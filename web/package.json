@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "mocks": "node scripts/run.mjs scripts/make-mocks.ts",
-    "check": "node scripts/run.mjs scripts/check.tsx"
+    "check": "node scripts/run.mjs scripts/check.tsx",
+    "check:real": "node scripts/run.mjs scripts/check-real.ts"
   },
   "engines": {
     "node": ">=20.19"
