@@ -23,92 +23,12 @@ from analysis.nowcast import (
     target_months,
 )
 
-LICE_EFFECT = 0.4
-
-
-def _synthetic_world(seed: int = 5) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
-    """A world where harvest volume in month m rises with lice pressure in m."""
-
-    rng = np.random.default_rng(seed)
-    months = pd.date_range("2017-10-01", "2026-09-01", freq="MS")
-    weeks = pd.date_range("2012-01-02", "2026-10-26", freq="7D")
-    week_month = (weeks + pd.Timedelta(days=3)).to_period("M").to_timestamp()
-    iso = weeks.isocalendar()
-    week_labels = [f"{y}-W{w:02d}" for y, w in zip(iso["year"], iso["week"])]
-    week_season = np.sin(2 * np.pi * (weeks + pd.Timedelta(days=3)).dayofyear / 365.25)
-
-    directorate_rows: list[dict[str, object]] = []
-    weekly_frames = []
-    for area in range(14):
-        scale = area + 1
-        lice_shock = pd.Series(
-            rng.normal(0, 0.3, len(pd.date_range("2012-01-01", "2026-10-01", freq="MS"))),
-            index=pd.date_range("2012-01-01", "2026-10-01", freq="MS"),
-        )
-        if area >= 1:
-            weekly_frames.append(
-                pd.DataFrame(
-                    {
-                        "area": area,
-                        "week": week_labels,
-                        "mobile_idx": np.expm1(
-                            0.5
-                            + 0.2 * week_season
-                            + lice_shock.reindex(week_month).to_numpy()
-                            + rng.normal(0, 0.02, len(weeks))
-                        ),
-                        "treat_rate": np.clip(0.1 + rng.normal(0, 0.02, len(weeks)), 0, 1),
-                        "disease_share": np.nan,
-                        "dd_below8": rng.normal(0, 5, len(weeks)),
-                        "dd_8to14": rng.normal(0, 5, len(weeks)),
-                        "dd_above14": 0.0,
-                        "available_at": weeks + pd.Timedelta(days=13),
-                    }
-                )
-            )
-        for month in months:
-            season = 1 + 0.3 * np.sin(2 * np.pi * month.month / 12)
-            count = scale * 300_000 * season * np.exp(
-                LICE_EFFECT * lice_shock[month] + rng.normal(0, 0.02)
-            )
-            avg_kg = 4.5 * np.exp(rng.normal(0, 0.01))
-            directorate_rows.append(
-                {
-                    "area": area,
-                    "month": month.strftime("%Y-%m"),
-                    "harvest_count": count,
-                    "harvest_kg": count * avg_kg,
-                    "avg_kg": avg_kg,
-                    "biomass_kg": scale * 1e7 * season * rng.uniform(0.9, 1.1),
-                    "fish_stock": scale * 2e6 * rng.uniform(0.9, 1.1),
-                    "smolt_released": scale * 1e5 * rng.uniform(0.5, 1.5),
-                    "dead": scale * 2e4 * rng.uniform(0.7, 1.3),
-                    "feed_kg": scale * 1e6 * season * rng.uniform(0.9, 1.1),
-                    "available_at": month + pd.offsets.MonthBegin(1) + pd.Timedelta(days=19),
-                }
-            )
-
-    angle = 2 * np.pi * weeks.dayofyear / 365.25
-    ssb = pd.DataFrame(
-        {
-            "week": week_labels,
-            "week_start": weeks,
-            "price_nok_kg": 80 + 10 * np.sin(angle),
-            "volume_t": 20_000 * np.exp(0.1 * np.cos(angle) + rng.normal(0, 0.03, len(weeks))),
-            "available_at": weeks + pd.Timedelta(days=9),
-        }
-    )
-    return pd.DataFrame(directorate_rows), pd.concat(weekly_frames, ignore_index=True), ssb
+World = tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]
 
 
 @pytest.fixture(scope="module")
-def world() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
-    return _synthetic_world()
-
-
-@pytest.fixture(scope="module")
-def dev_results(world: tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]) -> pd.DataFrame:
-    prepared = PreparedInputs(*world)
+def dev_results(nowcast_world: World) -> pd.DataFrame:
+    prepared = PreparedInputs(*nowcast_world)
     features = model_features(prepared.include_disease)
     months = pd.period_range("2023-01", "2023-12", freq="M")
     return run_backtest(prepared, months, features, features["drivers"])
@@ -125,10 +45,8 @@ def test_holdout_is_locked_by_default() -> None:
     assert holdout_unlocked(FREEZE_AT, confirm_freeze=False)
 
 
-def test_nowcast_ignores_everything_not_yet_public(
-    world: tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame],
-) -> None:
-    directorate, weekly, ssb = world
+def test_nowcast_ignores_everything_not_yet_public(nowcast_world: World) -> None:
+    directorate, weekly, ssb = nowcast_world
     target = pd.Period("2023-06", "M")
     made_on = forecast_date(target)
     features = model_features(include_disease=False)
@@ -210,8 +128,8 @@ def test_f1_fails_when_drivers_add_nothing() -> None:
     assert f1["pass"] is False
 
 
-def test_driver_ranking_shape(world: tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]) -> None:
-    prepared = PreparedInputs(*world)
+def test_driver_ranking_shape(nowcast_world: World) -> None:
+    prepared = PreparedInputs(*nowcast_world)
     features = model_features(prepared.include_disease)
     features |= ranking_features(features["drivers"])
     months = pd.period_range("2023-01", "2023-04", freq="M")

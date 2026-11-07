@@ -171,10 +171,17 @@ def holdout_unlocked(now: datetime, confirm_freeze: bool) -> bool:
     return confirm_freeze or now >= FREEZE_AT
 
 
-def build_vintage(prepared: PreparedInputs, target: pd.Period) -> pd.DataFrame:
-    """Every area-month up to ``target`` as it looked on the forecast date."""
+def build_vintage(
+    prepared: PreparedInputs,
+    target: pd.Period,
+    made_on: pd.Timestamp | None = None,
+) -> pd.DataFrame:
+    """Every area-month up to ``target`` as it looked on the forecast date.
 
-    made_on = forecast_date(target)
+    ``made_on`` defaults to D(target); a live nowcast passes an earlier date.
+    """
+
+    made_on = forecast_date(target) if made_on is None else min(made_on, forecast_date(target))
     last_known = (target - 1).to_timestamp()
     weekly_fit_end = (target - 1).to_timestamp(how="end").normalize()
     grid = pd.date_range(prepared.first_month, target.to_timestamp(), freq="MS")
@@ -251,8 +258,8 @@ def nowcast_month(
         for name, features in feature_sets.items():
             predictions = np.full(len(test), np.nan)
             if fit_allowed:
-                fitted = sm.OLS(y, _design(train.loc[train_rows, features])).fit()
-                predictions[test_rows] = base + _design(test.loc[test_rows, features]) @ fitted.params
+                fitted = sm.OLS(y, design_matrix(train.loc[train_rows, features])).fit()
+                predictions[test_rows] = base + design_matrix(test.loc[test_rows, features]) @ fitted.params
             result[name] = predictions
         results.append(result)
     return pd.concat(results, ignore_index=True)
@@ -468,7 +475,7 @@ def _components(
         return pd.DataFrame(np.nan, index=series.index, columns=["y", "level", "season", "anomaly"])
 
 
-def _design(features: pd.DataFrame) -> np.ndarray:
+def design_matrix(features: pd.DataFrame) -> np.ndarray:
     return sm.add_constant(features.to_numpy(float), has_constant="add")
 
 
