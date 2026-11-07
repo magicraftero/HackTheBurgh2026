@@ -1,0 +1,188 @@
+{
+  "generated_at": "2026-11-07T21:05:26.809687+00:00",
+  "final": false,
+  "sources": [
+    {
+      "label": "Statistics Norway 03024: fresh/chilled farmed salmon",
+      "url": "https://www.ssb.no/en/statbank/table/03024/",
+      "units": "NOK/kg; export tonnes"
+    },
+    {
+      "label": "Directorate of Fisheries: biomass statistics by production area",
+      "url": "https://register.fiskeridir.no/biomassestatistikk/BIOSTAT-LAKS-OMR/biostat-total-omr.csv",
+      "units": "round-weight kg; national totals include area 0"
+    },
+    {
+      "label": "Norges Bank exchange rates",
+      "url": "https://data.norges-bank.no/",
+      "units": "NOK per EUR / USD"
+    },
+    {
+      "label": "BarentsWatch Fish Health",
+      "url": "https://www.barentswatch.no/fiskehelse/",
+      "units": "mobile lice per fish; treatment/disease shares; temperature degree-days"
+    }
+  ],
+  "inputs": {
+    "directorate_area_month.parquet": "af653ae619518a1634bc0c0c4a863682b01264eb290d348873a664f58f72f3d9",
+    "fx_daily.parquet": "949e26de3712c592a45359efde338a593b3d2e7e2d08083b214990429b857d1d",
+    "ssb_weekly.parquet": "f22ea7bd13ea8a5523bf705aebde2e80236ff830cad9457dd14c5bd609155304",
+    "weekly_national_index.parquet": "5de0de996489f8df493a66d01335127b83d89777ac4455eb0cdc8ece4dab2a9f"
+  },
+  "diagnostics": {
+    "lag_selection": {
+      "2": {
+        "p": 2,
+        "n": 362,
+        "bic": {
+          "1": -870.1,
+          "2": -881.7,
+          "3": -877.2,
+          "4": -875.0,
+          "5": -870.0,
+          "6": -864.1,
+          "7": -858.3,
+          "8": -853.7
+        }
+      },
+      "3": {
+        "p": 2,
+        "n": 361,
+        "bic": {
+          "1": -775.4,
+          "2": -782.1,
+          "3": -778.9,
+          "4": -775.1,
+          "5": -769.6,
+          "6": -763.7,
+          "7": -759.2,
+          "8": -755.4
+        }
+      },
+      "4": {
+        "p": 2,
+        "n": 360,
+        "bic": {
+          "1": -712.2,
+          "2": -720.1,
+          "3": -715.8,
+          "4": -711.1,
+          "5": -705.4,
+          "6": -700.7,
+          "7": -696.9,
+          "8": -691.8
+        }
+      },
+      "5": {
+        "p": 2,
+        "n": 359,
+        "bic": {
+          "1": -659.6,
+          "2": -664.3,
+          "3": -659.3,
+          "4": -654.2,
+          "5": -650.2,
+          "6": -646.2,
+          "7": -641.2,
+          "8": -636.5
+        }
+      },
+      "6": {
+        "p": 2,
+        "n": 358,
+        "bic": {
+          "1": -617.8,
+          "2": -619.3,
+          "3": -614.2,
+          "4": -611.4,
+          "5": -608.2,
+          "6": -603.2,
+          "7": -598.5,
+          "8": -594.3
+        }
+      },
+      "7": {
+        "p": 2,
+        "n": 357,
+        "bic": {
+          "1": -576.0,
+          "2": -576.7,
+          "3": -573.9,
+          "4": -571.9,
+          "5": -567.5,
+          "6": -563.0,
+          "7": -558.7,
+          "8": -554.8
+        }
+      },
+      "8": {
+        "p": 2,
+        "n": 356,
+        "bic": {
+          "1": -535.7,
+          "2": -541.2,
+          "3": -539.5,
+          "4": -535.8,
+          "5": -531.8,
+          "6": -527.6,
+          "7": -523.6,
+          "8": -522.5
+        }
+      }
+    },
+    "skips": {
+      "dev/h8": {
+        "missing_features": 6,
+        "insufficient_training": 0,
+        "missing_actual": 0,
+        "scored": 202
+      },
+      "dev/h7": {
+        "missing_features": 6,
+        "insufficient_training": 0,
+        "missing_actual": 0,
+        "scored": 202
+      },
+      "dev/h6": {
+        "missing_features": 6,
+        "insufficient_training": 0,
+        "missing_actual": 0,
+        "scored": 202
+      },
+      "dev/h5": {
+        "missing_features": 6,
+        "insufficient_training": 0,
+        "missing_actual": 0,
+        "scored": 202
+      },
+      "dev/h4": {
+        "missing_features": 6,
+        "insufficient_training": 0,
+        "missing_actual": 0,
+        "scored": 202
+      },
+      "dev/h3": {
+        "missing_features": 6,
+        "insufficient_training": 0,
+        "missing_actual": 0,
+        "scored": 202
+      },
+      "dev/h2": {
+        "missing_features": 6,
+        "insufficient_training": 0,
+        "missing_actual": 0,
+        "scored": 202
+      }
+    },
+    "first_complete_origin": "2018-W33",
+    "last_starting_feature": "weight_anom",
+    "h4_first_dev_training_rows": 118,
+    "anomaly_engine": "analysis.anomalies.anomaly",
+    "models": [
+      "rw",
+      "ar",
+      "c0",
+      "c1"
+    ]
+  }
+}
