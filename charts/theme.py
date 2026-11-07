@@ -28,7 +28,7 @@ def _theme():
 
 def register():
     """Register and enable `lice`, using either Altair 5 theme API."""
-    if hasattr(alt, "theme"):
+    if hasattr(getattr(alt, "theme", None), "register"):
         alt.theme.register("lice", enable=True)(_theme)
     else:
         alt.themes.register("lice", _theme)

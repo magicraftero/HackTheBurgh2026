@@ -24,7 +24,7 @@ def paired(rows, h, window):
     rows = rows.loc[(rows.h == h) & (rows.window == window)]
     c0 = rows.loc[rows.model == "c0"].set_index("origin_week")
     c1 = rows.loc[rows.model == "c1"].set_index("origin_week")
-    return c0.join(c1, lsuffix="_c0", rsuffix="_c1", how="inner").sort_index()
+    return c0.merge(c1, left_index=True, right_index=True, suffixes=("_c0", "_c1"), how="inner").sort_index()
 
 
 def evaluate(rows, final=False):

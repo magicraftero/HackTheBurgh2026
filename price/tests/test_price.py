@@ -2,8 +2,9 @@ from datetime import datetime
 import json
 from pathlib import Path
 import tempfile
+from types import SimpleNamespace
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 from zoneinfo import ZoneInfo
 
 import numpy as np
@@ -15,6 +16,7 @@ from statsmodels.stats.multitest import multipletests
 
 from charts.price_charts import build_charts
 from charts.theme import PALETTE
+from charts import theme
 from price.anomalies import fallback_anomaly
 from price.backtest import FREEZE, check_final_allowed, main, run_backtest
 from price.calendar import iso_week, week_start
@@ -84,6 +86,27 @@ class DatasetTests(unittest.TestCase):
         self.assertTrue(pd.isna(row.mobile_anom))
         self.assertTrue(np.isfinite(row.mobile_anom_lag1))
 
+    def test_barentswatch_rejects_release_before_next_sunday(self):
+        for lag in [7, 9, 12]:
+            with self.subTest(lag_days=lag):
+                inputs = [x.copy() for x in self.inputs]
+                inputs[3]["available_at"] = inputs[0].week_start + pd.Timedelta(days=lag)
+                with self.assertRaisesRegex(ValueError, "National weekly index:.*before its release date"):
+                    PriceDataset.from_frames(*inputs)
+
+    def test_barentswatch_accepts_next_sunday_and_later_ssb_keeps_wednesday(self):
+        for lag in [13, 14]:
+            with self.subTest(lag_days=lag):
+                inputs = [x.copy() for x in self.inputs]
+                inputs[3]["available_at"] = inputs[0].week_start + pd.Timedelta(days=lag)
+                data = PriceDataset.from_frames(*inputs)
+                self.assertTrue((data.ssb.available_at.dt.day_of_week == 2).all())
+                # At t's Wednesday origin, the latest released BW week is t-1.
+                t = week_start("2021-W01")
+                origin = data.ssb.loc[t, "available_at"]
+                released = data.weekly.loc[data.weekly.available_at <= origin]
+                self.assertEqual(released.index.max(), t - pd.Timedelta(weeks=1))
+
     def test_lag_is_one_calendar_week_across_a_missing_week(self):
         inputs = [x.copy() for x in self.inputs]
         inputs[3] = inputs[3].loc[inputs[3].week != "2020-W52"]
@@ -123,6 +146,25 @@ class DatasetTests(unittest.TestCase):
         s.iloc[141:] *= 1000
         after = fallback_anomaly(s, "W", fit_end=s.index[140])
         np.testing.assert_allclose(before.iloc[:141], after.iloc[:141], equal_nan=True)
+
+
+class ThemeTests(unittest.TestCase):
+    def test_registration_supports_both_altair_apis(self):
+        legacy = Mock()
+        for namespace in [None, SimpleNamespace()]:
+            with self.subTest(theme_namespace=namespace):
+                legacy.reset_mock()
+                with patch.object(theme, "alt", SimpleNamespace(theme=namespace, themes=legacy)):
+                    theme.register()
+                legacy.register.assert_called_once_with("lice", theme._theme)
+                legacy.enable.assert_called_once_with("lice")
+        modern = Mock()
+        legacy.reset_mock()
+        with patch.object(theme, "alt", SimpleNamespace(theme=modern, themes=legacy)):
+            theme.register()
+        modern.register.assert_called_once_with("lice", enable=True)
+        modern.register.return_value.assert_called_once_with(theme._theme)
+        legacy.register.assert_not_called()
 
 
 class BacktestTests(unittest.TestCase):

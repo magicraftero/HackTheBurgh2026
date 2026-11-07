@@ -1,4 +1,6 @@
-# Integration verification, 7 November 2026
+# Price integration verification
+
+## Original verification, 7 November 2026
 
 Price was implemented on `priceRyan`. At the start this worktree contained only
 plans. Source tables and Production code were read from existing local Git refs
@@ -17,13 +19,14 @@ its normal is the shifted cumulative mean for the same ISO week, requires three
 earlier years, and its six-week degree-day sum looks backwards. Stored
 full-sample anomaly columns are not used by Price.
 
-## Upstream issue found
+## Historical upstream issue
 
-The full Production `build_weekly_indices()` currently rejects one inconsistent
+At the original snapshots, Production `build_weekly_indices()` rejected one inconsistent
 area: locality **34537**, `farm_week.area=4` and `farms.area=3`. There are 1,476
 unique locality/area combinations and 416 farm capacities are null. The regional
-inconsistency should be resolved by the Data/Production owners before their
-combined pipeline runs. Price did not reassign any farm area.
+inconsistency was subsequently resolved by Data's `30bdfc7` commit, now included
+on this branch. Price did not reassign any farm area. The committed Price outputs
+still describe the original inputs until the authoritative-table rerun below.
 
 For this verification, only the **national** part of Production's existing
 code was run: join capacity by locality; impute unknown capacity with the
@@ -41,15 +44,23 @@ After Data/Production deliver the index on the integrated branch, rerun the
 default backtest and chart generator with that authoritative table. Results may
 change if the upstream inputs change.
 
-## Verification commands
+## Shared install and authoritative-table rerun
 
-Using a temporary virtual environment with `price/requirements.txt` installed:
+Original verification used the then-separate Price requirements. New checkouts
+use the shared `.venv` installed from the root `requirements.txt`:
 
 ```sh
 python -m unittest discover -s price/tests -v
-PYTHONPATH=/path/to/production-checkout python -m price.backtest --input-dir /path/to/verification-inputs --input-note 'National index derived using Production national aggregation; regional consistency issue documented in price/INTEGRATION.md.'
+python -m pipeline.checks
+# Once Production's weekly and monthly national tables are on main:
+python -m price.backtest
 python -m charts.price_charts
 ```
+
+Run the backtest from an up-to-date main without `--input-note`; that removes
+the original input-debugging note from the regenerated public findings. Do not
+replace the committed c1 results with a preliminary c0-only run while waiting
+for Production's tables. The pending work is tracked in `REVIEW-priceRyan.md`.
 
 The stand-in and Production anomaly functions were also compared for weekly and
 monthly frequencies, all three transforms, missing values and an explicit
@@ -82,3 +93,19 @@ Real F2 remains unscored until the scheduled final run.
 No live front-end application exists on this branch. Browser mounting and
 deployment belong to the Front end role; these checks verify its agreed static
 inputs, not a deployed page.
+
+## Review follow-up verification
+
+The shared root install was tested in a fresh `.venv`: pandas 3.1.1 (also
+confirmed in Data's Parquet writer metadata), NumPy 2.4.6, Altair 5.5.0,
+statsmodels 0.15.0 and linearmodels 7.1. All **26 Price tests**, all Data pipeline
+checks and `pip check` passed. Regression tests reject BarentsWatch releases
+at 7, 9 and 12 days, accept 13 days and later, preserve SSB's Wednesday release,
+and verify registration through both Altair APIs. An isolated Altair 5.3.0
+installation also registered the theme and serialized all three chart specs.
+
+At the final repository check, main remained `30bdfc7` and Production was
+`e7807b0`. The weekly national index was absent from both branches, and the
+monthly national table was only on Production. The authoritative-table rerun
+and public-note cleanup remain pending; no real holdout was scored and no
+committed findings were regenerated during this review follow-up.

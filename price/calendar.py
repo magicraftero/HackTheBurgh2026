@@ -40,7 +40,7 @@ def seasonality(index: pd.DatetimeIndex, freq="W", K=3) -> pd.DataFrame:
     anchor = index + pd.Timedelta(days=3) if freq == "W" else index + pd.Timedelta(days=14)
     result = pd.DataFrame({"const": np.ones(len(index))}, index=index)
     for k in range(1, K + 1):
-        angle = 2 * np.pi * k * anchor.dayofyear / 365.25
+        angle = 2 * np.pi * k * anchor.day_of_year / 365.25
         result[f"sin{k}"] = np.sin(angle)
         result[f"cos{k}"] = np.cos(angle)
     if freq == "W":

@@ -1,7 +1,0 @@
-# Isolated Price setup until Data's root requirements.txt is merged.
-pandas>=2.2,<3
-numpy>=1.26,<2.5
-pyarrow
-scipy
-statsmodels>=0.14
-altair>=5.3,<6

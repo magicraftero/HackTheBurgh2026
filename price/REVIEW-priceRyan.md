@@ -4,6 +4,27 @@ Checked on 7 Nov 2026 by Jesse's coding agent. Branch `priceRyan` at `1df553f`, 
 
 **Verdict: merge. Nothing blocks.** The holdout is untouched, every input respects its publication date, and the models and tests match F2. Make the small fixes in items 1, 2 and 4 on this branch, then main gets fast-forwarded.
 
+## Implementation status (7 Nov 2026)
+
+- Items **1, 2 and 4 implemented**: national BarentsWatch releases require at
+  least 13 days; theme registration checks the API capability; both duplicate
+  `.gitignore` files are removed. Regression tests cover early/valid releases
+  and both registration APIs; all three charts also serialize under Altair 5.3.
+- Item **3 implemented** by matching Data's existing pandas **3.1.1** version in
+  the root `requirements.txt`, retaining NumPy `<2.5` and Altair `<6`. The separate
+  Price requirements file is removed, and setup instructions and environment
+  errors point to the root file. A fresh shared `.venv` installs successfully;
+  All 26 Price tests, Data pipeline checks and `pip check` pass. Price's deprecated
+  pandas aliases were replaced with equivalent supported APIs for this version.
+- Items **5 and 6 pending Production delivery to main**: neither national table
+  is on `origin/main` (`30bdfc7`); the weekly national index is also absent from
+  `origin/production` (`e7807b0`). Preserve the existing c1 outputs until both
+  authoritative tables land. Then run `python -m price.backtest` followed by
+  `python -m charts.price_charts` on up-to-date main, **without `--input-note`**,
+  and check input coverage/scale without changing the registered models.
+
+This review is retained until the conditional rerun and note cleanup are done.
+
 ## Who needs to do what
 
 | Who | What |

@@ -14,16 +14,16 @@ From the repository root, using Python 3.11 or newer:
 ```sh
 python3 -m venv .venv
 source .venv/bin/activate
-python -m pip install -r price/requirements.txt
+python -m pip install -r requirements.txt
 python -m price.backtest
 python -m charts.price_charts
 python -m unittest discover -s price/tests -v
 ```
 
-`price/requirements.txt` supplies an isolated setup until Data's root
-requirements are merged. Altair is constrained to v5 for the agreed chart
-schema; NumPy is constrained below 2.5 because its timedelta deprecations flood
-the pandas 2 backtest with warnings. The tests use `unittest` and deterministic
+The root `requirements.txt` is the single install path for all roles. It pins
+pandas to 3.1.1, matching Data's table-writing environment. Altair is constrained
+to v5 for the agreed chart schema, and NumPy stays below 2.5 for compatibility
+with the existing analysis stack. The tests use `unittest` and deterministic
 **synthetic test fixtures** in `price/tests/fixtures.py`; those observations are
 never exported to the website.
 
@@ -104,7 +104,8 @@ if findings exist but holdout rows do not, it emits a visible waiting chart.
 - Exchange-rate predictors are log changes of Monday–Sunday daily means;
   unreleased daily data is excluded. Directorate months are unavailable until
   their release (the following month's 20th if the driver-table stamp is absent).
-  BarentsWatch's Sunday t+1 release normally restricts the current origin to t−1.
+  BarentsWatch releases are rejected if earlier than 13 days after the week's
+  Monday (Sunday of t+1), restricting the current origin to t−1.
 - `rw` predicts zero change. `ar` adds price-change lags and three Fourier
   harmonics plus Easter and Christmas. `c0` adds export-volume anomalies,
   national average-weight anomaly, and EUR/NOK changes. `c1` adds exactly the

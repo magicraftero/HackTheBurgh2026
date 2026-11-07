@@ -36,15 +36,15 @@ def _dates(frame, column):
     return dates
 
 
-def _weekly(frame, name, columns):
+def _weekly(frame, name, columns, min_lag_days=7):
     _require(frame, ["week", "available_at", *columns], name)
     frame = frame.copy()
     frame.index = pd.DatetimeIndex(frame.week.map(week_start), name="period")
     if frame.index.duplicated().any():
         raise ValueError(f"{name}: duplicate weeks")
     frame["available_at"] = _dates(frame, "available_at")
-    if (frame.available_at < frame.index + pd.Timedelta(days=7)).any():
-        raise ValueError(f"{name}: a week cannot be published before it ends")
+    if (frame.available_at < frame.index + pd.Timedelta(days=min_lag_days)).any():
+        raise ValueError(f"{name}: a week cannot be published before its release date")
     if "week_start" in frame and not (pd.to_datetime(frame.week_start) == frame.index).all():
         raise ValueError(f"{name}: week_start disagrees with ISO week")
     return frame.sort_index()
@@ -125,7 +125,7 @@ class PriceDataset:
         monthly = _monthly(monthly, "Monthly drivers", ["biomass_kg", "feed_rate", "mortality"])
         if weekly is not None:
             weekly = _weekly(weekly, "National weekly index", ["mobile_idx", "treat_rate",
-                "disease_share", "dd_below8", "dd_8to14", "dd_above14"])
+                "disease_share", "dd_below8", "dd_8to14", "dd_above14"], min_lag_days=13)
             if weekly.disease_share.isna().all():
                 notes.append("disease_share dropped from c1: no disease flags in BarentsWatch.")
         else:
@@ -178,7 +178,7 @@ class PriceDataset:
         weights["weight_anom"] = _adjust(weights, "avg_kg", "M", "log", origin)
         frame["weight_anom"] = _asof(weights, origins, ["weight_anom"])["weight_anom"]
         fx = self.fx.loc[self.fx.available_at <= origin].copy()
-        fx["period"] = fx.date - pd.to_timedelta(fx.date.dt.dayofweek, unit="D")
+        fx["period"] = fx.date - pd.to_timedelta(fx.date.dt.day_of_week, unit="D")
         fxweek = fx.groupby("period").agg(eurnok=("eurnok", "mean"), usdnok=("usdnok", "mean"),
                                          available_at=("available_at", "max"))
         if not fxweek.empty:

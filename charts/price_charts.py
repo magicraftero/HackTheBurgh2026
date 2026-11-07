@@ -81,7 +81,7 @@ def backtest(payload):
 
 def build_charts(payload):
     if alt.__version__.split(".")[0] != "5":
-        raise ValueError("Price charts require Altair 5 for the shared Vega-Lite v5 contract; install price/requirements.txt")
+        raise ValueError("Price charts require Altair 5 for the shared Vega-Lite v5 contract; install requirements.txt")
     register()
     alt.data_transformers.disable_max_rows()
     return {"price_scorecard": scorecard(payload), "price_by_year": by_year(payload),
