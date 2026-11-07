@@ -60,7 +60,9 @@ Every number can be `null`. All numbers are 4 significant figures, except `basel
     {"id": "lice", "label": "Mobile lice per fish", "unit": "lice per fish", "transform": "log1p", "scale": 1,
      "evidence": {"ranking_increase_pct": 6.7, "mechanism_tests": [{"test": "M1", "pass": true, "…": "…"}]}}
   ],
-  "national": {"label": "Areas 1-13 (…)", "kg": 180000000, "count": 39000000, "avg_kg": 4.6,
+  "national": {"label": "Areas 2-12 (areas 1 and 13 harvest too irregularly to forecast)",
+               "areas": [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+               "kg": 180000000, "count": 39000000, "avg_kg": 4.6,
                "kg_range": [150000000, 210000000]},
   "areas": [{
     "area": 6, "name": "Nordmøre og Sør-Trøndelag",
