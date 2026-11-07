@@ -11,6 +11,7 @@ views read. Holdout keys stay null until the --final tables exist.
 from __future__ import annotations
 
 import argparse
+import json
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -19,6 +20,7 @@ import numpy as np
 import pandas as pd
 
 from analysis.io import round_significant, write_json_atomic
+from analysis.decision_lab import AREA_NAMES, DISCLAIMER, LEVERS
 from ml.bands import coverage, month_number, rolling_bands, week_number
 from ml.config import (
     DEVELOPMENT_WINDOW,
@@ -209,7 +211,8 @@ def supply_payload(results: pd.DataFrame, final: bool) -> tuple[dict[str, Any], 
         "band": {"level": 0.8, "model": headline,
                  "method": f"rolling quantiles of the model's errors public by the issue date, last {SUPPLY_BAND_MONTHS} months"},
         "winner": win,
-        "areas": {"forecast": scored_areas, "not_forecast": sorted(all_areas - set(scored_areas)),
+        "areas": {"names": {str(a): AREA_NAMES[a] for a in sorted(all_areas)},
+                  "forecast": scored_areas, "not_forecast": sorted(all_areas - set(scored_areas)),
                   "reason": "an area's season needs 24 usable months (areas with many zero-harvest months never reach it)"},
         "national_label": f"Sum of areas {scored_areas[0]}-{scored_areas[-1]} forecast here (areas {sorted(all_areas - set(scored_areas))} excluded)",
         "issue_dates": sorted(past["issued"].unique().tolist()),
@@ -306,6 +309,34 @@ def price_payload(results: pd.DataFrame, ssb: pd.DataFrame, final: bool) -> tupl
     return payload, {"scores": scores, "winner": win}
 
 
+def cockpit_payload(grids: dict[str, Any], win: dict[str, Any]) -> dict[str, Any]:
+    """Lever grids for the farmer cockpit; used only when the winner rule picked ml or blend."""
+
+    model = win.get("model")
+    applies = model in ("ml", "blend")
+
+    def area(entry: dict[str, Any]) -> dict[str, Any]:
+        return {"area": entry["area"], "levers": [
+            {"id": lever["id"], "feature": lever["feature"], "current": R(lever["current"]),
+             "grid": [R(v) for v in lever["grid"]],
+             "delta_log": {o: [round(v, 6) for v in values]
+                           for o, values in lever["delta_log"].get(model if applies else "blend", {}).items()}}
+            for lever in entry["levers"]]}
+
+    return {
+        "target_month": grids["target_month"], "made_on": grids["made_on"],
+        "model": model if applies else None, "applies": applies,
+        "rule": win.get("rule"),
+        "status": "unverifiable until the Directorate publishes this month",
+        "disclaimer": DISCLAIMER,
+        "how": ("forecast_log[o] = baseline_log[o] + sum over levers of interp(value, grid, delta_log[o]). "
+                "Each lever is swept on its own with the others at their current values, so the sum is an "
+                "approximation when several levers move. Outside the grid, show 'outside past experience'."),
+        "levers": [{"id": lever.id, "label": lever.label, "unit": lever.unit} for lever in LEVERS],
+        "areas": [area(entry) for entry in grids["areas"]],
+    }
+
+
 # --------------------------------------------------------------------------- results
 
 def results_markdown(supply: dict[str, Any] | None, price: dict[str, Any] | None, final: bool) -> str:
@@ -364,6 +395,11 @@ def main(argv: list[str] | None = None) -> None:
         payload, supply_summary = supply_payload(results, final)
         write_json_atomic(payload, args.site / "outlook_supply.json")
         print(f"outlook_supply.json: {len(payload['backtest'])} area rows; winner {supply_summary['winner']['model']}")
+        levers = args.processed / "ml_levers.json"
+        if levers.exists():
+            cockpit = cockpit_payload(json.loads(levers.read_text(encoding="utf-8")), supply_summary["winner"])
+            write_json_atomic(cockpit, args.site / "cockpit_ml.json")
+            print(f"cockpit_ml.json: {len(cockpit['areas'])} areas; applies={cockpit['applies']}")
     price_path = args.processed / "ml_price_backtest.parquet"
     if price_path.exists():
         results = pd.read_parquet(price_path)

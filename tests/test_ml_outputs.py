@@ -119,3 +119,28 @@ def test_price_json_shape(price_dataset: PriceDataset) -> None:
     entry = payload["backtest"][0]
     assert set(entry["pred"]) == {"rw", "ar", "c0", "c1", "ml", "blend"}
     assert entry["actual"] > 0 and entry["pred"]["rw"] > 0
+
+
+def test_supply_json_after_final_has_current_outlook() -> None:
+    months = [str(p) for p in pd.period_range("2019-07", "2026-09", freq="M")]
+    results = _supply_results({"warmup": months[:18], "dev": months[18:66], "holdout": months[66:],
+                               "current": ["2026-10"]})
+    payload, summary = supply_payload(results, final=True)
+    json.dumps(payload, allow_nan=False)
+    assert payload["scores"]["holdout"] is not None and payload["status"] == "final"
+    target = payload["current"]["targets"][0]
+    assert target["target"] == "2026-10" and target["publishes_around"] == "2026-11-20"
+    assert target["areas"][0]["actual"]["t"] is None and target["areas"][0]["pred"]["blend"]["t"] > 0
+    assert target["areas"][0]["band"]["t"][0] is not None
+
+
+def test_cockpit_payload_only_applies_when_ml_wins() -> None:
+    from ml.export import cockpit_payload
+
+    grids = {"target_month": "2026-10", "made_on": "2026-11-08", "areas": [
+        {"area": 3, "levers": [{"id": "lice", "feature": "mobile_anom", "current": 0.5, "grid": list(np.linspace(0.1, 0.9, 9)),
+                                "delta_log": {"ml": {"log_kg": [0.0] * 9}, "blend": {"log_kg": [0.01] * 9}}}]}]}
+    wins = cockpit_payload(grids, {"model": "blend", "rule": "r"})
+    assert wins["applies"] and wins["areas"][0]["levers"][0]["delta_log"]["log_kg"][0] == 0.01
+    loses = cockpit_payload(grids, {"model": "drivers", "rule": "r"})
+    assert not loses["applies"] and loses["model"] is None

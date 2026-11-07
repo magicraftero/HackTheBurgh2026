@@ -17,6 +17,7 @@ import json
 import os
 from concurrent.futures import ProcessPoolExecutor
 from datetime import datetime
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -42,12 +43,14 @@ from ml.config import (
     SUPPLY_LINEAR,
     SUPPLY_WARMUP_START,
 )
-from ml.models import fit_gbm, fit_ols, normal_values, why
+from analysis.decision_lab import LEVERS, _monthly_levels, _quantiles, _temperature_feature
+from ml.models import Predict, fit_gbm, fit_ols, normal_values, why
 from ml.vintage import LAGGED_OUTCOMES, LEVEL_FEATURES, ML_EXTRA_FEATURES, build_horizon_vintage, issue_date
 
 ROOT = Path(__file__).resolve().parents[1]
 FINAL_RECORD = ROOT / "ml" / "final_supply.json"
 OUTPUT_NAME = "ml_supply_backtest.parquet"
+LEVERS_NAME = "ml_levers.json"
 WHY_MODELS = ("drivers", "ml")
 
 
@@ -75,6 +78,47 @@ def driver_groups(columns: list[str]) -> dict[str, list[str]]:
     return {name: [c for c in cols if c in columns] for name, cols in groups.items()}
 
 
+@dataclass
+class Fit:
+    """One outcome's fitted models for one (target, horizon), on Production's sample rule."""
+
+    outcome: str
+    fitting: pd.DataFrame
+    test: pd.DataFrame
+    test_rows: np.ndarray
+    predictors: dict[str, Predict]
+
+
+def fit_all(
+    prepared: PreparedInputs,
+    target: pd.Period,
+    h: int,
+    made_on: pd.Timestamp | None = None,
+) -> tuple[pd.Timestamp, pd.DataFrame, list[Fit]]:
+    sets = feature_sets(prepared.include_disease)
+    sample = sets["drivers"]
+    vintage = build_horizon_vintage(prepared, target, h, made_on)
+    issued = issue_date(target, h) if made_on is None else min(pd.Timestamp(made_on), issue_date(target, h))
+    known_end = (target - h - 1).to_timestamp()
+    train = vintage.loc[vintage["date"] <= known_end]
+    test = vintage.loc[vintage["date"] == target.to_timestamp()].reset_index(drop=True)
+    n_parameters = len(sample) + 1
+
+    fits = []
+    for outcome in OUTCOMES:
+        anomaly, base_column = f"{outcome}_anom", f"{outcome}_base"
+        train_rows = train[anomaly].notna() & train[sample].notna().all(axis=1)
+        test_rows = (test[base_column].notna() & test[sample].notna().all(axis=1)).to_numpy()
+        fitting = train.loc[train_rows]
+        predictors: dict[str, Predict] = {}
+        if len(fitting) >= MIN_ROWS_PER_PARAMETER * n_parameters and test_rows.any():
+            y = fitting[anomaly].to_numpy(float)
+            predictors = {model: fit_ols(fitting[sets[model]], y) for model in SUPPLY_LINEAR}
+            predictors["ml"] = fit_gbm(fitting[sets["ml"]], y, categorical=["area"])
+        fits.append(Fit(outcome, fitting, test, test_rows, predictors))
+    return issued, test, fits
+
+
 def forecast(
     prepared: PreparedInputs,
     target: pd.Period,
@@ -86,23 +130,13 @@ def forecast(
     """Forecast every area for ``target`` at horizon ``h`` with every model."""
 
     sets = feature_sets(prepared.include_disease)
-    sample = sets["drivers"]
-    vintage = build_horizon_vintage(prepared, target, h, made_on)
-    issued = issue_date(target, h) if made_on is None else min(pd.Timestamp(made_on), issue_date(target, h))
-    known_end = (target - h - 1).to_timestamp()
-    train = vintage.loc[vintage["date"] <= known_end]
-    test = vintage.loc[vintage["date"] == target.to_timestamp()].reset_index(drop=True)
-    n_parameters = len(sample) + 1
     groups = driver_groups(sets["ml"])
     level_columns = [c for c in sets["ml"] if c in LEVEL_FEATURES]
+    issued, test, fits = fit_all(prepared, target, h, made_on)
 
     results = []
-    for outcome in OUTCOMES:
-        anomaly, base_column = f"{outcome}_anom", f"{outcome}_base"
-        train_rows = train[anomaly].notna() & train[sample].notna().all(axis=1)
-        test_rows = (test[base_column].notna() & test[sample].notna().all(axis=1)).to_numpy()
-        fitting = train.loc[train_rows]
-        n_train = len(fitting)
+    for fit in fits:
+        outcome, test_rows = fit.outcome, fit.test_rows
         result = pd.DataFrame({
             "area": test["area"].to_numpy(),
             "month": str(target),
@@ -111,28 +145,25 @@ def forecast(
             "window": window or window_of(str(target)),
             "outcome": outcome,
             "actual": test[f"{outcome}_actual"].to_numpy(),
-            "n_train": n_train,
+            "n_train": len(fit.fitting),
         })
-        base = test[base_column].to_numpy(float)
+        base = test[f"{outcome}_base"].to_numpy(float)
         for model in ("seasonal", *SUPPLY_LINEAR, "ml", "blend"):
             result[model] = np.nan
-        if n_train < MIN_ROWS_PER_PARAMETER * n_parameters or not test_rows.any():
+        if not fit.predictors:
             results.append(result)
             continue
 
-        y = fitting[anomaly].to_numpy(float)
         scored = test.loc[test_rows]
-        predictors = {model: fit_ols(fitting[sets[model]], y) for model in SUPPLY_LINEAR}
-        predictors["ml"] = fit_gbm(fitting[sets["ml"]], y, categorical=["area"])
         result.loc[test_rows, "seasonal"] = base[test_rows]
-        for model, predict in predictors.items():
+        for model, predict in fit.predictors.items():
             result.loc[test_rows, model] = base[test_rows] + predict(scored)
         result["blend"] = (result["drivers"] + result["ml"]) / 2
 
-        normals = normal_values(fitting, sets["ml"], level_columns, "area")
+        normals = normal_values(fit.fitting, sets["ml"], level_columns, "area")
         for model in WHY_MODELS:
             model_groups = {name: [c for c in cols if c in sets[model]] for name, cols in groups.items()}
-            contributions = why(predictors[model], scored, model_groups, normals, "area")
+            contributions = why(fit.predictors[model], scored, model_groups, normals, "area")
             for name in groups:
                 values = np.full(len(test), np.nan)
                 if name in contributions:
@@ -140,6 +171,48 @@ def forecast(
                 result[f"why_{model}_{name}"] = values
         results.append(result)
     return pd.concat(results, ignore_index=True)
+
+
+def lever_grids(prepared: PreparedInputs, target: pd.Period, made_on: pd.Timestamp) -> dict[str, Any]:
+    """Decision Lab's levers, swept one at a time through the ML and blend nowcasts.
+
+    For each area and lever: 9 values across the area's 5th-95th percentile and
+    the change in each log outcome against the lever's current value. The lever
+    moves its feature exactly as in Decision Lab: T(scale * new) - T(scale * current).
+    """
+
+    _, test, fits = fit_all(prepared, target, 0, made_on)
+    cutoff = min(pd.Timestamp(made_on), issue_date(target, 0))
+    target_start = target.to_timestamp()
+    areas = []
+    for position, area in enumerate(test["area"]):
+        monthly = _monthly_levels(prepared.weekly.get(int(area)), cutoff)
+        temp_c = monthly["temp_c"].get(target_start, np.nan)
+        row = test.iloc[[position]]
+        entry: dict[str, Any] = {"area": int(area), "levers": []}
+        for lever in LEVERS:
+            history = monthly[lever.level_column].loc[lambda s: s.index < target_start].dropna()
+            current = monthly[lever.level_column].get(target_start, np.nan)
+            feature = lever.feature or _temperature_feature(temp_c)
+            low, high = _quantiles(history, (0.05, 0.95))
+            if feature is None or feature not in row or not np.isfinite([current, low, high]).all():
+                continue
+            grid = np.linspace(low, high, 9)
+            transform = (lambda v: np.log1p(lever.scale * v)) if lever.transform == "log1p" else (lambda v: lever.scale * v)
+            deltas: dict[str, dict[str, list[float]]] = {"ml": {}, "blend": {}}
+            for fit in fits:
+                if not fit.predictors or not fit.test_rows[position]:
+                    continue
+                moved = pd.concat([row] * len(grid), ignore_index=True)
+                moved[feature] = row[feature].iloc[0] + transform(grid) - transform(current)
+                ml = fit.predictors["ml"](moved) - fit.predictors["ml"](row)[0]
+                drivers = fit.predictors["drivers"](moved) - fit.predictors["drivers"](row)[0]
+                deltas["ml"][fit.outcome] = ml.tolist()
+                deltas["blend"][fit.outcome] = ((ml + drivers) / 2).tolist()
+            entry["levers"].append({"id": lever.id, "feature": feature, "current": float(current),
+                                    "grid": grid.tolist(), "delta_log": deltas})
+        areas.append(entry)
+    return {"target_month": str(target), "made_on": cutoff.strftime("%Y-%m-%d"), "areas": areas}
 
 
 def target_months(final: bool) -> pd.PeriodIndex:
@@ -225,6 +298,10 @@ def main(argv: list[str] | None = None) -> None:
     results = run(args.processed, args.final, args.jobs, today)
     write_parquet_atomic(results, args.processed / OUTPUT_NAME)
     if args.final:
+        prepared = load_inputs(args.processed)
+        target = current_targets(prepared, today)[0][0]
+        grids = lever_grids(prepared, target, today)
+        (args.processed / LEVERS_NAME).write_text(json.dumps(grids) + "\n", encoding="utf-8")
         FINAL_RECORD.write_text(json.dumps({"run_at": datetime.now().isoformat(), "rows": len(results)}) + "\n")
     summary: dict[str, Any] = results.groupby(["window", "h"]).size().to_dict()
     print(f"Wrote {len(results):,} rows to {args.processed / OUTPUT_NAME}: {summary}")

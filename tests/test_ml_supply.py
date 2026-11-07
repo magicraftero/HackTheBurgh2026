@@ -98,3 +98,19 @@ def test_no_forecast_when_the_season_has_too_few_months(nowcast_world: World) ->
     kg = result.loc[result["outcome"] == "log_kg"].set_index("area")
     assert kg.loc[4, MODELS].isna().all()
     assert kg.drop(index=4)["drivers"].notna().all()
+
+
+def test_lever_grids_sweep_each_lever(nowcast_world: World) -> None:
+    from ml.supply import lever_grids
+
+    prepared = PreparedInputs(*nowcast_world)
+    grids = lever_grids(prepared, pd.Period("2023-06", "M"), pd.Timestamp("2023-07-10"))
+    area = next(a for a in grids["areas"] if a["area"] == 3)
+    lice = next(lever for lever in area["levers"] if lever["id"] == "lice")
+    assert len(lice["grid"]) == 9 and lice["grid"][0] < lice["grid"][-1]
+    for model in ("ml", "blend"):
+        assert set(lice["delta_log"][model]) == {"log_kg", "log_count", "log_avg_kg"}
+        assert all(np.isfinite(lice["delta_log"][model]["log_kg"]))
+    # The synthetic world raises harvest with lice, so the blend's kg response rises across the grid.
+    kg = lice["delta_log"]["blend"]["log_kg"]
+    assert kg[-1] > kg[0]
