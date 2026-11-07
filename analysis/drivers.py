@@ -188,12 +188,6 @@ def main() -> None:
         type=Path,
         default=PROCESSED_DATA_DIR / "drivers_area_month.parquet",
     )
-    parser.add_argument(
-        "--national-output",
-        type=Path,
-        default=PROCESSED_DATA_DIR / "drivers_national_month.parquet",
-        help="Partial national table; weekly and export fields are added later.",
-    )
     args = parser.parse_args()
 
     if not args.input.exists():
@@ -202,11 +196,9 @@ def main() -> None:
         )
 
     source = pd.read_parquet(args.input)
-    area_drivers, national_drivers = build_directorate_driver_tables(source)
+    area_drivers, _ = build_directorate_driver_tables(source)
     _atomic_parquet_write(area_drivers, args.area_output)
-    _atomic_parquet_write(national_drivers, args.national_output)
     print(f"Wrote {len(area_drivers):,} rows to {args.area_output}")
-    print(f"Wrote {len(national_drivers):,} rows to {args.national_output}")
 
 
 if __name__ == "__main__":
