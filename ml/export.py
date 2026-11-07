@@ -83,13 +83,15 @@ def supply_frames(results: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
                               known="known_n", actual="actual", window=SUPPLY_BAND_MONTHS,
                               minimum=SUPPLY_BAND_MIN_MONTHS)
 
-    areas = sorted(rows.loc[rows["window"] != "current", "area"].unique())
+    # National = the areas forecast in every month, so the series means the same thing throughout.
+    areas = sorted(national_area_set(rows))
     totals = []
     for (issued, h, month, window), group in rows.loc[rows["outcome"].isin(["log_kg", "log_count"])].groupby(
             ["issued", "h", "month", "window"]):
-        if set(group.loc[group["outcome"] == "log_kg", "area"]) != set(areas):
+        group = group.loc[group["area"].isin(areas)]
+        if not set(areas) <= set(group.loc[group["outcome"] == "log_kg", "area"]):
             continue
-        if set(group.loc[group["outcome"] == "log_count", "area"]) != set(areas):
+        if not set(areas) <= set(group.loc[group["outcome"] == "log_count", "area"]):
             continue
         for outcome in ("log_kg", "log_count"):
             part = group.loc[group["outcome"] == outcome]
@@ -106,6 +108,12 @@ def supply_frames(results: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
                                  known="known_n", actual="actual", window=SUPPLY_BAND_MONTHS,
                                  minimum=SUPPLY_BAND_MIN_MONTHS)
     return area_rows, national
+
+
+def national_area_set(rows: pd.DataFrame) -> set:
+    scored = rows.loc[rows["window"] != "current"]
+    per_month = scored.groupby(["month", "h"])["area"].apply(set)
+    return set.intersection(*per_month) if len(per_month) else set()
 
 
 def supply_scores(rows: pd.DataFrame, window: str) -> list[dict[str, Any]] | None:
@@ -198,6 +206,7 @@ def supply_payload(results: pd.DataFrame, final: bool) -> tuple[dict[str, Any], 
 
     all_areas = set(range(1, 14))
     scored_areas = sorted(int(a) for a in area_rows["area"].unique())
+    national_areas = sorted(int(a) for a in national_area_set(area_rows))
     payload = {
         "generated_at": datetime.now().isoformat(timespec="seconds"),
         "status": "final" if final else "development",
@@ -213,8 +222,9 @@ def supply_payload(results: pd.DataFrame, final: bool) -> tuple[dict[str, Any], 
         "winner": win,
         "areas": {"names": {str(a): AREA_NAMES[a] for a in sorted(all_areas)},
                   "forecast": scored_areas, "not_forecast": sorted(all_areas - set(scored_areas)),
-                  "reason": "an area's season needs 24 usable months (areas with many zero-harvest months never reach it)"},
-        "national_label": f"Sum of areas {scored_areas[0]}-{scored_areas[-1]} forecast here (areas {sorted(all_areas - set(scored_areas))} excluded)",
+                  "reason": "an area's season needs 24 usable months; areas with many zero-harvest months rarely or never reach it"},
+        "national_label": (f"Sum of areas {national_areas[0]}-{national_areas[-1]}, the areas forecast every month "
+                           f"(areas {sorted(all_areas - set(national_areas))} excluded)") if national_areas else None,
         "issue_dates": sorted(past["issued"].unique().tolist()),
         "scores": scores,
         "national_scores": national_scores,
