@@ -11,10 +11,14 @@ considers active that week, reporting or not).
   to the measure ("ikke-medikamentell"). Treating sites per week is stable across the change.
 - sea_temp_c: null below -2 °C, above 25 °C, or more than 6 °C from the site's trailing
   8-week median (trailing, so no later data is used).
-- isa, pd: the site has a suspected or confirmed ISA (ILA) / PD case that week. Null before the
-  first disease record. Records are sparse before 2014 (a few cases a week in 2012).
+- isa, pd: the site has a suspected or confirmed ISA (ILA) / PD case that week. Null before 2014-W01:
+  the register ramps up through 2012-2013 (2 active cases a week in late 2012, 89 by late 2013,
+  110+ from 2014), so earlier false values would show a rise that is only record-keeping.
+- area: the site's area in farms.parquet, so every table agrees; the lice report's own area is
+  only a fallback.
 - lice_limit, above_limit: the week's published adult-female threshold and BarentsWatch's flag
-  for being above it (an addition to the contract, from the dashboard plan).
+  for being above it (an addition to the contract, from the dashboard plan). BarentsWatch
+  counts a site exactly at the limit as above (>=).
 - available_at: the Sunday ending week w + 1.
 
 Run: python -m pipeline.build_farm_week
@@ -28,6 +32,7 @@ from pipeline import bw_raw
 from pipeline.common import PROCESSED, available_at_bw, iso_week_str, week_start, write_parquet
 
 YES_NO = {"Ja": True, "Nei": False}
+DISEASE_FROM = "2014-W01"  # see the isa/pd note above
 COLUMNS = ["locality_no", "week", "week_start", "area", "reported", "adult_female", "mobile",
            "stationary", "treated", "treat_types", "sea_temp_c", "fallow", "isa", "pd",
            "lice_limit", "above_limit", "available_at"]
@@ -75,15 +80,13 @@ def treatment_weeks() -> pd.DataFrame:
              .rename(columns={"Lokalitetsnummer": "locality_no"}))
 
 
-def disease_weeks() -> tuple[pd.DataFrame, str]:
+def disease_weeks() -> pd.DataFrame:
     d = bw_raw.load("disease")
     d = d[d["Status"].isin(["Mistanke", "Påvist"])].copy()  # suspected and confirmed both count
     d["week"] = [iso_week_str(y, w) for y, w in zip(d["År"], d["Uke"])]
-    flags = (d.assign(isa=d["Sykdom"].eq("ILA"), pd=d["Sykdom"].eq("PD"))
-              .groupby(["Lokalitetsnummer", "week"])[["isa", "pd"]].any().reset_index()
-              .rename(columns={"Lokalitetsnummer": "locality_no"}))
-    # Weeks before the first disease record are unknown, not disease-free.
-    return flags, d["week"].min()
+    return (d.assign(isa=d["Sykdom"].eq("ILA"), pd=d["Sykdom"].eq("PD"))
+             .groupby(["Lokalitetsnummer", "week"])[["isa", "pd"]].any().reset_index()
+             .rename(columns={"Lokalitetsnummer": "locality_no"}))
 
 
 def clean_temperature(df: pd.DataFrame) -> pd.Series:
@@ -99,11 +102,13 @@ def build() -> pd.DataFrame:
     df = lice_rows()
     df["week_start"] = pd.to_datetime([week_start(w) for w in df["week"]])
 
-    # Area: from the lice report, else from farms.parquet; rows still without 1-13 are dropped.
+    # Area: one per site, from farms.parquet, so every table agrees (Production checks this).
+    # The lice report's area is only a fallback; rows still without 1-13 are dropped.
     farms_path = PROCESSED / "farms.parquet"
-    if farms_path.exists():
-        farm_area = pd.read_parquet(farms_path).set_index("locality_no")["area"]
-        df["area"] = df["area"].fillna(df["locality_no"].map(farm_area).astype("Int64"))
+    if not farms_path.exists():
+        raise SystemExit("farms.parquet is missing; run python -m pipeline.fetch_register first")
+    farm_area = pd.read_parquet(farms_path).set_index("locality_no")["area"]
+    df["area"] = df["locality_no"].map(farm_area).astype("Int64").fillna(df["area"])
     bad = ~df["area"].between(1, 13).fillna(False)
     if bad.any():
         print(f"dropping {bad.sum()} site-weeks with no area 1-13")
@@ -113,10 +118,9 @@ def build() -> pd.DataFrame:
     df = df.merge(treatment_weeks(), on=["locality_no", "week"], how="left")
     df["treated"] = df["treat_types"].notna().astype("boolean")
 
-    flags, first_disease_week = disease_weeks()
-    df = df.merge(flags, on=["locality_no", "week"], how="left")
-    covered = df["week"] >= first_disease_week
-    print(f"disease data from {first_disease_week}")
+    df = df.merge(disease_weeks(), on=["locality_no", "week"], how="left")
+    covered = df["week"] >= DISEASE_FROM
+    print(f"isa/pd known from {DISEASE_FROM}; null before")
     for col in ("isa", "pd"):
         df[col] = df[col].astype("boolean").fillna(False).where(covered, pd.NA).astype("boolean")
 

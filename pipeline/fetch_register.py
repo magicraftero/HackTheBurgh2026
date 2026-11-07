@@ -5,8 +5,9 @@ licensed for salmon or trout and deduplicate to one row per site (locality numbe
 Capacity is the site's licensed capacity when given in tonnes, otherwise null.
 
 Sites that appear in BarentsWatch but not in today's register (mostly closed sites) are
-added from BarentsWatch: coordinates and area from its latest report, capacity null.
-Rows without an area 1-13 are dropped and counted.
+added from BarentsWatch: coordinates and area from its latest report that has them, capacity
+null. A site with coordinates but no area takes the area of its nearest site. Sites with
+neither (old sites from before production areas existed) are dropped and counted.
 
 Run: python -m pipeline.fetch_register [--offline]   (needs the BarentsWatch lice files)
 """
@@ -15,6 +16,7 @@ from __future__ import annotations
 
 import sys
 
+import numpy as np
 import pandas as pd
 
 from pipeline import bw_raw
@@ -47,14 +49,33 @@ def bw_sites() -> pd.DataFrame:
     lice = bw_raw.load("lice")
     lice = lice.assign(area=pd.to_numeric(lice["ProduksjonsområdeId"], errors="coerce")).sort_values(["År", "Uke"])
     # last() skips blanks, so each field comes from the latest report that has it.
-    last = lice.groupby("Lokalitetsnummer")[["Lokalitetsnavn", "Lat", "Lon", "area"]].last().reset_index()
+    g = lice.groupby("Lokalitetsnummer")
+    last = g[["Lokalitetsnavn", "Lat", "Lon", "area"]].last().reset_index()
+    last["n_reports"] = g["Har telt lakselus"].apply(lambda s: (s == "Ja").sum()).to_numpy()
     return pd.DataFrame({
         "locality_no": last["Lokalitetsnummer"].astype(int),
         "name": last["Lokalitetsnavn"],
         "lat": last["Lat"].astype(float),
         "lon": last["Lon"].astype(float),
         "area": last["area"].astype("Int64"),
+        "n_reports": last["n_reports"],  # only for the "dropping" message
     })
+
+
+def nearest_area(farms: pd.DataFrame) -> pd.Series:
+    """Give a site without an area 1-13 the area of the nearest site that has one (Data plan, task 5)."""
+    area = farms["area"].copy()
+    known = farms[area.between(1, 13).fillna(False) & farms[["lat", "lon"]].notna().all(axis=1)]
+    todo = farms[~area.between(1, 13).fillna(False) & farms[["lat", "lon"]].notna().all(axis=1)]
+    if todo.empty:
+        return area
+    # Equirectangular distance is plenty for picking the nearest site along one coast.
+    kx = np.cos(np.radians(known["lat"].to_numpy()))
+    for i, row in todo.iterrows():
+        d2 = (known["lat"].to_numpy() - row.lat) ** 2 + ((known["lon"].to_numpy() - row.lon) * kx) ** 2
+        area.loc[i] = known["area"].iloc[int(np.argmin(d2))]
+    print(f"gave {len(todo)} sites the area of their nearest site")
+    return area
 
 
 def build(register: pd.DataFrame, bw: pd.DataFrame) -> pd.DataFrame:
@@ -65,10 +86,12 @@ def build(register: pd.DataFrame, bw: pd.DataFrame) -> pd.DataFrame:
     extra = bw[~bw["locality_no"].isin(reg["locality_no"])].assign(capacity_t=float("nan"))
     print(f"register sites: {len(reg)}, added from BarentsWatch only: {len(extra)}")
     farms = pd.concat([reg, extra], ignore_index=True)
+    farms["area"] = nearest_area(farms)
 
     bad = farms[~farms["area"].between(1, 13).fillna(False)]
     if len(bad):
-        print(f"dropping {len(bad)} sites with no area 1-13 (e.g. {bad['name'].head(3).tolist()})")
+        lost = int(bad["n_reports"].fillna(0).sum())
+        print(f"dropping {len(bad)} sites with no area and no coordinates ({lost} lice reports in total)")
     farms = farms[farms["area"].between(1, 13).fillna(False)].copy()
     farms["area"] = farms["area"].astype("int64")
     farms["locality_no"] = farms["locality_no"].astype("int64")

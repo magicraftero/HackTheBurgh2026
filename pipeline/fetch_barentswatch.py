@@ -75,6 +75,7 @@ def parse_args() -> tuple[list[int], list[str]]:
 def main() -> None:
     years, reports = parse_args()
     bw = BarentsWatch()
+    failed = []
     for year in years:
         for report in reports:
             for attempt in range(3):
@@ -84,6 +85,11 @@ def main() -> None:
                 except Exception as e:  # network hiccup: wait and retry, then move on
                     print(f"error {report} {year} (attempt {attempt + 1}): {e}", flush=True)
                     time.sleep(10 * (attempt + 1))
+            else:
+                failed.append(f"{report} {year}")
+    if failed:
+        # Finished years already on disk are skipped, so a rerun fetches only these.
+        raise SystemExit(f"FAILED after 3 attempts: {', '.join(failed)}. Rerun to fetch just these.")
     print("done")
 
 

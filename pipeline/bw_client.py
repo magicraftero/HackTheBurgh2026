@@ -49,8 +49,9 @@ class BarentsWatch:
 
     def request(self, method: str, path: str, **kwargs) -> requests.Response:
         """Call API + path; on 401 fetch a new token and retry once."""
+        extra = kwargs.pop("headers", {})  # popped once, so a retry keeps them
         for attempt in (0, 1):
-            headers = {"Authorization": f"Bearer {self.token(force=attempt == 1)}", **kwargs.pop("headers", {})}
+            headers = {"Authorization": f"Bearer {self.token(force=attempt == 1)}", **extra}
             resp = self.session.request(method, API + path, headers=headers, timeout=300, **kwargs)
             if resp.status_code != 401:
                 break

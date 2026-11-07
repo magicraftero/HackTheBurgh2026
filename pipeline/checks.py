@@ -108,6 +108,12 @@ def farm_week(fw: pd.DataFrame, farms: pd.DataFrame) -> None:
     check(fw["area"].between(1, 13).all(), "every row has an area 1-13")
     check(not fw.duplicated(["locality_no", "week"]).any(), "one row per site-week")
     check(fw["locality_no"].isin(farms["locality_no"]).all(), "every site is in farms.parquet")
+    farm_area = farms.set_index("locality_no")["area"]
+    mismatched = (fw["area"] != fw["locality_no"].map(farm_area)).sum()
+    check(mismatched == 0, f"every farm_week area equals the site's farms.parquet area ({mismatched} differ)")
+    early = fw["week"] < "2014-W01"
+    check(fw.loc[early, ["isa", "pd"]].isna().all().all() and fw.loc[~early, ["isa", "pd"]].notna().all().all(),
+          "isa/pd null before 2014-W01 and known from then on")
     unreported = fw["reported"] != True  # noqa: E712
     check(fw.loc[unreported, ["adult_female", "mobile", "stationary"]].isna().all().all(),
           "unreported weeks keep lice missing, never zero")
