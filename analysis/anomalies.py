@@ -49,7 +49,7 @@ def anomaly(
 
     _validate_inputs(x, freq, transform, fit_end, K)
 
-    y = _transform(x.astype(float), transform)
+    y = apply_transform(x.astype(float), transform)
     window = _WINDOWS[freq]
     minimum_periods = int(np.ceil(window * _MINIMUM_COVERAGE))
     level = y.shift(1).rolling(window=window, min_periods=minimum_periods).mean()
@@ -61,7 +61,7 @@ def anomaly(
     return result
 
 
-def _transform(x: pd.Series, transform: Transform) -> pd.Series:
+def apply_transform(x: pd.Series, transform: Transform) -> pd.Series:
     """Apply a transform while converting values outside its domain to NaN."""
 
     if transform == "none":
