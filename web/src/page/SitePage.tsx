@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import type { AllFiles, Source } from '../data/source';
-import { DataStatusDialog, Footer, PromoStrip, TopNav } from './Chrome';
+import { DataStatusDialog, Footer, Notice } from './Chrome';
 import { Findings } from './Findings';
 import { ExploreGrid, Hero, PreregBand, ResultsBand, ScaleBand } from './Overview';
 
@@ -19,8 +19,7 @@ export function SitePage({ files, source, generation, onCheckAgain }: Props) {
 
   return (
     <>
-      <PromoStrip files={files} source={source} />
-      <TopNav files={files} onOpenStatus={openStatus} />
+      <Notice files={files} source={source} />
       <main id="main">
         <Hero files={files} />
         <ScaleBand files={files} />
@@ -29,7 +28,7 @@ export function SitePage({ files, source, generation, onCheckAgain }: Props) {
         <Findings key={generation} files={files} source={source} />
         <PreregBand />
       </main>
-      <Footer onOpenStatus={openStatus} />
+      <Footer files={files} onOpenStatus={openStatus} />
       <DataStatusDialog dialogRef={dialogRef} files={files} onCheckAgain={onCheckAgain} />
     </>
   );

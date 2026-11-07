@@ -16,9 +16,9 @@ export function Hero({ files }: { files: AllFiles }) {
           <p className="eyebrow">
             <Pill tone="accent">HackTheBurgh XIII · Edinburgh</Pill>
           </p>
-          <h1 id="top-heading" tabIndex={-1}>
+          <h2 id="top-heading" className="display" tabIndex={-1}>
             The harvest, called early.
-          </h1>
+          </h2>
           <p className="lede">
             Norway publishes what happens in its salmon farms every week. Salmon Signal turns that into an early
             call on each month's harvest and on the export price weeks ahead, then proves it on months the models
@@ -318,7 +318,7 @@ export function ExploreGrid({ files }: { files: AllFiles }) {
 
 export function PreregBand() {
   return (
-    <section className="band band-salmon prereg" id="prereg" aria-labelledby="prereg-title">
+    <section className="band band-coral prereg" id="prereg" aria-labelledby="prereg-title">
       <div className="container">
         <Reveal>
           <h2 id="prereg-title">Rules first. Results second.</h2>

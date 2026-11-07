@@ -7,7 +7,8 @@ import {
   useAllFiles,
   type Source,
 } from './data/source';
-import { FishingIntro, Hook } from './intro/FishingIntro';
+import { FishingIntro } from './intro/FishingIntro';
+import { FloatNav } from './page/Chrome';
 import { SitePage } from './page/SitePage';
 
 export function App() {
@@ -16,6 +17,9 @@ export function App() {
   const files = useAllFiles(source, generation);
   const siteRef = useRef<HTMLDivElement>(null);
 
+  const { nowcast } = files.data;
+  const hasCurrentCall = nowcast.state === 'ok' && nowcast.data.current != null;
+
   const checkAgain = () => {
     clearCache();
     setGeneration((g) => g + 1);
@@ -23,14 +27,14 @@ export function App() {
 
   return (
     <>
-      <FishingIntro siteRef={siteRef} />
+      <FloatNav />
+      <FishingIntro siteRef={siteRef} hasCurrentCall={hasCurrentCall} />
       <div ref={siteRef} className="site-wrap">
-        <Hook />
         <div className="site">
-          {import.meta.env.DEV ? <DevBar source={source} /> : null}
           <SitePage files={files} source={source} generation={generation} onCheckAgain={checkAgain} />
         </div>
       </div>
+      {import.meta.env.DEV ? <DevBar source={source} /> : null}
     </>
   );
 }

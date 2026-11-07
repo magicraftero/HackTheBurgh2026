@@ -71,6 +71,23 @@ export const IconRefresh = ({ size, className }: P) => (
   </svg>
 );
 
+/** The fishing reel on the "Reel in" button. */
+export const IconReel = ({ size, className }: P) => (
+  <svg {...svgProps(size, className)}>
+    <circle cx="12" cy="12" r="8.5" />
+    <circle cx="12" cy="12" r="2.2" />
+    <path d="M12 12l4.5-4.5" />
+  </svg>
+);
+
+/** The brand mark: a fishing hook. */
+export const HookMark = ({ size = 20, color = 'currentColor' }: { size?: number; color?: string }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
+    <circle cx="14.5" cy="3.6" r="1.9" stroke={color} strokeWidth="2" />
+    <path d="M14.5 5.5v9.2a4.6 4.6 0 0 1-9.2 0v-1.9l2.6 2.4" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
 /** The wordmark's salmon. */
 export const FishMark = ({ size = 30 }: { size?: number }) => (
   <svg width={size} height={size * 0.62} viewBox="0 0 50 31" aria-hidden="true" focusable="false">

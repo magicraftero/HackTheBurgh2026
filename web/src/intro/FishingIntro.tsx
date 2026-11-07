@@ -1,251 +1,240 @@
-import { useEffect, useRef, type RefObject } from 'react';
-import { FishMark } from '../components/Icons';
+import { useEffect, useRef, useState, type RefObject } from 'react';
+import { IconReel } from '../components/Icons';
 
 /*
-  The intro: a fisherman in a boat. The site hangs on his line under the water.
-  On load he gets a bite, lifts the rod, and the site rises out of the sea.
+  The reel-in hero, after the team's mockup: misty fjord, a fisherman standing
+  in a rowboat, a salmon on the line. "Reel in" (or scrolling) makes him heave
+  the rod; the salmon comes out of the water and the site rises over the scene.
 
-  How it works: the scene is a sticky, full-screen layer behind the site, and
-  the site starts 10vh above the bottom of the screen. Everything is driven by
-  scroll position: the auto-play simply scrolls the page, so scrolling by hand
-  plays (and rewinds) the same animation. One rAF loop moves the rod, the line,
-  the water and the splash; it stops once the site covers the screen.
+  How it works: the scene is a sticky, full-screen layer behind the site, which
+  starts just below the screen. Everything is driven by scroll position, so the
+  button simply scrolls the page and scrolling by hand plays (and rewinds) the
+  same motion. One rAF loop runs while the scene is visible and stops after.
 
-  Accessibility: the scene is decorative (aria-hidden). "Skip intro" is the
-  first thing in the tab order; any key, wheel or touch stops the auto-play;
-  reduced-motion users start with the site already in place.
+  Accessibility: the drawing is decorative (aria-hidden); the headline, button
+  and card are real content. Any key, wheel or touch stops the reel-in.
+  Reduced-motion users get a still scene and an instant jump.
 */
 
-const DRAWING_W = 400; // the boat drawing's width, in its own units
-const WATERLINE = 250; // where the hull meets the water, in drawing units
-const PIVOT = { x: 238, y: 182 }; // the fisherman's hands
-const ROD_LENGTH = 250;
-const ANGLE_START = -12; // degrees; negative tilts the tip up
-const ANGLE_END = -62;
-const SURFACE = 0.62; // the sea surface, as a share of the screen height
-const AUTOPLAY_DELAY = 1500; // ms: idle, then the bite
-const AUTOPLAY_TIME = 1900; // ms: the pull
+// The drawing's own coordinates (viewBox 0 0 820 520).
+const VIEW_W = 820;
+const WATERLINE = 392; // where the boat floats
+const HANDS = { x: 322, y: 238 }; // the rod pivots in his hands
+const ROD_LENGTH = 340;
+const ANGLE_REST = -36; // degrees; negative tilts the tip up
+const ANGLE_UP = -68;
+const FISH_REST = { x: 668, y: 452 }; // the salmon's mouth, at the surface
+const REEL_TIME = 2600; // ms for the whole reel-in
 
-export const REPLAY_EVENT = 'salmon-signal:replay-intro';
+export const REPLAY_EVENT = 'salmon-signal:back-to-boat';
 
 const clamp = (x: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, x));
+const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 const easeOut = (u: number) => 1 - Math.pow(1 - u, 3);
 const easeInOut = (u: number) => (u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2);
-const bump = (t: number, centre: number, width: number) => Math.exp(-(((t - centre) / width) ** 2));
 
-/** The rod in drawing units: its path (before rotation) and its tip (after). */
-function rodShape(deg: number, bend: number) {
-  const butt = { x: PIVOT.x - 16, y: PIVOT.y + 5 };
-  const tip = { x: PIVOT.x + ROD_LENGTH, y: PIVOT.y + bend };
-  const ctrl = { x: PIVOT.x + ROD_LENGTH * 0.55, y: PIVOT.y + bend * 0.2 };
+/** The rod: its path before rotation, and its tip after rotation (drawing units). */
+function rod(deg: number, bend: number) {
+  const tip = { x: HANDS.x + ROD_LENGTH, y: HANDS.y + bend };
   const a = (deg * Math.PI) / 180;
-  const dx = tip.x - PIVOT.x;
-  const dy = tip.y - PIVOT.y;
+  const dx = tip.x - HANDS.x;
+  const dy = tip.y - HANDS.y;
   return {
-    d: `M${butt.x} ${butt.y} Q${ctrl.x} ${ctrl.y} ${tip.x} ${tip.y}`,
+    d: `M${HANDS.x - 26} ${HANDS.y} Q${HANDS.x + ROD_LENGTH * 0.58} ${HANDS.y + bend * 0.12} ${tip.x} ${tip.y}`,
     tip: {
-      x: PIVOT.x + dx * Math.cos(a) - dy * Math.sin(a),
-      y: PIVOT.y + dx * Math.sin(a) + dy * Math.cos(a),
+      x: HANDS.x + dx * Math.cos(a) - dy * Math.sin(a),
+      y: HANDS.y + dx * Math.sin(a) + dy * Math.cos(a),
     },
   };
 }
 
 const DROPLETS = [
-  { dx: '-46px', dy: '-58px', s: '9px' },
-  { dx: '-22px', dy: '-84px', s: '7px' },
-  { dx: '4px', dy: '-96px', s: '10px' },
-  { dx: '28px', dy: '-80px', s: '7px' },
-  { dx: '50px', dy: '-52px', s: '9px' },
-  { dx: '-64px', dy: '-26px', s: '6px' },
-  { dx: '66px', dy: '-24px', s: '6px' },
+  [-30, -46],
+  [-14, -64],
+  [6, -72],
+  [24, -58],
+  [40, -40],
+  [-46, -20],
+  [52, -18],
+] as const;
+
+// Reflection lines on the water: [left %, top %, width %, kind].
+const GLINTS: [number, number, number, 'light' | 'dark'][] = [
+  [8, 14, 12, 'light'],
+  [38, 9, 9, 'light'],
+  [82, 16, 11, 'light'],
+  [5, 34, 10, 'light'],
+  [56, 30, 12, 'light'],
+  [86, 40, 8, 'light'],
+  [20, 52, 14, 'dark'],
+  [66, 58, 13, 'light'],
+  [2, 72, 16, 'light'],
+  [44, 76, 12, 'dark'],
+  [74, 84, 15, 'dark'],
+  [28, 90, 18, 'dark'],
 ];
 
-export function FishingIntro({ siteRef }: { siteRef: RefObject<HTMLDivElement | null> }) {
-  const sceneRef = useRef<HTMLDivElement>(null);
-  const boatRef = useRef<HTMLDivElement>(null);
+type Props = { siteRef: RefObject<HTMLDivElement | null>; hasCurrentCall: boolean };
+
+export function FishingIntro({ siteRef, hasCurrentCall }: Props) {
+  const sceneRef = useRef<HTMLElement>(null);
+  const actionRef = useRef<HTMLDivElement>(null);
+  const boatRef = useRef<SVGGElement>(null);
   const rodRef = useRef<SVGGElement>(null);
   const rodPathRef = useRef<SVGPathElement>(null);
-  const lineSvgRef = useRef<SVGSVGElement>(null);
   const lineRef = useRef<SVGPathElement>(null);
-  const rippleRef = useRef<HTMLDivElement>(null);
-  const brandRef = useRef<HTMLDivElement>(null);
-  const waterRef = useRef<HTMLDivElement>(null);
-  const splashRef = useRef<HTMLDivElement>(null);
-  const skipRef = useRef<HTMLButtonElement>(null);
+  const fishRef = useRef<SVGGElement>(null);
+  const rippleRef = useRef<SVGGElement>(null);
+  const splashRef = useRef<SVGGElement>(null);
+  const copyRef = useRef<HTMLDivElement>(null);
+  const ctaRef = useRef<HTMLDivElement>(null);
+  const cardRef = useRef<HTMLElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     const scene = sceneRef.current;
+    const action = actionRef.current;
     const boat = boatRef.current;
-    const rod = rodRef.current;
+    const rodGroup = rodRef.current;
     const rodPath = rodPathRef.current;
-    const lineSvg = lineSvgRef.current;
     const line = lineRef.current;
+    const fish = fishRef.current;
     const ripple = rippleRef.current;
-    const brand = brandRef.current;
-    const water = waterRef.current;
     const splash = splashRef.current;
-    const skip = skipRef.current;
+    const copy = copyRef.current;
+    const cta = ctaRef.current;
+    const card = cardRef.current;
+    const button = buttonRef.current;
     const site = siteRef.current;
-    if (!scene || !boat || !rod || !rodPath || !lineSvg || !line || !ripple || !brand || !water || !splash || !skip || !site) {
+    if (!scene || !action || !boat || !rodGroup || !rodPath || !line || !fish || !ripple || !splash || !copy || !cta || !card || !button || !site) {
       return;
     }
 
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
 
-    // ---- Geometry, in screen pixels ----
-    let vw = 0;
-    let vh = 0;
-    let surfaceY = 0;
-    let scale = 1; // screen px per drawing unit
-    let boatW = 0;
-    let boatX = 0;
-    let boatY = 0;
-    let hookX = 0;
     let travel = 1; // scroll distance until the site reaches the top
+    let actionTop = 0;
+    let scale = 1;
 
     const measure = () => {
-      vw = window.innerWidth;
-      vh = window.innerHeight;
-      surfaceY = Math.round(vh * SURFACE);
-      boatW = clamp(Math.min(vw, vh) * 0.36, 230, 440);
-      scale = boatW / DRAWING_W;
-      hookX = Math.round(vw * (vw < 720 ? 0.74 : 0.57));
-      boatX = hookX - rodShape(ANGLE_START, 6).tip.x * scale;
-      boatY = surfaceY - WATERLINE * scale;
-      boat.style.width = `${boatW}px`;
-      boat.style.left = `${boatX}px`;
-      boat.style.top = `${boatY}px`;
-      scene.style.setProperty('--surface', `${surfaceY}px`);
-      water.style.setProperty('--surface', `${surfaceY}px`);
-      site.style.setProperty('--hook-x', `${hookX}px`);
-      lineSvg.setAttribute('viewBox', `0 0 ${vw} ${vh}`);
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const width = vw >= 720 ? clamp(vw * 0.6, 600, 1000) : 560;
+      const s = width / VIEW_W;
+      const left = vw >= 720 ? (vw - width) / 2 : vw - 50 - FISH_REST.x * s;
+      action.style.width = `${width}px`;
+      action.style.left = `${left}px`;
+      actionTop = vh * 0.8 - WATERLINE * s;
+      scale = s;
+      action.style.top = `${actionTop}px`;
       travel = Math.max(1, site.getBoundingClientRect().top + window.scrollY);
     };
 
-    // ---- Auto-play ----
-    const t0 = performance.now();
-    let autoAt = 0; // when the pull should start
-    let auto: { from: number; to: number; start: number } | null = null;
-    let biteFrom = t0;
-
-    const startAutoplay = () => {
-      window.scrollTo(0, 0);
-      biteFrom = performance.now();
-      autoAt = biteFrom + AUTOPLAY_DELAY;
-      auto = null;
+    // ---- The reel-in: an eased scroll to the site ----
+    let reel: { from: number; start: number } | null = null;
+    const startReel = () => {
+      if (reduce) {
+        window.scrollTo(0, travel);
+        document.getElementById('top-heading')?.focus({ preventScroll: true });
+        return;
+      }
+      reel = { from: window.scrollY, start: performance.now() };
       wake();
     };
-    const stopAutoplay = () => {
-      autoAt = 0;
-      auto = null;
+    const stopReel = () => {
+      reel = null;
     };
-    const skipIntro = () => {
-      stopAutoplay();
-      window.scrollTo(0, travel);
-      document.getElementById('top-heading')?.focus({ preventScroll: true });
+    const backToBoat = () => {
+      stopReel();
+      window.scrollTo(0, 0);
+      wake();
     };
 
     // ---- One frame ----
+    const t0 = performance.now();
     let raf = 0;
-    let prevHookY = Number.POSITIVE_INFINITY;
+    let prevLift = 0;
     let hidden = false;
 
     const render = (now: number) => {
       const p = clamp(window.scrollY / travel, 0, 1);
-      const time = (now - t0) / 1000;
-      const sinceBite = (now - biteFrom) / 1000;
+      const time = reduce ? 0 : (now - t0) / 1000;
 
-      // The bite: two tugs on the line before the pull.
-      const tugs = autoAt || auto ? bump(sinceBite, 0.75, 0.09) + 1.2 * bump(sinceBite, 1.08, 0.09) : 0;
+      // Idle life: the boat rocks, and every few seconds the salmon fights.
+      const bob = Math.sin(time * 1.6) * 2.2;
+      const tug = reduce ? 0 : Math.pow(Math.max(0, Math.sin(time * 1.4)), 16);
+      boat.setAttribute('transform', `translate(0 ${bob.toFixed(2)})`);
 
-      // The boat bobs.
-      const bob = reduce ? 0 : Math.sin(time * 2.1) * 3;
-      const tilt = reduce ? 0 : Math.sin(time * 2.1 + 0.8) * 1.1;
-      boat.style.transform = `translate3d(0, ${bob.toFixed(2)}px, 0) rotate(${tilt.toFixed(3)}deg)`;
-
-      // The rod lifts as the site rises, and bends under the load.
-      const lift = easeOut(clamp(p / 0.55, 0, 1));
-      const deg = ANGLE_START + (ANGLE_END - ANGLE_START) * lift;
-      const bend = 6 + 26 * Math.sin(Math.PI * clamp(p / 0.6, 0, 1)) + 20 * tugs;
-      const shape = rodShape(deg, bend);
-      rod.setAttribute('transform', `rotate(${deg.toFixed(2)} ${PIVOT.x} ${PIVOT.y})`);
+      // He heaves the rod as the site rises.
+      const heave = easeOut(clamp(p / 0.32, 0, 1));
+      const deg = lerp(ANGLE_REST, ANGLE_UP, heave);
+      const bend = 26 + 22 * Math.sin(Math.PI * clamp(p / 0.4, 0, 1)) + 10 * tug;
+      const shape = rod(deg, bend);
+      rodGroup.setAttribute('transform', `rotate(${deg.toFixed(2)} ${HANDS.x} ${HANDS.y})`);
       rodPath.setAttribute('d', shape.d);
+      const tipX = shape.tip.x;
+      const tipY = shape.tip.y + bob;
 
-      // Rod tip on screen, following the boat's bob and tilt.
-      const ox = boatW * 0.5;
-      const oy = WATERLINE * scale;
-      const lx = shape.tip.x * scale - ox;
-      const ly = shape.tip.y * scale - oy;
-      const a = (tilt * Math.PI) / 180;
-      const tipX = boatX + ox + lx * Math.cos(a) - ly * Math.sin(a);
-      const tipY = boatY + oy + lx * Math.sin(a) + ly * Math.cos(a) + bob;
+      // The salmon comes out of the water and up to the rod.
+      const lift = easeInOut(clamp(p / 0.36, 0, 1));
+      const fx = lerp(FISH_REST.x, tipX + 14, lift);
+      const fy = lerp(FISH_REST.y - 3 * tug, tipY + 78, lift);
+      const fight = Math.sin(time * 8) * (2 + 9 * tug) * (1 - 0.6 * lift);
+      fish.setAttribute('transform', `translate(${fx.toFixed(1)} ${fy.toFixed(1)}) rotate(${(lerp(26, 84, lift) + fight).toFixed(2)})`);
 
-      // The hook: on the site's top edge, which dips during the bite.
-      const dip = 12 * tugs;
-      site.style.transform = dip > 0.2 ? `translate3d(0, ${dip.toFixed(2)}px, 0)` : '';
-      const siteTop = site.getBoundingClientRect().top;
-      const hookY = siteTop - 42;
-      const wobble = 10 * tugs * Math.sin(time * 40);
-      const midX = (tipX + hookX) / 2 + wobble;
-      const midY = (tipY + hookY) / 2;
-      line.setAttribute('d', `M${tipX.toFixed(1)} ${tipY.toFixed(1)} Q${midX.toFixed(1)} ${midY.toFixed(1)} ${hookX} ${hookY.toFixed(1)}`);
+      const sag = 10 * (1 - lift);
+      line.setAttribute(
+        'd',
+        `M${tipX.toFixed(1)} ${tipY.toFixed(1)} Q${((tipX + fx) / 2 + sag).toFixed(1)} ${((tipY + fy) / 2).toFixed(1)} ${fx.toFixed(1)} ${fy.toFixed(1)}`,
+      );
 
-      // Once the site rises past the rod tip, the catch is landed: the line and hook fade.
-      const landed = clamp((siteTop - tipY + 50) / 60, 0, 1);
-      line.style.opacity = landed.toFixed(3);
-      site.style.setProperty('--hook-o', landed.toFixed(3));
+      // Once the site rises past his head, the rod and the catch fade with him.
+      const headY = actionTop + 170 * scale;
+      const catchFade = clamp((site.getBoundingClientRect().top - headY + 40) / 120, 0, 1).toFixed(3);
+      rodGroup.style.opacity = catchFade;
+      line.style.opacity = catchFade;
+      fish.style.opacity = catchFade;
 
-      // Ripples where the line enters the water, while the hook is under it.
-      if (hookY > surfaceY + 4 && hookY !== tipY) {
-        const x = tipX + ((hookX - tipX) * (surfaceY - tipY)) / (hookY - tipY);
-        ripple.style.transform = `translate(${x.toFixed(1)}px, ${surfaceY}px)`;
-        ripple.style.opacity = '1';
-      } else {
-        ripple.style.opacity = '0';
-      }
-
-      // A splash as the site breaks the surface.
-      if (prevHookY > surfaceY && hookY <= surfaceY && !reduce) {
-        splash.style.transform = `translate(${hookX}px, ${surfaceY}px)`;
+      ripple.style.opacity = lift < 0.05 ? '1' : '0';
+      if (prevLift < 0.1 && lift >= 0.1 && !reduce) {
         splash.classList.remove('go');
-        void splash.offsetWidth; // restart the animation
+        void splash.getBoundingClientRect(); // restart the animation
         splash.classList.add('go');
       }
-      prevHookY = hookY;
+      prevLift = lift;
 
-      // The water in front fades once the site is out of it.
-      const fade = 0.07 * vh;
-      water.style.opacity = clamp((siteTop - (surfaceY - fade)) / fade, 0, 1).toFixed(3);
+      // The words make way.
+      const fadeCopy = clamp(p / 0.25, 0, 1);
+      copy.style.opacity = (1 - fadeCopy).toFixed(3);
+      copy.style.transform = `translate(-50%, ${(-40 * fadeCopy).toFixed(1)}px)`;
+      const fadeUi = (1 - clamp(p / 0.1, 0, 1)).toFixed(3);
+      cta.style.opacity = fadeUi;
+      card.style.opacity = fadeUi;
+      cta.style.visibility = p > 0.12 ? 'hidden' : 'visible';
 
-      brand.style.opacity = clamp(1 - p * 3, 0, 1).toFixed(3);
-      skip.classList.toggle('is-gone', p > 0.9);
       site.style.setProperty('--panel-r', `${(32 * (1 - clamp((p - 0.88) / 0.12, 0, 1))).toFixed(1)}px`);
 
       // Once the site covers the screen, hide the scene so it costs nothing.
-      const covered = p >= 1 && !auto && !autoAt;
+      const covered = p >= 1 && !reel;
       if (covered !== hidden) {
         hidden = covered;
-        const v = covered ? 'hidden' : 'visible';
-        scene.style.visibility = v;
-        water.style.visibility = v;
+        scene.style.visibility = covered ? 'hidden' : 'visible';
       }
       return covered;
     };
 
     const loop = (now: number) => {
       raf = 0;
-      if (autoAt && now >= autoAt) {
-        auto = { from: window.scrollY, to: travel, start: now };
-        autoAt = 0;
+      if (reel) {
+        const u = clamp((now - reel.start) / REEL_TIME, 0, 1);
+        window.scrollTo(0, lerp(reel.from, travel, easeInOut(u)));
+        if (u >= 1) {
+          reel = null;
+          document.getElementById('top-heading')?.focus({ preventScroll: true });
+        }
       }
-      if (auto) {
-        const u = clamp((now - auto.start) / AUTOPLAY_TIME, 0, 1);
-        window.scrollTo(0, auto.from + (auto.to - auto.from) * easeInOut(u));
-        if (u >= 1) auto = null;
-      }
-      const covered = render(now);
-      if (!covered) raf = requestAnimationFrame(loop);
+      if (!render(now) || reel) raf = requestAnimationFrame(loop);
     };
     function wake() {
       if (!raf) raf = requestAnimationFrame(loop);
@@ -257,121 +246,224 @@ export function FishingIntro({ siteRef }: { siteRef: RefObject<HTMLDivElement | 
       wake();
     };
     const onUserInput = (e: Event) => {
-      if (e instanceof KeyboardEvent && e.key === 'Tab') return;
-      stopAutoplay();
+      if (e instanceof KeyboardEvent && (e.key === 'Tab' || e.key === 'Shift')) return;
+      stopReel();
     };
     const inputs = ['wheel', 'touchstart', 'pointerdown', 'keydown'] as const;
 
     measure();
     window.addEventListener('scroll', wake, { passive: true });
     window.addEventListener('resize', onResize);
-    window.addEventListener(REPLAY_EVENT, startAutoplay);
+    window.addEventListener(REPLAY_EVENT, backToBoat);
     for (const name of inputs) window.addEventListener(name, onUserInput, { passive: true });
-    skip.addEventListener('click', skipIntro);
+    button.addEventListener('click', startReel);
 
     const target = location.hash ? document.getElementById(decodeURIComponent(location.hash.slice(1))) : null;
-    if (target) {
-      requestAnimationFrame(() => target.scrollIntoView());
-    } else if (reduce) {
-      window.scrollTo(0, travel);
-    } else {
-      startAutoplay();
-    }
+    if (target) requestAnimationFrame(() => target.scrollIntoView());
+    else window.scrollTo(0, 0);
     wake();
 
     return () => {
       cancelAnimationFrame(raf);
       window.removeEventListener('scroll', wake);
       window.removeEventListener('resize', onResize);
-      window.removeEventListener(REPLAY_EVENT, startAutoplay);
+      window.removeEventListener(REPLAY_EVENT, backToBoat);
       for (const name of inputs) window.removeEventListener(name, onUserInput);
-      skip.removeEventListener('click', skipIntro);
-      site.style.transform = '';
+      button.removeEventListener('click', startReel);
     };
   }, [siteRef]);
 
+  const rest = rod(ANGLE_REST, 26);
+
   return (
-    <>
-      <div className="intro" ref={sceneRef} aria-hidden="true">
+    <section className="intro" id="intro" ref={sceneRef} aria-labelledby="intro-title">
+      <div className="intro-art" aria-hidden="true">
         <div className="intro-sun" />
-        <div className="intro-cloud c1" />
-        <div className="intro-cloud c2" />
-        <div className="intro-cloud c3" />
-        <svg className="intro-mountains" viewBox="0 0 1440 200" preserveAspectRatio="none">
-          <path
-            d="M0 200V118l120-50 110 45 110-75 130 70 90-30 130 50 130-70 120 60 120-45 120 50 120-70 140 55v90z"
-            fill="#f2c3b6"
-          />
-          <path
-            d="M0 200v-42l150-38 110 30 140-50 120 60 120-25 120 35 140-50 130 45 130-25 140 30 140-40v70z"
-            fill="#e7a596"
-          />
+        <svg className="intro-hills" viewBox="0 0 1600 150" preserveAspectRatio="none">
+          <path d="M0 150V92c180-32 360-8 540-22 200-16 360 18 560-4 200-20 360 10 500-6v90z" fill="#cfd3d1" />
+          <path d="M0 150v-32c220-22 420-4 660-16 220-10 400 14 620-2 150-10 250 6 320-2v52z" fill="#bcc3c4" />
         </svg>
-        <div className="intro-sea" />
-        <svg className="intro-pens" viewBox="0 0 200 20" preserveAspectRatio="xMidYMid meet" style={{ position: 'absolute', left: '64vw', width: '220px', top: 'calc(var(--surface, 62vh) - 9px)' }}>
-          <ellipse cx="40" cy="10" rx="34" ry="6" fill="none" stroke="#ffe3da" strokeWidth="3" />
-          <ellipse cx="130" cy="10" rx="28" ry="5" fill="none" stroke="#ffe3da" strokeWidth="3" />
+        <svg className="intro-mountain left" viewBox="0 0 760 470" preserveAspectRatio="xMinYMax meet">
+          <defs>
+            <pattern id="rain-left" width="34" height="58" patternUnits="userSpaceOnUse" patternTransform="rotate(16)">
+              <line x1="6" y1="4" x2="6" y2="40" stroke="#7a8691" strokeWidth="1.6" strokeLinecap="round" />
+            </pattern>
+          </defs>
+          <path d="M0 470V60c30-30 90-52 130-46 40 6 75 46 110 86 80 90 180 190 280 260 70 50 150 90 240 110z" fill="#5c6876" />
+          <path d="M0 470V60c30-30 90-52 130-46 40 6 75 46 110 86 80 90 180 190 280 260 70 50 150 90 240 110z" fill="url(#rain-left)" />
+          <path d="M0 470V250c70-14 150 0 230 50 70 44 140 110 210 170z" fill="#2d3946" />
         </svg>
-        <div className="intro-boat" ref={boatRef}>
-          <svg viewBox="0 0 400 300">
-            {/* inside of the boat */}
-            <path d="M40 226q150 14 300 0l-4 10q-146 12-292 0z" fill="#8f3b27" />
-            {/* the fisherman: yellow raincoat and sou'wester */}
-            <path d="M148 232l2-60q2-22 26-24h18q22 3 23 26l3 58z" fill="#f6c445" />
-            <path d="M183 152v78" stroke="#e0a92e" strokeWidth="3" />
-            <path d="M160 170q10 26 54 22" stroke="#e8b43a" strokeWidth="13" fill="none" strokeLinecap="round" />
-            <circle cx="183" cy="128" r="17" fill="#f1c6a8" />
-            <path d="M169 131q2 21 17 21 13-1 14-20-7 9-15 9-9 0-16-10z" fill="#ded6cc" />
-            <circle cx="200" cy="129" r="3.4" fill="#e9ae8f" />
-            <circle cx="192" cy="124" r="1.9" fill="#0b0b0c" />
-            <path d="M165 120q1-21 19-22 17 1 18 22z" fill="#f6c445" />
-            <path d="M150 121q34-10 66-1-32 9-66 1z" fill="#e8b43a" />
-            <path d="M160 121q-2 17 6 25" stroke="#f6c445" strokeWidth="7" fill="none" strokeLinecap="round" />
-            <path d="M200 166q14 16 32 18" stroke="#f6c445" strokeWidth="14" fill="none" strokeLinecap="round" />
-            {/* the rod, which rotates around his hands */}
-            <g ref={rodRef} transform={`rotate(${ANGLE_START} ${PIVOT.x} ${PIVOT.y})`}>
-              <path ref={rodPathRef} d={rodShape(ANGLE_START, 6).d} stroke="#3a2a22" strokeWidth="3.6" fill="none" strokeLinecap="round" />
-              <circle cx="228" cy="191" r="6.5" fill="#2b2b2e" />
-              <circle cx="228" cy="191" r="2.2" fill="#a3a3a3" />
+        <svg className="intro-mountain right" viewBox="0 0 520 430" preserveAspectRatio="xMaxYMax meet">
+          <defs>
+            <pattern id="rain-right" width="34" height="58" patternUnits="userSpaceOnUse" patternTransform="rotate(16)">
+              <line x1="6" y1="4" x2="6" y2="40" stroke="#73808b" strokeWidth="1.6" strokeLinecap="round" />
+            </pattern>
+          </defs>
+          <path d="M520 430V20c-40 10-80 50-120 100-70 90-150 200-260 280-30 18-70 28-140 30z" fill="#56636f" />
+          <path d="M520 430V20c-40 10-80 50-120 100-70 90-150 200-260 280-30 18-70 28-140 30z" fill="url(#rain-right)" />
+          <path d="M520 430V250c-50 30-100 90-140 180z" fill="#44505c" />
+        </svg>
+        <div className="intro-water">
+          <svg viewBox="0 0 1600 340" preserveAspectRatio="none" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}>
+            <path d="M0 0h700C560 40 300 90 0 140z" fill="#5c6876" opacity="0.2" />
+            <path d="M1600 0h-420c120 40 270 80 420 110z" fill="#56636f" opacity="0.2" />
+          </svg>
+          {GLINTS.map(([left, top, width, kind], i) => (
+            <span
+              key={i}
+              className={`intro-glint${kind === 'dark' ? ' dark' : ''}`}
+              style={{ left: `${left}%`, top: `${top}%`, width: `${width}%`, animationDelay: `${-i * 1.3}s` }}
+            />
+          ))}
+          {[0, 1, 2, 3, 4].map((i) => (
+            <span
+              key={`sun-${i}`}
+              className="intro-glint sun"
+              style={{
+                left: `calc(68vw + 8.5vmin - ${(6 - i) * 0.9}vmin)`,
+                top: `${4 + i * 5}%`,
+                width: `${(6 - i) * 1.8}vmin`,
+                opacity: 1 - i * 0.16,
+              }}
+            />
+          ))}
+        </div>
+        <div className="intro-action" ref={actionRef}>
+          <svg viewBox="0 0 820 520">
+            <g ref={boatRef}>
+              <path d="M102 404c68 14 198 14 302 2l-12 24c-92 10-212 10-276-4z" fill="#8b959c" opacity="0.55" />
+              <path d="M52 330c68 16 248 22 368 24l-16 48c-104 10-234 10-302-4-22-18-40-46-50-68z" fill="#232e3a" />
+              <path d="M74 350c86 12 226 16 340 18M90 372c90 10 210 14 318 14" stroke="#3a4655" strokeWidth="2" fill="none" />
+              <path d="M52 330c68 16 248 22 368 24" stroke="#4a5767" strokeWidth="3" fill="none" strokeLinecap="round" />
+              <path d="M232 343v-9M226 334h12" stroke="#4a5767" strokeWidth="3" strokeLinecap="round" />
+              {/* the fisherman: a navy silhouette, standing */}
+              <path d="M264 288l-18 60M278 288l20 60" stroke="#1c2836" strokeWidth="15" strokeLinecap="round" />
+              <path d="M270 222q16 32 46 24" stroke="#1c2836" strokeWidth="12" fill="none" strokeLinecap="round" />
+              <path d="M246 294c-6-30-2-70 16-86l18-2c16 10 22 46 16 88z" fill="#142130" />
+              <circle cx="270" cy="186" r="15" fill="#142130" />
+              <path d="M256 182c0-16 28-18 30-2z" fill="#142130" />
+              <path d="M280 177l24 4-20 5z" fill="#142130" />
+              <path d="M284 218q16 28 38 20" stroke="#142130" strokeWidth="13" fill="none" strokeLinecap="round" />
+              <g ref={rodRef} transform={`rotate(${ANGLE_REST} ${HANDS.x} ${HANDS.y})`}>
+                <path ref={rodPathRef} d={rest.d} stroke="#142130" strokeWidth="4" fill="none" strokeLinecap="round" />
+                <circle cx={HANDS.x - 12} cy={HANDS.y + 9} r="7" fill="#142130" />
+              </g>
+              <circle cx={HANDS.x} cy={HANDS.y} r="6.5" fill="#142130" />
             </g>
-            <circle cx="236" cy="183" r="7.5" fill="#f1c6a8" />
-            {/* the hull */}
-            <path d="M26 224h328l-32 42q-132 20-256 0z" fill="#f27a5e" />
-            <path d="M31 231h318l-5 7H37z" fill="#fff" opacity="0.92" />
-            <path d="M26 224h328" stroke="#b8462c" strokeWidth="4" strokeLinecap="round" />
+            <path ref={lineRef} d="" stroke="#142130" strokeWidth="1.4" fill="none" />
+            <g ref={rippleRef} className="intro-ripple">
+              <ellipse cx={FISH_REST.x + 30} cy={FISH_REST.y + 10} rx="34" ry="6" fill="none" stroke="#fff" strokeWidth="1.6" />
+              <ellipse cx={FISH_REST.x + 30} cy={FISH_REST.y + 10} rx="34" ry="6" fill="none" stroke="#fff" strokeWidth="1.6" />
+            </g>
+            <g ref={splashRef} className="intro-splash">
+              {DROPLETS.map(([dx, dy], i) => (
+                <circle
+                  key={i}
+                  cx={FISH_REST.x + 24}
+                  cy={FISH_REST.y}
+                  r={i % 2 ? 3.2 : 4.2}
+                  fill="#fff"
+                  style={{ ['--dx' as string]: `${dx}px`, ['--dy' as string]: `${dy}px` }}
+                />
+              ))}
+            </g>
+            {/* the salmon, mouth at the origin, body trailing to the right */}
+            <g ref={fishRef} transform={`translate(${FISH_REST.x} ${FISH_REST.y}) rotate(26)`}>
+              <path d="M0 0c16-17 62-24 100-9l14 6v6l-14 6C62 24 16 17 0 0z" fill="#cdd4d8" />
+              <path d="M0 0c16-17 62-24 100-9l14 6H56C36-4 16-3 0 0z" fill="#8f9ba5" />
+              <path d="M8 2c32 5 72 3 100-1" stroke="#e5a395" strokeWidth="3.2" fill="none" strokeLinecap="round" />
+              <path d="M112 0l26-18-7 18 7 18z" fill="#8f9ba5" />
+              <path d="M48-19l14-12 10 13z" fill="#8f9ba5" />
+              <path d="M60 15l10 9 6-10z" fill="#aeb8bf" />
+              <circle cx="40" cy="-10" r="1.6" fill="#6d7983" />
+              <circle cx="55" cy="-12" r="1.6" fill="#6d7983" />
+              <circle cx="70" cy="-9" r="1.6" fill="#6d7983" />
+              <circle cx="13" cy="-4" r="2.4" fill="#142130" />
+              <path d="M2 2l7 2" stroke="#6d7983" strokeWidth="1.5" strokeLinecap="round" />
+            </g>
           </svg>
         </div>
-        <svg className="intro-line" ref={lineSvgRef} preserveAspectRatio="none">
-          <path ref={lineRef} d="" stroke="#2b2b2e" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-        </svg>
-        <div className="intro-ripple" ref={rippleRef} />
-        <div className="intro-brand" ref={brandRef}>
-          <span className="wordmark">
-            <FishMark /> Salmon Signal
-          </span>
-          <p>Reeling in the findings…</p>
-        </div>
       </div>
-      <div className="intro-water" ref={waterRef} aria-hidden="true" />
-      <div className="intro-splash" ref={splashRef} aria-hidden="true">
-        {DROPLETS.map((d, i) => (
-          <span key={i} style={{ ['--dx' as string]: d.dx, ['--dy' as string]: d.dy, ['--s' as string]: d.s }} />
-        ))}
+
+      <div className="intro-copy" ref={copyRef}>
+        <h1 id="intro-title" className="intro-title">
+          Salmon Signal
+        </h1>
+        <p className="intro-sub">
+          An open test of whether Norway's free farm-level biology data forecasts salmon supply and price.
+        </p>
       </div>
-      <button type="button" ref={skipRef} className="btn btn-light btn-sm intro-skip">
-        Skip intro
-      </button>
-    </>
+
+      <div className="intro-cta" ref={ctaRef}>
+        <button type="button" ref={buttonRef} className="btn btn-primary reel-btn">
+          <IconReel size={20} /> Reel in
+        </button>
+        <span className="or-scroll">or scroll</span>
+      </div>
+
+      <aside className="oslo-card" ref={cardRef} aria-label="Next official figures">
+        <OsloCard hasCurrentCall={hasCurrentCall} />
+      </aside>
+    </section>
   );
 }
 
-/** The hook and ring on the site's top edge, where the line ties on. */
-export function Hook() {
+// ---- The Oslo card: live clock and the countdown to the next release ----
+
+function osloParts(date: Date) {
+  const parts = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Europe/Oslo',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+  }).formatToParts(date);
+  const get = (type: string) => parts.find((p) => p.type === type)?.value ?? '';
+  return { y: Number(get('year')), m: Number(get('month')), d: Number(get('day')), time: `${get('hour')}:${get('minute')}` };
+}
+
+/** Days until the 20th, when the Directorate publishes the previous month (00-shared.md). */
+export function daysToRelease(y: number, m: number, d: number): number {
+  let ty = y;
+  let tm = m;
+  if (d > 20) {
+    tm += 1;
+    if (tm > 12) {
+      tm = 1;
+      ty += 1;
+    }
+  }
+  return Math.round((Date.UTC(ty, tm - 1, 20) - Date.UTC(y, m - 1, d)) / 86_400_000);
+}
+
+function OsloCard({ hasCurrentCall }: { hasCurrentCall: boolean }) {
+  const [now, setNow] = useState(() => new Date());
+  useEffect(() => {
+    const id = window.setInterval(() => setNow(new Date()), 30_000);
+    return () => window.clearInterval(id);
+  }, []);
+  const { y, m, d, time } = osloParts(now);
+  const days = daysToRelease(y, m, d);
   return (
-    <svg className="hook" viewBox="0 0 28 52" aria-hidden="true" focusable="false">
-      <circle cx="14" cy="7" r="5" fill="none" stroke="#2b2b2e" strokeWidth="2.6" />
-      <path d="M14 12v22q0 9 8 9" fill="none" stroke="#2b2b2e" strokeWidth="2.6" strokeLinecap="round" />
-      <path d="M9 52a5 5 0 0 1 10 0" fill="#2b2b2e" />
-    </svg>
+    <>
+      <p className="oslo-top">
+        <span className="oslo-place">
+          <span className="oslo-dot" aria-hidden="true" /> Oslo
+        </span>
+        <span className="oslo-time">{time}</span>
+      </p>
+      <p>
+        {days === 0 ? (
+          <>Official harvest figures come out <strong>today</strong>.</>
+        ) : (
+          <>
+            Next official harvest figures in <strong>{days === 1 ? '1 day' : `${days} days`}</strong>.
+          </>
+        )}{' '}
+        {hasCurrentCall ? 'Our call goes in first.' : 'See how our calls on the 10th did.'}
+      </p>
+    </>
   );
 }

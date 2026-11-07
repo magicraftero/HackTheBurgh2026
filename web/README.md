@@ -2,9 +2,9 @@
 
 A static site that shows the findings. Every number comes from the files the back end writes; nothing is hard-coded. Plan: `docs/plans/frontend.md`. File formats: `docs/plans/00-shared.md`.
 
-**Salmon Signal.** The look takes its feel from Klarna's site (short bold headlines, black pill buttons, soft rounded cards, colour bands), with salmon as the signature colour. It's original: no third-party branding, fonts or images.
+**Salmon Signal.** Colours and mood come from the team's "reel-in hero" mockup: navy, coral, misty greys and cream, with serif subtitles. Buttons, pills and cards follow the feel of Klarna's site. It's original: no third-party branding, fonts or images.
 
-**The intro.** A fisherman in a boat; the site hangs on his line under the water. On load he gets a bite, lifts the rod, and the site rises out of the sea. It's driven by scroll position, so scrolling back up rewinds it. "Skip intro" (or any key, click or scroll) stops it, and people with reduced motion switched on start with the site in place. Code: `src/intro/FishingIntro.tsx`.
+**The reel-in hero.** A misty fjord, a fisherman standing in a rowboat, a salmon on his line. "Reel in" (or scrolling) makes him heave the rod; the salmon comes out of the water and the site rises over the scene. It's driven by scroll position, so scrolling back up rewinds it, and any key, click or scroll stops the button's reel-in. People with reduced motion switched on get a still scene and an instant jump. The Oslo card's clock and its "next official figures in N days" (the 20th, per 00-shared.md) are worked out live. Code: `src/intro/FishingIntro.tsx`.
 
 ## Run it
 
@@ -55,8 +55,8 @@ The build uses relative paths, so the same `dist/` also works under a sub-path s
 | `src/data/load.ts` | Fetch + check, giving ok / missing / invalid / error |
 | `src/data/source.ts` | The dev-only mock switch, caching, React hooks |
 | `src/components/VegaChart.tsx` | Draws any `.vl.json` chart (vega-embed, responsive, no menu) |
-| `src/intro/FishingIntro.tsx` | The fishing intro |
-| `src/page/` | The page: nav, hero, results, findings 1 to 8, footer, data status |
+| `src/intro/FishingIntro.tsx` | The reel-in hero |
+| `src/page/` | The page: floating nav, notice, hero, results, findings 1 to 8, footer, data status |
 | `src/styles.css` | The design system: colours, type, buttons, pills, cards |
 | `scripts/` | Mock generator and checks |
 

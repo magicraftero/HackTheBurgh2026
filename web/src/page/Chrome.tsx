@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState, type MouseEvent, type RefObject } from 'react';
+import type { MouseEvent, RefObject } from 'react';
 import { Pill } from '../components/Bits';
-import { FishMark, IconAlert, IconClose, IconRefresh } from '../components/Icons';
+import { HookMark, IconClose, IconRefresh } from '../components/Icons';
 import { StatusCell } from '../components/States';
 import { CHART_NAMES, CHARTS, DATA_FILES, DATA_KEYS, chartPath } from '../data/files';
 import type { Status } from '../data/load';
@@ -16,7 +16,7 @@ export function goTo(e: MouseEvent<HTMLElement>, id: string) {
   e.preventDefault();
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
-  history.replaceState(null, '', `#${id}`);
+  history.replaceState(null, '', id === 'intro' ? location.pathname + location.search : `#${id}`);
 }
 
 type FileRow = { file: string; owner: string; due: string; status: Status<unknown> };
@@ -28,90 +28,61 @@ export function fileRows(files: AllFiles): FileRow[] {
   ];
 }
 
-// ---- Promo strip ----
-
-export function PromoStrip({ files, source }: { files: AllFiles; source: Source }) {
-  const { nowcast, price } = files.data;
-  const scored = (nowcast.state === 'ok' && nowcast.data.f1 !== null) || (price.state === 'ok' && price.data.f2 !== null);
-  return (
-    <div className="promo">
-      {source.kind === 'mock' ? <Pill tone="mock">Mock data: made-up numbers, not findings</Pill> : null}
-      {scored ? (
-        <span>
-          The holdout results are in.{' '}
-          <a href="#results" onClick={(e) => goTo(e, 'results')}>
-            See how the forecasts did
-          </a>
-        </span>
-      ) : (
-        <span>
-          Holdout results land at the 04:00 analysis freeze.{' '}
-          <a href="#prereg" onClick={(e) => goTo(e, 'prereg')}>
-            How we test
-          </a>
-        </span>
-      )}
-    </div>
-  );
-}
-
-// ---- Top navigation ----
+// ---- The floating nav: one pill, fixed over the hero and the site ----
 
 const NAV_LINKS: [string, string][] = [
   ['nowcast', 'Production'],
   ['price', 'Price'],
-  ['drivers', 'Drivers'],
   ['farms', 'Farms'],
+  ['results', 'Tests'],
 ];
 
-export function TopNav({ files, onOpenStatus }: { files: AllFiles; onOpenStatus: () => void }) {
-  const sentinel = useRef<HTMLDivElement>(null);
-  const [stuck, setStuck] = useState(false);
-  const rows = fileRows(files);
-  const loaded = rows.filter((r) => r.status.state === 'ok').length;
-  const trouble = rows.some((r) => r.status.state === 'invalid' || r.status.state === 'error');
-
-  useEffect(() => {
-    const el = sentinel.current;
-    if (!el || typeof IntersectionObserver === 'undefined') return;
-    const io = new IntersectionObserver(([entry]) => {
-      if (entry) setStuck(!entry.isIntersecting && entry.boundingClientRect.top < 0);
-    });
-    io.observe(el);
-    return () => io.disconnect();
-  }, []);
-
+export function FloatNav() {
   return (
-    <>
-      <div ref={sentinel} aria-hidden="true" />
-      <header className={`nav${stuck ? ' is-stuck' : ''}`}>
-        <div className="container nav-inner">
-          <a className="wordmark" href="#top" onClick={(e) => goTo(e, 'top')}>
-            <FishMark /> Salmon Signal
+    <header className="float-nav">
+      <nav aria-label="Main">
+        <a className="brand" href="#intro" onClick={(e) => goTo(e, 'intro')}>
+          <HookMark size={18} /> Salmon Signal
+        </a>
+        {NAV_LINKS.map(([id, label]) => (
+          <a key={id} className="nav-link" href={`#${id}`} onClick={(e) => goTo(e, id)}>
+            {label}
           </a>
-          <nav aria-label="Sections">
-            <ul className="nav-links">
-              {NAV_LINKS.map(([id, label]) => (
-                <li key={id}>
-                  <a href={`#${id}`} onClick={(e) => goTo(e, id)}>
-                    {label}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </nav>
-          <div className="nav-actions">
-            <button type="button" className="btn btn-soft btn-sm" onClick={onOpenStatus}>
-              {trouble ? <IconAlert size={16} /> : null}
-              Files {loaded}/{rows.length}
-            </button>
-            <a className="btn btn-primary btn-sm nav-cta" href="#nowcast" onClick={(e) => goTo(e, 'nowcast')}>
-              See the forecast
+        ))}
+        <a className="btn btn-primary btn-sm" href="#top" onClick={(e) => goTo(e, 'top')}>
+          See the forecast
+        </a>
+      </nav>
+    </header>
+  );
+}
+
+// ---- Notice at the top of the site ----
+
+export function Notice({ files, source }: { files: AllFiles; source: Source }) {
+  const { nowcast, price } = files.data;
+  const scored = (nowcast.state === 'ok' && nowcast.data.f1 !== null) || (price.state === 'ok' && price.data.f2 !== null);
+  return (
+    <div className="notice">
+      <span className="notice-pill">
+        {source.kind === 'mock' ? <Pill tone="mock">Mock data: made-up numbers, not findings</Pill> : null}
+        {scored ? (
+          <span>
+            The holdout results are in.{' '}
+            <a href="#results" onClick={(e) => goTo(e, 'results')}>
+              See how the forecasts did
             </a>
-          </div>
-        </div>
-      </header>
-    </>
+          </span>
+        ) : (
+          <span>
+            Holdout results land at the 04:00 analysis freeze.{' '}
+            <a href="#prereg" onClick={(e) => goTo(e, 'prereg')}>
+              How we test
+            </a>
+          </span>
+        )}
+      </span>
+    </div>
   );
 }
 
@@ -186,15 +157,17 @@ export function DataStatusDialog({ dialogRef, files, onCheckAgain }: DialogProps
 
 // ---- Footer ----
 
-export function Footer({ onOpenStatus }: { onOpenStatus: () => void }) {
-  const replay = () => window.dispatchEvent(new Event(REPLAY_EVENT));
+export function Footer({ files, onOpenStatus }: { files: AllFiles; onOpenStatus: () => void }) {
+  const rows = fileRows(files);
+  const loaded = rows.filter((r) => r.status.state === 'ok').length;
+  const backToBoat = () => window.dispatchEvent(new Event(REPLAY_EVENT));
   return (
     <footer className="footer">
       <div className="container">
         <div className="footer-grid">
           <div>
-            <span className="wordmark">
-              <FishMark /> Salmon Signal
+            <span className="brand">
+              <HookMark size={22} /> Salmon Signal
             </span>
             <p className="footer-about">
               Made in 24 hours at HackTheBurgh XIII, Edinburgh, by The Edinburgers. Forecasting Norway's salmon
@@ -251,12 +224,12 @@ export function Footer({ onOpenStatus }: { onOpenStatus: () => void }) {
             <ul>
               <li>
                 <button type="button" className="link" onClick={onOpenStatus}>
-                  Data status
+                  Data status ({loaded}/{rows.length} files)
                 </button>
               </li>
               <li>
-                <button type="button" className="link" onClick={replay}>
-                  Replay the intro
+                <button type="button" className="link" onClick={backToBoat}>
+                  Back to the fisherman
                 </button>
               </li>
               <li>
