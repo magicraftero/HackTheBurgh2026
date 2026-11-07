@@ -5,6 +5,7 @@
 // 3. The loader turns every kind of server answer into the right state.
 // 4. Every mock chart compiles and draws with Vega.
 // 5. The page renders in every scenario, including a broken file.
+// 6. The farm map: coastline file, projection, week dates, names, colour bins.
 
 import { renderToString } from 'react-dom/server';
 import * as vega from 'vega';
@@ -27,7 +28,11 @@ import {
   type ChartSpec,
 } from '../src/data/schemas';
 import type { AllFiles } from '../src/data/source';
-import { FarmWeekSummary } from '../src/page/FarmWeeks';
+import { BasemapSchema } from '../src/map/basemap';
+import { VIEW, project } from '../src/map/projection';
+import { LICE_BREAKS, TEMP_BREAKS, TEMP_COLORS, binIndex, markFor } from '../src/map/scales';
+import { displayName, searchKey, weekDates } from '../src/map/text';
+import { FarmExplorer, indexOfWeek } from '../src/page/FarmWeeks';
 import { SitePage } from '../src/page/SitePage';
 import * as ex from './contract-examples';
 import type { IO } from './io';
@@ -300,11 +305,83 @@ export default async function main(io: IO): Promise<number> {
       expect(false, `finding 1 renders (${scenario})`, 'mock files missing');
       continue;
     }
-    const text = textOf(renderToString(<FarmWeekSummary data={year.data} farms={farms.data} />));
-    const wants = ['2026-W44', 'Farms reporting lice', scenario === 'pre' ? 'No disease flags in the data' : 'Farms flagged ISA or PD'];
-    const missing = wants.filter((w) => !text.includes(w));
-    expect(!missing.length, `finding 1 renders a week (${scenario})`, `missing text: ${missing.join(' | ')}`);
+    try {
+      const text = textOf(
+        renderToString(
+          <FarmExplorer farms={farms.data} years={[2025, 2026]} year={2026} onYear={() => {}} data={year.data} source={{ kind: 'mock', scenario }} />,
+        ),
+      );
+      const wants = [
+        'Week 44',
+        '26 Oct to 1 Nov 2026',
+        'Colour the farms by',
+        'Whole coast',
+        'Mobile lice per fish',
+        'Find a farm',
+        'This week by area',
+        'Farms reporting lice',
+        scenario === 'pre' ? 'No disease flags in the data' : 'Farms flagged ISA or PD',
+      ];
+      const missing = wants.filter((w) => !text.includes(w));
+      expect(!missing.length, `finding 1 renders the map's controls and a week (${scenario})`, `missing text: ${missing.join(' | ')}`);
+    } catch (e) {
+      expect(false, `finding 1 renders (${scenario})`, e instanceof Error ? e.stack : String(e));
+    }
   }
+
+  // ---- 5 ----
+  heading('5. The farm map');
+  const base = fromDisk(io, 'public/map/norway.json', BasemapSchema);
+  expect(base.state === 'ok', 'public/map/norway.json passes, with the same projection and view as the code', describe(base));
+  if (base.state === 'ok') {
+    const kb = Math.round((io.read('public/map/norway.json') ?? '').length / 1024);
+    expect(kb < 260, `the coastline file stays small (${kb} KB)`);
+    expect(base.data.countries.includes('Norway') && base.data.countries.includes('Sweden'), 'it has Norway and its neighbours');
+  }
+  const inView = ([x, y]: [number, number]) => x > VIEW.x && x < VIEW.x + VIEW.w && y > VIEW.y && y < VIEW.y + VIEW.h;
+  const bergen = project(5.3221, 60.3913);
+  const trondheim = project(10.3951, 63.4305);
+  const tromso = project(18.956, 69.6496);
+  const northCape = project(25.7836, 71.1685);
+  const lindesnes = project(7.0475, 57.9826);
+  expect([bergen, trondheim, tromso, northCape, lindesnes].every(inView), 'Lindesnes, Bergen, Trondheim, Tromsø and the North Cape are in view');
+  expect(bergen[0] < trondheim[0] && trondheim[0] < tromso[0] && tromso[1] < trondheim[1] && trondheim[1] < bergen[1], 'north is up and east is right');
+  expect(Math.abs(Math.hypot(bergen[0] - trondheim[0], bergen[1] - trondheim[1]) - 433) < 15, 'Bergen to Trondheim is about 433 km on the map');
+
+  const weekCases: [string, string][] = [
+    ['2026-W44', '26 Oct to 1 Nov 2026'],
+    ['2025-W41', '6 to 12 Oct 2025'],
+    ['2026-W01', '29 Dec 2025 to 4 Jan 2026'],
+    ['2020-W53', '28 Dec 2020 to 3 Jan 2021'],
+  ];
+  const badWeeks = weekCases.filter(([w, want]) => weekDates(w) !== want).map(([w]) => `${w} → ${weekDates(w)}`);
+  expect(!badWeeks.length, 'ISO weeks turn into the right dates', badWeeks.join('; '));
+  const weeks44 = Array.from({ length: 44 }, (_, i) => `2026-W${String(i + 1).padStart(2, '0')}`);
+  expect(indexOfWeek(weeks44, 44) === 43 && indexOfWeek(weeks44, 53) === 43 && indexOfWeek(weeks44, 1) === 0, 'a week missing from a year falls back to the nearest one before it');
+
+  const nameCases: [string, string][] = [
+    ['REVØY', 'Revøy'],
+    ['FINNKJERKA S', 'Finnkjerka S'],
+    ['HÅGARDSNESET II', 'Hågardsneset II'],
+    ['Aukan', 'Aukan'],
+    ['SKÅR-HOLMEN 2', 'Skår-Holmen 2'],
+  ];
+  const badNames = nameCases.filter(([n, want]) => displayName(n) !== want).map(([n]) => `${n} → ${displayName(n)}`);
+  expect(!badNames.length, 'capitalised farm names read as names', badNames.join('; '));
+  expect(searchKey('Revøy') === 'revoy' && searchKey('ÆRØY') === 'aeroy' && searchKey('Hågardsneset') === 'hagardsneset', 'search ignores ø, æ and å');
+
+  const liceBins = [0, 0.1, 0.249, 0.25, 0.5, 1, 2, 63].map((v) => binIndex(v, LICE_BREAKS));
+  expect(liceBins.join() === '0,1,1,2,3,4,5,5', 'lice values land in the right colour bins', liceBins.join());
+  const tempBins = [-0.2, 3.9, 4, 9, 9.99, 14, 21].map((v) => binIndex(v, TEMP_BREAKS));
+  expect(tempBins.join() === '0,0,1,3,3,6,6' && TEMP_COLORS.length === TEMP_BREAKS.length + 1, 'temperatures land in the right bins, grey in the middle', tempBins.join());
+  const blank = { mobile: null, temp: null, treated: null, disease: null };
+  expect(
+    markFor('lice', blank).shape === 'empty' &&
+      markFor('treated', { ...blank, treated: 1 }).ring &&
+      markFor('disease', { ...blank, disease: 1 }).shape === 'diamond' &&
+      markFor('lice', { ...blank, mobile: 0.3, treated: 1 }).ring,
+    'treated farms get a ring and flagged farms a diamond, not just a colour',
+  );
 
   console.log(failures ? `\n${failures} check(s) failed.` : '\nAll checks passed.');
   return failures ? 1 : 0;

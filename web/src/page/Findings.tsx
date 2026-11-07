@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react';
-import { LaterPill, PassPill, Pill, Reveal } from '../components/Bits';
+import { LaterPill, Numbers, PassPill, Pill, Reveal, Table } from '../components/Bits';
 import { Boundary } from '../components/Boundary';
 import { DASH, fmt, fmtDate, fmtInt, fmtMonth, fmtP, fmtPct, fmtR, fmtTonnes } from '../components/format';
-import { IconAlert, IconPlus } from '../components/Icons';
+import { IconAlert } from '../components/Icons';
 import { Later, StatusView } from '../components/States';
 import { VegaChart } from '../components/VegaChart';
 import { CHARTS, DATA_FILES, chartPath, type ChartName, type DataKey } from '../data/files';
@@ -34,7 +34,7 @@ export function Findings({ files, source }: { files: AllFiles; source: Source })
 
   return (
     <>
-      <Finding n={1} id="farms" band="cream" tag="Data" title="Every farm, every week." lede="Lice, treatments, disease and sea temperature, as each farm reported them. Pick a year, then slide through its weeks.">
+      <Finding n={1} id="farms" band="cream" tag="Data" title="Every farm, every week." lede="Every salmon farm on Norway's coast reports lice, treatments, disease and sea temperature each week. Press play to watch a year go by, or pick a farm to see its own year.">
         <FarmSection farms={data.farms} index={data.farmWeeksIndex} source={source} />
       </Finding>
 
@@ -181,37 +181,6 @@ function ChartCard({ status, name, label }: { status: Status<Record<string, unkn
   );
 }
 
-function Numbers({ title = 'Show the numbers', children }: { title?: string; children: ReactNode }) {
-  return (
-    <details className="numbers">
-      <summary>
-        {title}
-        <IconPlus size={20} />
-      </summary>
-      <div className="numbers-body">{children}</div>
-    </details>
-  );
-}
-
-function Table({ caption, head, children }: { caption: string; head: string[]; children: ReactNode }) {
-  return (
-    <div className="table-wrap">
-      <table>
-        <caption>{caption}</caption>
-        <thead>
-          <tr>
-            {head.map((h) => (
-              <th key={h} scope="col">
-                {h}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>{children}</tbody>
-      </table>
-    </div>
-  );
-}
 
 function MiniStats({ items }: { items: [string, ReactNode][] }) {
   return (

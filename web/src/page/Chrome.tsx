@@ -197,6 +197,12 @@ export function Footer({ files, onOpenStatus }: { files: AllFiles; onOpenStatus:
                   Norges Bank
                 </a>
               </li>
+              <li>
+                <a href="https://www.naturalearthdata.com" target="_blank" rel="noopener noreferrer">
+                  Natural Earth
+                </a>{' '}
+                (the coastline)
+              </li>
             </ul>
           </div>
           <div>

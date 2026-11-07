@@ -7,6 +7,7 @@ import { compile } from 'vega-lite';
 import type { z } from 'zod';
 import { CHART_NAMES, CHARTS, DATA_FILES, DATA_KEYS, chartPath, farmWeeksYearPath } from '../src/data/files';
 import { parseJson } from '../src/data/load';
+import { VIEW, project } from '../src/map/projection';
 import { ChartSpecSchema, FarmWeeksYearSchema, type ChartSpec, type Farms, type FarmWeeksIndex, type Price } from '../src/data/schemas';
 import type { IO } from './io';
 
@@ -54,6 +55,18 @@ export default async function main(io: IO): Promise<number> {
   if (farms) {
     const areas = new Set(farms.map((f) => f.area));
     detail(`farms.json: ${farms.length} farms in ${areas.size} areas; ${farms.filter((f) => f.lat === null || f.lon === null).length} without a position`);
+    // Every farm has to land inside the map's frame (src/map/projection.ts).
+    const outside = farms.filter((f) => {
+      if (f.lat === null || f.lon === null) return false;
+      const [x, y] = project(f.lon, f.lat);
+      return x < VIEW.x || x > VIEW.x + VIEW.w || y < VIEW.y || y > VIEW.y + VIEW.h;
+    });
+    if (outside.length) {
+      problems += 1;
+      say('✕', `${outside.length} farms fall outside the map, e.g. ${outside.slice(0, 3).map((f) => `${f.id} (${f.lat}, ${f.lon})`).join(', ')}. Check with Data.`);
+    } else {
+      detail('every farm with a position falls inside the map');
+    }
   }
 
   if (index) {

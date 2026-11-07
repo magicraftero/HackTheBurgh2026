@@ -11,7 +11,8 @@
     "typecheck": "tsc --noEmit",
     "mocks": "node scripts/run.mjs scripts/make-mocks.ts",
     "check": "node scripts/run.mjs scripts/check.tsx",
-    "check:real": "node scripts/run.mjs scripts/check-real.ts"
+    "check:real": "node scripts/run.mjs scripts/check-real.ts",
+    "basemap": "node scripts/run.mjs scripts/make-basemap.ts"
   },
   "engines": {
     "node": ">=20.19"

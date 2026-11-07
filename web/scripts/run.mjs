@@ -19,12 +19,14 @@ if (!script) {
   process.exit(2);
 }
 
-const MOCK_DIR = resolve(root, 'public/data/_mock');
+// The front end's own folders: mock data, and the map outline. The back end
+// writes everything else in public/data/ and public/charts/.
+const OWN_DIRS = [resolve(root, 'public/data/_mock'), resolve(root, 'public/map')];
 
 function ours(path) {
   const p = resolve(root, path);
-  if (p !== MOCK_DIR && !p.startsWith(MOCK_DIR + sep)) {
-    throw new Error(`refusing to change ${relative(root, p)}: scripts may only write in public/data/_mock/`);
+  if (!OWN_DIRS.some((dir) => p === dir || p.startsWith(dir + sep))) {
+    throw new Error(`refusing to change ${relative(root, p)}: scripts may only write in public/data/_mock/ or public/map/`);
   }
   return p;
 }

@@ -71,6 +71,25 @@ export const IconRefresh = ({ size, className }: P) => (
   </svg>
 );
 
+export const IconPlay = ({ size, className }: P) => (
+  <svg {...svgProps(size, className)}>
+    <path d="M8 5.5v13l10.5-6.5z" fill="currentColor" />
+  </svg>
+);
+
+export const IconPause = ({ size, className }: P) => (
+  <svg {...svgProps(size, className)}>
+    <path d="M8.5 5.5v13M15.5 5.5v13" strokeWidth={3.2} />
+  </svg>
+);
+
+export const IconSearch = ({ size, className }: P) => (
+  <svg {...svgProps(size, className)}>
+    <circle cx="10.5" cy="10.5" r="6" />
+    <path d="M15 15l5 5" />
+  </svg>
+);
+
 /** The fishing reel on the "Reel in" button. */
 export const IconReel = ({ size, className }: P) => (
   <svg {...svgProps(size, className)}>

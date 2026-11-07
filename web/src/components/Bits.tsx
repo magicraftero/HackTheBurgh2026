@@ -1,5 +1,39 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
-import { IconCheck, IconClock, IconCross, IconHalf } from './Icons';
+import { IconCheck, IconClock, IconCross, IconHalf, IconPlus } from './Icons';
+
+// ---- "Show the numbers": a disclosure with a table or stats inside ----
+
+export function Numbers({ title = 'Show the numbers', children }: { title?: string; children: ReactNode }) {
+  return (
+    <details className="numbers">
+      <summary>
+        {title}
+        <IconPlus size={20} />
+      </summary>
+      <div className="numbers-body">{children}</div>
+    </details>
+  );
+}
+
+export function Table({ caption, head, children }: { caption: string; head: string[]; children: ReactNode }) {
+  return (
+    <div className="table-wrap">
+      <table>
+        <caption>{caption}</caption>
+        <thead>
+          <tr>
+            {head.map((h) => (
+              <th key={h} scope="col">
+                {h}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>{children}</tbody>
+      </table>
+    </div>
+  );
+}
 
 // ---- Pills: status chips, always icon + label ----
 
@@ -67,8 +101,8 @@ export function StatTile({ label, value, note, pill, tone = 'paper', className =
 
 // ---- Motion helpers (both respect reduced motion) ----
 
-const prefersReducedMotion = () =>
-  typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+export const prefersReducedMotion = () =>
+  typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
 /** Counts up from 0 the first time the number scrolls into view. */
 export function CountUp({ value, format }: { value: number; format: (n: number) => string }) {

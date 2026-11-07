@@ -6,6 +6,21 @@ A static site that shows the findings. Every number comes from the files the bac
 
 **The reel-in hero.** A misty fjord, a fisherman standing in a rowboat, a salmon on his line. "Reel in" (or scrolling) makes him heave the rod; the salmon comes out of the water and the site rises over the scene. It's driven by scroll position, so scrolling back up rewinds it, and any key, click or scroll stops the button's reel-in. People with reduced motion switched on get a still scene and an instant jump. The Oslo card's clock and its "next official figures in N days" (the 20th, per 00-shared.md) are worked out live. Code: `src/intro/FishingIntro.tsx`.
 
+**The farm map (finding 1).** Norway's real coastline with one dot per farm, from `farms.json` and the `farm_weeks/{year}.json` files. Colour the farms by lice, sea temperature, treatments, or ISA and PD; press play to step through the weeks (it carries on into the next year); zoom to the south and west, the middle or the north; hover over a farm for its numbers, or click it (or find it by name) for its year week by week next to its area's average. "This week by area" under the map is the same week as a table. Code: `src/map/`.
+
+- **No map service.** The coastline is `public/map/norway.json`, a 190 KB (65 KB gzipped) file of SVG paths made once from Natural Earth's 1:10m countries (public domain) by `scripts/make-basemap.ts`, so the map never loads anything from another server and can't break on bad Wi-Fi. It's drawn on two canvases: land underneath, farms on top.
+- **Projection.** A transverse Mercator centred on 15°E (the same central meridian as Norway's UTM 33 maps), in `src/map/projection.ts`, shared by the site and the generator so the farms and the coast always line up.
+- **Colours.** Each ramp was checked with the dataviz palette validator against the map's night-blue sea: lice is one coral hue in six steps; temperature is blue and coral arms of matching lightness around a grey 8 to 10 °C band (the 9.2 °C average); treated is teal with a ring, and ISA or PD is a red diamond, so neither relies on colour alone. Details at the top of `src/map/scales.ts`.
+- **Known limit.** At 1:10m, narrow sounds and small islands are simplified, so about a fifth of farms sit just on land.
+
+To rebuild the coastline (only needed if the projection or view changes):
+
+```sh
+mkdir /tmp/wa && cd /tmp/wa && npm pack world-atlas@2.0.2 --ignore-scripts && tar -xzf world-atlas-2.0.2.tgz
+cd -  # back to web/
+npm run basemap -- /tmp/wa/package/countries-10m.json
+```
+
 ## Run it
 
 ```sh
@@ -28,7 +43,8 @@ Production builds never use mocks: the switch is compiled out, and `public/data/
 ## Check it
 
 ```sh
-npm run check       # formats, mocks, loader, charts, and the page in every scenario
+npm run check       # formats, mocks, loader, charts, the page in every scenario, and the farm map
+npm run check:real  # the real files that have landed: formats, and every chart draws
 npm run typecheck
 npm run build       # output in dist/
 ```
@@ -36,7 +52,7 @@ npm run build       # output in dist/
 ## Who writes what
 
 - The back end writes `public/data/*.json`, `public/data/farm_weeks/*.json` and `public/charts/*.vl.json`. Never delete or overwrite those.
-- The front end owns everything else in `web/`, including `public/data/_mock/` (regenerate with `npm run mocks`).
+- The front end owns everything else in `web/`, including `public/data/_mock/` (regenerate with `npm run mocks`) and `public/map/` (the coastline).
 
 A file shows up on the site once it's pushed to `main` and the host redeploys. The page fetches files at run time, so a missing file never breaks the build. A missing file, or one that doesn't match the agreed format, shows "coming later", and the file table at the top of the page says which and why.
 
@@ -56,9 +72,10 @@ The build uses relative paths, so the same `dist/` also works under a sub-path s
 | `src/data/source.ts` | The dev-only mock switch, caching, React hooks |
 | `src/components/VegaChart.tsx` | Draws any `.vl.json` chart (vega-embed, responsive, no menu) |
 | `src/intro/FishingIntro.tsx` | The reel-in hero |
+| `src/map/` | The farm map: projection, coastline loader, colours, canvas map, farm card, search |
 | `src/page/` | The page: floating nav, notice, hero, results, findings 1 to 8, footer, data status |
 | `src/styles.css` | The design system: colours, type, buttons, pills, cards |
-| `scripts/` | Mock generator and checks |
+| `scripts/` | Mock generator, coastline generator and checks |
 
 ## Chart theme: suggestion for Price (`charts/theme.py`)
 
