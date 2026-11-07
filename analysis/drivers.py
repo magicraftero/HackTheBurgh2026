@@ -15,6 +15,7 @@ import pandas as pd
 
 from analysis.anomalies import anomaly
 from analysis.config import AREAS, PROCESSED_DATA_DIR
+from analysis.io import write_parquet_atomic
 
 SOURCE_COLUMNS: Final[set[str]] = {
     "area",
@@ -169,13 +170,6 @@ def _validate_and_prepare(source: pd.DataFrame) -> pd.DataFrame:
     return frame.sort_values(["area", "month"]).reset_index(drop=True)
 
 
-def _atomic_parquet_write(frame: pd.DataFrame, destination: Path) -> None:
-    destination.parent.mkdir(parents=True, exist_ok=True)
-    temporary = destination.with_suffix(".tmp.parquet")
-    frame.to_parquet(temporary, index=False)
-    temporary.replace(destination)
-
-
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -197,7 +191,7 @@ def main() -> None:
 
     source = pd.read_parquet(args.input)
     area_drivers, _ = build_directorate_driver_tables(source)
-    _atomic_parquet_write(area_drivers, args.area_output)
+    write_parquet_atomic(area_drivers, args.area_output)
     print(f"Wrote {len(area_drivers):,} rows to {args.area_output}")
 
 

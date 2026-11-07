@@ -11,7 +11,7 @@ import pandas as pd
 
 from analysis.anomalies import Transform, anomaly
 from analysis.config import AREAS, PROCESSED_DATA_DIR
-from analysis.drivers import _atomic_parquet_write
+from analysis.io import write_parquet_atomic
 
 FARM_WEEK_COLUMNS: Final[set[str]] = {
     "locality_no",
@@ -321,8 +321,8 @@ def main() -> None:
     )
     area_output = PROCESSED_DATA_DIR / "weekly_area_index.parquet"
     national_output = PROCESSED_DATA_DIR / "weekly_national_index.parquet"
-    _atomic_parquet_write(area, area_output)
-    _atomic_parquet_write(national, national_output)
+    write_parquet_atomic(area, area_output)
+    write_parquet_atomic(national, national_output)
     print(f"Wrote {len(area):,} rows to {area_output}")
     print(f"Wrote {len(national):,} rows to {national_output}")
 
