@@ -79,6 +79,7 @@ def available_at_fx(d: date) -> date:
 def write_parquet(df: pd.DataFrame, name: str) -> Path:
     """Write data/processed/<name>, with date columns as datetime64[ns] at midnight."""
     df = df.copy()
+    df.attrs = {}  # pandas would otherwise store run-time notes in the Parquet metadata
     for col in DATE_COLUMNS:
         if col in df.columns:
             df[col] = pd.to_datetime(df[col]).dt.normalize().astype("datetime64[ns]")

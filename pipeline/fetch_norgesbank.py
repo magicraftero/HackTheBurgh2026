@@ -41,19 +41,30 @@ def main() -> None:
     df = df[["date", "eurnok", "usdnok", "available_at"]]
 
     ok = True
-    for name in SERIES:
-        s = df[["date", name]].dropna()
-        print(f"{name}: {s['date'].min().date()} .. {s['date'].max().date()} ({len(s)} days), "
-              f"range {s[name].min():.4f}-{s[name].max():.4f}")
-        if not s[name].between(5, 14).all():
-            print(f"WARNING: {name} has values outside 5-14")
+    for name, part in zip(SERIES, parts):
+        # errors="coerce" turns unparseable values into NaN, so count them before anything drops them.
+        unparsed = int(part[name].isna().sum())
+        if part.empty or unparsed:
+            print(f"WARNING: {name} has {len(part)} rows, {unparsed} empty or unparseable values")
             ok = False
+        if part[name].notna().any():
+            s = df[["date", name]].dropna()
+            print(f"{name}: {s['date'].min().date()} .. {s['date'].max().date()} ({len(s)} days), "
+                  f"range {s[name].min():.4f}-{s[name].max():.4f}")
+            if not s[name].between(5, 14).all():
+                print(f"WARNING: {name} has values outside 5-14")
+                ok = False
+    unmatched = int(df[list(SERIES)].isna().any(axis=1).sum())
+    if unmatched:
+        print(f"WARNING: {unmatched} days have one rate but not the other")
+        ok = False
     print(df.tail(3).to_string(index=False))
 
     write_parquet(df, "fx_daily.parquet")
-    last = df["date"].max()
-    for name, path in paths.items():
-        log_download(f"norgesbank_{name}", START, str(last.date()), available_at_fx(last), path, len(df))
+    if not offline:
+        last = df["date"].max()
+        for name, path in paths.items():
+            log_download(f"norgesbank_{name}", START, str(last.date()), available_at_fx(last), path, len(df))
     if not ok:
         print("CHECKS FAILED: tell your human.")
 

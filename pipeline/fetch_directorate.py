@@ -38,6 +38,11 @@ def load(path) -> pd.DataFrame:
 
     raw = raw[raw["ARTSID"] == "LAKS"].copy()
     raw["area"] = raw["PO_KODE"].replace("(null)", "0").astype(int)
+    # groupby().sum() skips NaN, so a blank raw cell would otherwise become a real-looking 0.
+    blanks = raw[list(COLUMNS)].isna().sum()
+    blanks = blanks[blanks > 0]
+    if len(blanks):
+        print(f"WARNING: blank cells in the raw file would be summed as 0: {blanks.to_dict()}")
     df = (raw.groupby(["area", "ÅR", "MÅNED_KODE"], as_index=False)[list(COLUMNS)].sum()
              .rename(columns=COLUMNS))
     df["month"] = [month_str(y, m) for y, m in zip(df["ÅR"], df["MÅNED_KODE"])]
@@ -48,11 +53,13 @@ def load(path) -> pd.DataFrame:
     df[FLOAT_COLUMNS + ["avg_kg"]] = df[FLOAT_COLUMNS + ["avg_kg"]].astype("float64")
     cols = ["area", "month", "harvest_count", "harvest_kg", "avg_kg", "biomass_kg",
             "fish_stock", "smolt_released", "dead", "feed_kg", "available_at"]
-    return df[cols].sort_values(["month", "area"]).reset_index(drop=True)
+    df = df[cols].sort_values(["month", "area"]).reset_index(drop=True)
+    df.attrs["raw_blank_cells"] = int(blanks.sum())
+    return df
 
 
 def check(df: pd.DataFrame) -> bool:
-    ok = True
+    ok = df.attrs.get("raw_blank_cells", 0) == 0
     months = sorted(df["month"].unique())
     print(f"months {months[0]} .. {months[-1]} ({len(months)}), areas {sorted(df['area'].unique())}")
 
@@ -95,12 +102,14 @@ def check(df: pd.DataFrame) -> bool:
 
 
 def main() -> None:
-    path = latest_raw("directorate", "*.csv") if "--offline" in sys.argv else download(URL, "directorate", ".csv")
+    offline = "--offline" in sys.argv
+    path = latest_raw("directorate", "*.csv") if offline else download(URL, "directorate", ".csv")
     df = load(path)
     ok = check(df)
     write_parquet(df, "directorate_area_month.parquet")
-    months = sorted(df["month"].unique())
-    log_download("directorate", months[0], months[-1], available_at_dir(months[-1]), path, len(df))
+    if not offline:
+        months = sorted(df["month"].unique())
+        log_download("directorate", months[0], months[-1], available_at_dir(months[-1]), path, len(df))
     if not ok:
         print("CHECKS FAILED: table pushed as-is; tell your human before rescaling anything.")
 

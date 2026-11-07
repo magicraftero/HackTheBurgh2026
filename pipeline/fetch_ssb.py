@@ -61,11 +61,13 @@ def check(df: pd.DataFrame) -> bool:
 
 
 def main() -> None:
-    path = latest_raw("ssb", "*.json") if "--offline" in sys.argv else download(URL, "ssb", ".json")
+    offline = "--offline" in sys.argv
+    path = latest_raw("ssb", "*.json") if offline else download(URL, "ssb", ".json")
     df = load(path)
     ok = check(df)
     write_parquet(df, "ssb_weekly.parquet")
-    log_download("ssb", df["week"].iloc[0], df["week"].iloc[-1], available_at_ssb(df["week"].iloc[-1]), path, len(df))
+    if not offline:
+        log_download("ssb", df["week"].iloc[0], df["week"].iloc[-1], available_at_ssb(df["week"].iloc[-1]), path, len(df))
     if not ok:
         print("CHECKS FAILED: tell your human.")
 

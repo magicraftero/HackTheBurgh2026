@@ -55,4 +55,7 @@ def log_download(source: str, period_from: str, period_to: str, available_at, pa
         "rows": int(rows),
     }])
     log = pd.concat([pd.read_parquet(LOG), row], ignore_index=True) if LOG.exists() else row
+    # Same dtype as the contract tables: available_at at midnight, downloaded_at keeps its time.
+    log["available_at"] = pd.to_datetime(log["available_at"]).dt.normalize().astype("datetime64[ns]")
+    log["downloaded_at"] = pd.to_datetime(log["downloaded_at"]).astype("datetime64[ns]")
     log.to_parquet(LOG, index=False)
