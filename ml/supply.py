@@ -302,7 +302,9 @@ def main(argv: list[str] | None = None) -> None:
         target = current_targets(prepared, today)[0][0]
         grids = lever_grids(prepared, target, today)
         (args.processed / LEVERS_NAME).write_text(json.dumps(grids) + "\n", encoding="utf-8")
-        FINAL_RECORD.write_text(json.dumps({"run_at": datetime.now().isoformat(), "rows": len(results)}) + "\n")
+        FINAL_RECORD.write_text(json.dumps({"run_at": datetime.now().isoformat(), "rows": len(results),
+                                            "before_freeze": datetime.now() < FREEZE_AT,
+                                            "team_confirmed": args.confirm_freeze}) + "\n")
     summary: dict[str, Any] = results.groupby(["window", "h"]).size().to_dict()
     print(f"Wrote {len(results):,} rows to {args.processed / OUTPUT_NAME}: {summary}")
 

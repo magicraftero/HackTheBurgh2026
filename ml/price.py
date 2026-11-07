@@ -191,12 +191,14 @@ def run(processed: Path, final: bool, jobs: int) -> pd.DataFrame:
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--final", action="store_true", help="include the holdout and the current outlook (after 04:00, once)")
+    parser.add_argument("--confirm-freeze", action="store_true", help="run --final before 04:00 on the team's say-so")
     parser.add_argument("--processed", type=Path, default=PROCESSED_DATA_DIR)
     parser.add_argument("--jobs", type=int, default=max(1, (os.cpu_count() or 2) - 1))
     args = parser.parse_args(argv)
 
+    early = datetime.now(ZoneInfo("Europe/London")) < PRICE_FREEZE
     if args.final:
-        if datetime.now(ZoneInfo("Europe/London")) < PRICE_FREEZE:
+        if early and not args.confirm_freeze:
             raise SystemExit("The holdout is locked until 04:00 Europe/London on 8 November 2026.")
         if FINAL_RECORD.exists():
             raise SystemExit(f"The final price run is already recorded in {FINAL_RECORD}.")
@@ -206,7 +208,8 @@ def main(argv: list[str] | None = None) -> None:
     results = run(args.processed, args.final, args.jobs)
     write_parquet_atomic(results, args.processed / OUTPUT_NAME)
     if args.final:
-        FINAL_RECORD.write_text(json.dumps({"run_at": datetime.now().isoformat(), "rows": len(results)}) + "\n")
+        FINAL_RECORD.write_text(json.dumps({"run_at": datetime.now().isoformat(), "rows": len(results),
+                                            "before_freeze": early, "team_confirmed": args.confirm_freeze}) + "\n")
     print(f"Wrote {len(results):,} rows to {args.processed / OUTPUT_NAME}: "
           f"{results.groupby(['window', 'h']).size().to_dict()}")
 

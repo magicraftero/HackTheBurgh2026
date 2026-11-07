@@ -367,6 +367,14 @@ def results_markdown(supply: dict[str, Any] | None, price: dict[str, Any] | None
                 lines.append(f"| {window} | {h} | " + " | ".join(cells) + f" | {values['n'].iloc[0]} |")
         lines += ["", "MAE in log price-change points (and NOK/kg).", "",
                   f"Winner rule: {price['winner']['rule']}.", f"Result: `{price['winner']}`.", ""]
+    records = {name: json.loads((ROOT / "ml" / f"final_{name}.json").read_text())
+               for name in ("supply", "price") if (ROOT / "ml" / f"final_{name}.json").exists()}
+    if records:
+        lines += ["## When the holdout was opened", ""]
+        for name, record in records.items():
+            when = "before the 04:00 freeze, on the team's say-so" if record.get("before_freeze") else "after the 04:00 freeze"
+            lines.append(f"- {name}: final run at {record['run_at'][:16]}, {when}.")
+        lines.append("")
     lines += ["## Deviations and caveats", "",
               "- **Season guard (added after the first dev run, before any holdout run).** Area 1's season was "
               "fitted on 11-20 usable months, because its zero-harvest months drop out, and exploded "
