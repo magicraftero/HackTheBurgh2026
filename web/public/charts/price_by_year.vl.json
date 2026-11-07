@@ -1,0 +1,161 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.20.1.json",
+  "config": {
+    "area": {
+      "opacity": 0.16
+    },
+    "axis": {
+      "gridColor": "#e6e8eb",
+      "labelColor": "#39424b",
+      "labelFontSize": 13,
+      "titleColor": "#252b31",
+      "titleFontSize": 14,
+      "titlePadding": 12
+    },
+    "background": "white",
+    "font": "system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
+    "legend": {
+      "labelFontSize": 13,
+      "orient": "bottom",
+      "titleFontSize": 14
+    },
+    "line": {
+      "strokeWidth": 2
+    },
+    "point": {
+      "size": 45
+    },
+    "range": {
+      "category": [
+        "#737373",
+        "#8a6bb8",
+        "#2673ac",
+        "#d05a3c",
+        "#747474",
+        "#a78329",
+        "#b54b73",
+        "#23877d",
+        "#252b31"
+      ]
+    },
+    "text": {
+      "fontSize": 15
+    },
+    "title": {
+      "anchor": "start",
+      "fontSize": 19,
+      "offset": 14,
+      "subtitleFontSize": 12,
+      "subtitlePadding": 6
+    },
+    "view": {
+      "stroke": null
+    }
+  },
+  "data": {
+    "values": [
+      {
+        "mae": 0.06816,
+        "model": "c0",
+        "year": 2021
+      },
+      {
+        "mae": 0.08816,
+        "model": "c1",
+        "year": 2021
+      },
+      {
+        "mae": 0.08953,
+        "model": "c0",
+        "year": 2022
+      },
+      {
+        "mae": 0.1072,
+        "model": "c1",
+        "year": 2022
+      },
+      {
+        "mae": 0.07401,
+        "model": "c0",
+        "year": 2023
+      },
+      {
+        "mae": 0.07285,
+        "model": "c1",
+        "year": 2023
+      },
+      {
+        "mae": 0.07532,
+        "model": "c0",
+        "year": 2024
+      },
+      {
+        "mae": 0.1212,
+        "model": "c1",
+        "year": 2024
+      }
+    ]
+  },
+  "encoding": {
+    "color": {
+      "field": "model",
+      "scale": {
+        "domain": [
+          "c0",
+          "c1"
+        ],
+        "range": [
+          "#2673ac",
+          "#d05a3c"
+        ]
+      },
+      "title": "Model",
+      "type": "nominal"
+    },
+    "tooltip": [
+      {
+        "field": "year",
+        "type": "ordinal"
+      },
+      {
+        "field": "model",
+        "type": "nominal"
+      },
+      {
+        "field": "mae",
+        "format": ".4f",
+        "type": "quantitative"
+      }
+    ],
+    "x": {
+      "axis": {
+        "labelAngle": 0
+      },
+      "field": "year",
+      "title": "Target ISO year",
+      "type": "ordinal"
+    },
+    "xOffset": {
+      "field": "model",
+      "type": "nominal"
+    },
+    "y": {
+      "field": "mae",
+      "title": "MAE (log price-change points)",
+      "type": "quantitative"
+    }
+  },
+  "height": 300,
+  "mark": {
+    "type": "bar"
+  },
+  "title": {
+    "subtitle": [
+      "Source: Statistics Norway 03024; latest revised data.",
+      "Drivers: Directorate of Fisheries, Norges Bank, BarentsWatch.",
+      "2021\u20132024 development; 2025\u20132026 holdout appears only after the final run."
+    ],
+    "text": "Four-week price errors by year"
+  },
+  "width": 680
+}
