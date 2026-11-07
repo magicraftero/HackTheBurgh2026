@@ -132,14 +132,19 @@ def missing_mechanism_columns(panel: pd.DataFrame) -> list[str]:
     )
 
 
-def lagged_design(panel: pd.DataFrame, outcome_column: str, regressors: tuple[str, ...]) -> pd.DataFrame:
+def lagged_design(
+    panel: pd.DataFrame,
+    outcome_column: str,
+    regressors: tuple[str, ...],
+    areas: tuple[int, ...] | range = AREAS,
+) -> pd.DataFrame:
     """Outcome, lagged regressors, t-4 controls and the area × calendar-month cell.
 
     Lags are taken within each area on a complete monthly grid, so a lag never
     crosses areas or skips a missing month. Incomplete rows are dropped.
     """
 
-    frame = panel.loc[panel["area"].isin(AREAS)].sort_values(["area", "month"])
+    frame = panel.loc[panel["area"].isin(areas)].sort_values(["area", "month"])
     month = pd.to_datetime(frame["month"], format="%Y-%m")
     for area, months in month.groupby(frame["area"]):
         expected = pd.date_range(months.iloc[0], months.iloc[-1], freq="MS")
@@ -187,7 +192,9 @@ def lag_sum(result: Any, column: str, first_lag: int, last_lag: int) -> tuple[fl
     return total, math.sqrt(variance) if variance >= 0 else math.nan
 
 
-def build_mechanism_panel(panel: pd.DataFrame) -> list[dict[str, Any]]:
+def build_mechanism_panel(
+    panel: pd.DataFrame, areas: tuple[int, ...] | range = AREAS
+) -> list[dict[str, Any]]:
     """Rows for ``channels.json`` → ``panel``, following prereg/PASS_MARKS.md."""
 
     missing = missing_mechanism_columns(panel)
@@ -200,7 +207,7 @@ def build_mechanism_panel(panel: pd.DataFrame) -> list[dict[str, Any]]:
         key = (tested.test, tested.outcome)
         if key not in fits:
             design = lagged_design(
-                panel, PANEL_OUTCOMES[tested.outcome], MODEL_REGRESSORS[tested.test]
+                panel, PANEL_OUTCOMES[tested.outcome], MODEL_REGRESSORS[tested.test], areas
             )
             fits[key] = fit_mechanism_model(design)
         total, se = lag_sum(fits[key], tested.column, tested.first_lag, tested.last_lag)
@@ -218,6 +225,25 @@ def build_mechanism_panel(panel: pd.DataFrame) -> list[dict[str, Any]]:
             }
         )
     return rows
+
+
+SENSITIVITY_EXCLUDED_AREAS: Final = (1, 13)
+SENSITIVITY_LABEL: Final = (
+    "Sensitivity check, not a pass mark: areas 1 and 13 excluded because their many "
+    "zero-harvest months give extreme count anomalies. Chosen before any M1/M2 results."
+)
+
+
+def build_mechanism_sensitivity(panel: pd.DataFrame) -> dict[str, Any]:
+    """The same M1/M2 sums without areas 1 and 13, for RESULTS.md only."""
+
+    areas = tuple(area for area in AREAS if area not in SENSITIVITY_EXCLUDED_AREAS)
+    rows = [{**row, "pass": None} for row in build_mechanism_panel(panel, areas)]
+    return {
+        "label": SENSITIVITY_LABEL,
+        "excluded_areas": list(SENSITIVITY_EXCLUDED_AREAS),
+        "rows": rows,
+    }
 
 
 def _passes(required_sign: int | None, lo: float, hi: float) -> bool | None:
@@ -258,6 +284,10 @@ def main() -> None:
             channels["panel"] = existing["panel"]
     else:
         channels["panel"] = build_mechanism_panel(panel)
+        sensitivity = build_mechanism_sensitivity(panel)
+        write_json_atomic(sensitivity, args.processed / "mechanism_sensitivity.json")
+        for row in sensitivity["rows"]:
+            print("sensitivity:", row)
     write_json_atomic(channels, destination)
     for row in channels["bins"]:
         print(row)

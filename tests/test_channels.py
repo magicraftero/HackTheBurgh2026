@@ -9,6 +9,7 @@ import pytest
 from analysis.channels import (
     build_bins,
     build_mechanism_panel,
+    build_mechanism_sensitivity,
     lagged_design,
     missing_mechanism_columns,
     verdicts_by_test,
@@ -184,3 +185,16 @@ def test_mechanism_panel_reports_missing_weekly_columns() -> None:
     assert missing_mechanism_columns(world) == ["mobile_anom", "treat_anom"]
     with pytest.raises(ValueError, match="mobile_anom"):
         build_mechanism_panel(world)
+
+
+def test_sensitivity_drops_areas_1_and_13_and_carries_no_pass_mark() -> None:
+    world = _mechanism_world()
+    world.loc[world["area"].isin([1, 13]), "count_anom"] *= 50
+
+    sensitivity = build_mechanism_sensitivity(world)
+
+    assert sensitivity["excluded_areas"] == [1, 13]
+    assert all(row["pass"] is None for row in sensitivity["rows"])
+    lice_count = _row(sensitivity["rows"], "M1", "log_count", "mobile_lice")
+    assert lice_count["coef_sum"] == pytest.approx(4 * LICE_PER_LAG, abs=0.02)
+    json.dumps(sensitivity, allow_nan=False)
