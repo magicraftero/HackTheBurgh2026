@@ -12,14 +12,9 @@ export function FarmSection({ farms, index, source }: Props) {
   return (
     <StatusView status={farms} file="farms.json" owner="Data" due="21:30">
       {(farmList) => (
-        <>
-          <p>
-            {fmtInt(farmList.length)} farms in <code>farms.json</code>.
-          </p>
-          <StatusView status={index} file="farm_weeks/index.json" owner="Data" due="21:30">
-            {(idx) => <FarmYears farms={farmList} years={idx.years} source={source} />}
-          </StatusView>
-        </>
+        <StatusView status={index} file="farm_weeks/index.json" owner="Data" due="21:30">
+          {(idx) => <FarmYears farms={farmList} years={idx.years} source={source} />}
+        </StatusView>
       )}
     </StatusView>
   );
@@ -29,35 +24,39 @@ function FarmYears({ farms, years, source }: { farms: Farms; years: number[]; so
   const sorted = useMemo(() => [...years].sort((a, b) => a - b), [years]);
   const [year, setYear] = useState<number | null>(sorted[sorted.length - 1] ?? null);
   const status = useFarmWeeksYear(year, source);
-  const selectId = useId();
+  const name = useId();
 
   if (!sorted.length || year === null) {
     return (
       <Later>
-        <p>
-          <code>farm_weeks/index.json</code> lists no years yet.
+        <p>No years listed yet.</p>
+        <p className="note">
+          Waiting for years in <code>farm_weeks/index.json</code> from Data.
         </p>
       </Later>
     );
   }
   return (
-    <>
-      <p className="control">
-        <label htmlFor={selectId}>Year</label>
-        <select id={selectId} value={year} onChange={(e) => setYear(Number(e.target.value))}>
-          {sorted.map((y) => (
-            <option key={y} value={y}>
-              {y}
-            </option>
-          ))}
-        </select>
-      </p>
+    <div className="farm-panel">
+      <fieldset className="chips">
+        <legend>Year</legend>
+        {sorted.map((y) => (
+          <label key={y} className="chip">
+            <input type="radio" name={name} value={y} checked={y === year} onChange={() => setYear(y)} />
+            <span>{y}</span>
+          </label>
+        ))}
+      </fieldset>
       {status ? (
         <StatusView status={status} file={`farm_weeks/${year}.json`} owner="Data" due="21:30">
           {(data) => <FarmWeekSummary key={data.year} data={data} farms={farms} />}
         </StatusView>
       ) : null}
-    </>
+      <p className="note">
+        {fmtInt(farms.length)} farms in the register. Simple averages over the farms that reported; the analysis
+        itself uses capacity-weighted indices.
+      </p>
+    </div>
   );
 }
 
@@ -88,19 +87,11 @@ export function FarmWeekSummary({ data, farms }: { data: FarmWeeksYear; farms: F
   const treatedShare = treated.length ? treated.filter((v) => v === 1).length / treated.length : null;
 
   return (
-    <div className="farm-week">
-      <p>
-        {data.year}: {fmtInt(data.weeks.length)} weeks, {fmtInt(data.ids.length)} farms that reported at
-        least once.
-      </p>
-      {unknownIds ? (
-        <p className="warn" role="status">
-          {fmtInt(unknownIds)} farm IDs in this file aren't in farms.json. Tell Data.
-        </p>
-      ) : null}
-      <p className="control">
+    <>
+      <div className="week-control">
         <label htmlFor={sliderId}>
-          Week <strong>{data.weeks[w]}</strong>
+          <span>Week</span>
+          <output htmlFor={sliderId}>{data.weeks[w]}</output>
         </label>
         <input
           id={sliderId}
@@ -112,8 +103,13 @@ export function FarmWeekSummary({ data, farms }: { data: FarmWeeksYear; farms: F
           aria-valuetext={data.weeks[w]}
           onChange={(e) => setPicked(Number(e.target.value))}
         />
-      </p>
-      <dl className="stats">
+      </div>
+      {unknownIds ? (
+        <p className="warn" role="status">
+          {fmtInt(unknownIds)} farm IDs in this year's file aren't in farms.json. Tell Data.
+        </p>
+      ) : null}
+      <dl className="mini-stats">
         <div>
           <dt>Farms reporting lice</dt>
           <dd>
@@ -137,10 +133,6 @@ export function FarmWeekSummary({ data, farms }: { data: FarmWeeksYear; farms: F
           <dd>{disease ? fmtInt(disease.filter((v) => v === 1).length) : 'No disease flags in the data'}</dd>
         </div>
       </dl>
-      <p className="note">
-        Simple averages over the farms that reported, to check the data flow. The analysis itself uses
-        capacity-weighted indices.
-      </p>
-    </div>
+    </>
   );
 }

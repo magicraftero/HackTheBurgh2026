@@ -1,12 +1,18 @@
 import type { ReactNode } from 'react';
 import type { Status } from '../data/load';
+import { IconAlert, IconCheck, IconClock } from './Icons';
 
 /** The "coming later" state: a file, or one part of a file, isn't there yet. */
 export function Later({ title = 'Coming later', children }: { title?: string; children?: ReactNode }) {
   return (
-    <div className="later" role="status">
-      <p className="later-title">{title}</p>
-      {children}
+    <div className="later">
+      <span className="later-icon">
+        <IconClock size={20} />
+      </span>
+      <div className="later-text">
+        <p className="later-title">{title}</p>
+        {children}
+      </div>
     </div>
   );
 }
@@ -24,29 +30,25 @@ type ViewProps<T> = {
 export function StatusView<T>({ status, file, owner, due, children }: ViewProps<T>) {
   switch (status.state) {
     case 'loading':
-      return (
-        <p className="loading" role="status">
-          Loading {file}…
-        </p>
-      );
+      return <p className="loading">Loading…</p>;
     case 'ok':
       return <>{children(status.data)}</>;
     case 'missing':
       return (
         <Later>
-          <p>
-            <code>{file}</code> isn't there yet.
-            {due ? ` Due ${due}` : ''}
-            {owner ? ` from ${owner}.` : due ? '.' : ''}
+          <p>{due ? `Arrives ${due}.` : 'Not published yet.'}</p>
+          <p className="note">
+            Waiting for <code>{file}</code>
+            {owner ? ` from ${owner}` : ''}.
           </p>
         </Later>
       );
     case 'invalid':
       return (
-        <Later>
+        <Later title="Held back">
           <p>
-            <code>{file}</code> is there but doesn't match the agreed format (00-shared.md), so it isn't
-            shown.{owner ? ` Tell ${owner}:` : ''}
+            <code>{file}</code> is there but doesn't match the agreed format yet, so it isn't shown.
+            {owner ? ` Tell ${owner}:` : ''}
           </p>
           <ul className="problems">
             {status.problems.map((p, i) => (
@@ -59,27 +61,43 @@ export function StatusView<T>({ status, file, owner, due, children }: ViewProps<
       );
     case 'error':
       return (
-        <Later>
+        <Later title="Couldn't load">
           <p>
-            Couldn't load <code>{file}</code> ({status.message}). Reload the page to try again.
+            <code>{file}</code> didn't load ({status.message}). Reload the page to try again.
           </p>
         </Later>
       );
   }
 }
 
-/** One-word status for the file table. Text and symbol, never colour alone. */
-export function statusText(status: Status<unknown>): { symbol: string; text: string; tone: string } {
+/** Status for the file table: an icon and a word, never colour alone. */
+export function StatusCell({ status }: { status: Status<unknown> }) {
   switch (status.state) {
     case 'loading':
-      return { symbol: '…', text: 'Loading', tone: 'muted' };
+      return <span className="status-cell">Loading…</span>;
     case 'ok':
-      return { symbol: '✓', text: 'Loaded', tone: 'ok' };
+      return (
+        <span className="status-cell is-ok">
+          <IconCheck size={16} /> Loaded
+        </span>
+      );
     case 'missing':
-      return { symbol: '○', text: 'Not there yet', tone: 'muted' };
+      return (
+        <span className="status-cell">
+          <IconClock size={16} /> Not there yet
+        </span>
+      );
     case 'invalid':
-      return { symbol: '✕', text: "Doesn't match the format", tone: 'bad' };
+      return (
+        <span className="status-cell is-bad">
+          <IconAlert size={16} /> Doesn't match the format
+        </span>
+      );
     case 'error':
-      return { symbol: '!', text: "Couldn't load", tone: 'bad' };
+      return (
+        <span className="status-cell is-bad">
+          <IconAlert size={16} /> Couldn't load
+        </span>
+      );
   }
 }

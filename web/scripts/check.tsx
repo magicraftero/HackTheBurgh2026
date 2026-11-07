@@ -28,7 +28,7 @@ import {
 } from '../src/data/schemas';
 import type { AllFiles } from '../src/data/source';
 import { FarmWeekSummary } from '../src/page/FarmWeeks';
-import { FindingsPage } from '../src/page/FindingsPage';
+import { SitePage } from '../src/page/SitePage';
 import * as ex from './contract-examples';
 import type { IO } from './io';
 
@@ -240,23 +240,45 @@ export default async function main(io: IO): Promise<number> {
       'before the freeze',
       pre,
       [
+        'Mock data: made-up numbers, not findings',
+        'Holdout results land at the 04:00 analysis freeze.',
         'Holdout scores arrive at the 04:00 freeze.',
         'F1 is scored once, at the 04:00 freeze.',
         'The worked example arrives at the 04:00 freeze.',
-        'drivers.json isn\'t there yet.',
-        'M1 and M2 are scored at the 04:00 freeze',
+        'Waiting for drivers.json from Production.',
+        'M1 and M2 are scored at the 04:00 freeze.',
         'F2 is scored once, at the 04:00 freeze.',
-        'charts/price_backtest.vl.json isn\'t there yet.',
+        'Waiting for charts/price_backtest.vl.json from Price.',
         'Only if the back end has time.',
+        '10 of 17 files in.', // 7 data files + 3 charts
       ],
     ],
-    ['after the freeze', post, ['F1: ✓ Pass', 'F2: ✕ Fail', 'No pass mark', '2026-09 by production area', 'Lice and treatments', 'Files: 16 of 17 loaded']], // price_fan is optional and absent
-    ['with no files at all', none, ['farms.json isn\'t there yet.', 'trap.json isn\'t there yet.', 'price.json isn\'t there yet.', 'Files: 0 of 17 loaded']],
-    ['with a broken nowcast.json', broken, ['nowcast.json is there but doesn\'t match the agreed format', 'f1.pass', 'F2: ✕ Fail']],
+    [
+      'after the freeze',
+      post,
+      [
+        'The holdout results are in.',
+        'Pass',
+        'Fail',
+        'No pass mark',
+        'lower error than baseline B1',
+        'September 2026 by production area',
+        'Lice and treatments',
+        '16 of 17 files in.', // price_fan is optional and absent
+      ],
+    ],
+    [
+      'with no files at all',
+      none,
+      ['Waiting for farms.json from Data.', 'Waiting for trap.json from Production.', 'Waiting for price.json from Price.', '0 of 17 files in.'],
+    ],
+    ['with a broken nowcast.json', broken, ["nowcast.json is there but doesn't match the agreed format yet", 'f1.pass', 'Fail']],
   ];
   for (const [name, files, wants] of scenarios) {
     try {
-      const text = textOf(renderToString(<FindingsPage files={files} source={{ kind: 'mock', scenario: 'pre' }} />));
+      const text = textOf(
+        renderToString(<SitePage files={files} source={{ kind: 'mock', scenario: 'pre' }} generation={0} onCheckAgain={() => {}} />),
+      );
       const missing = wants.filter((w) => !text.includes(w));
       expect(!missing.length, `renders ${name}`, `missing text: ${missing.join(' | ')}`);
     } catch (e) {

@@ -22,6 +22,34 @@ export const fmtP = (p: N) => (p == null ? DASH : p < 0.001 ? '< 0.001' : p.toFi
 
 export const fmtR = (r: N) => (r == null ? DASH : `${r < 0 ? '−' : ''}${Math.abs(r).toFixed(2)}`);
 
+const compact = new Intl.NumberFormat('en-GB', { notation: 'compact', maximumFractionDigits: 1 });
+
+/** 1,284 → "1.3K", 4,200,000 → "4.2M"; small numbers stay whole. */
+export const fmtCompact = (v: N) => (v == null ? DASH : Math.abs(v) < 10_000 ? fmtInt(v) : compact.format(v));
+
+/** "2026-09" → "September 2026". */
+export function fmtMonth(month: string): string {
+  const m = /^(\d{4})-(\d{2})$/.exec(month);
+  if (!m) return month;
+  return new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, 1)).toLocaleString('en-GB', {
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'UTC',
+  });
+}
+
+/** "2026-10-10" → "10 Oct 2026". */
+export function fmtDate(day: string): string {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(day);
+  if (!m) return day;
+  return new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3]))).toLocaleString('en-GB', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    timeZone: 'UTC',
+  });
+}
+
 export const mean = (xs: readonly (number | null)[]) => {
   let sum = 0;
   let n = 0;

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import {
   SCENARIOS,
   SCENARIO_LABELS,
@@ -7,12 +7,14 @@ import {
   useAllFiles,
   type Source,
 } from './data/source';
-import { FindingsPage } from './page/FindingsPage';
+import { FishingIntro, Hook } from './intro/FishingIntro';
+import { SitePage } from './page/SitePage';
 
 export function App() {
   const [source] = useState<Source>(currentSource);
   const [generation, setGeneration] = useState(0);
   const files = useAllFiles(source, generation);
+  const siteRef = useRef<HTMLDivElement>(null);
 
   const checkAgain = () => {
     clearCache();
@@ -21,26 +23,14 @@ export function App() {
 
   return (
     <>
-      {import.meta.env.DEV ? <DevBar source={source} /> : null}
-      <header className="site-header">
-        {source.kind === 'mock' ? (
-          <p className="mock-banner" role="note">
-            <strong>Mock data.</strong> These are made-up numbers for building the site, not findings.
-          </p>
-        ) : null}
-        <h1>Norwegian salmon: production and price</h1>
-        <p className="lede">
-          Test page: every finding, the files behind it, and whether they've arrived. This isn't the final
-          design.
-        </p>
-        <button type="button" onClick={checkAgain}>
-          Check for new files
-        </button>
-      </header>
-      <main className="page">
-        {/* A new key on "Check for new files" also reloads the farm year files. */}
-        <FindingsPage key={generation} files={files} source={source} />
-      </main>
+      <FishingIntro siteRef={siteRef} />
+      <div ref={siteRef} className="site-wrap">
+        <Hook />
+        <div className="site">
+          {import.meta.env.DEV ? <DevBar source={source} /> : null}
+          <SitePage files={files} source={source} generation={generation} onCheckAgain={checkAgain} />
+        </div>
+      </div>
     </>
   );
 }

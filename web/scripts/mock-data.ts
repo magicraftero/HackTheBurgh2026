@@ -574,7 +574,7 @@ function nowcastSpec(nc: Nowcast): ChartSpec {
           },
         ],
       },
-      mark: { type: 'text', dy: -16, fontWeight: 'bold' },
+      mark: { type: 'text', dy: -16, dx: -8, align: 'right', fontWeight: 'bold' },
       encoding: {
         x: { field: 'month', type: 'temporal' },
         y: { field: 'tonnes', type: 'quantitative' },
