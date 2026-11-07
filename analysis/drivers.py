@@ -91,12 +91,7 @@ def _build_driver_frame(
     frame = source.sort_values("month").copy()
     index = pd.DatetimeIndex(pd.to_datetime(frame["month"] + "-01"), name="date")
     frame.index = index
-
-    frame["smolt_pipe"] = np.log1p(
-        frame["smolt_released"].shift(12).rolling(12, min_periods=12).sum()
-    )
-    frame["feed_rate"] = _safe_ratio(frame["feed_kg"], frame["biomass_kg"])
-    frame["mortality"] = 1000 * _safe_ratio(frame["dead"], frame["fish_stock"])
+    frame = add_directorate_levels(frame)
 
     for level_column, transform in ANOMALY_TRANSFORMS.items():
         frame[_anomaly_name(level_column)] = anomaly(
@@ -110,6 +105,22 @@ def _build_driver_frame(
     if area is not None:
         frame["area"] = int(area)
     return frame.reset_index(drop=True)
+
+
+def add_directorate_levels(frame: pd.DataFrame) -> pd.DataFrame:
+    """Add the derived level columns to one area's (or the nation's) months.
+
+    ``frame`` must be sorted on a regular monthly grid, with missing months
+    present as NaN rows, so the smolt window counts calendar months.
+    """
+
+    frame = frame.copy()
+    frame["smolt_pipe"] = np.log1p(
+        frame["smolt_released"].shift(12).rolling(12, min_periods=12).sum()
+    )
+    frame["feed_rate"] = _safe_ratio(frame["feed_kg"], frame["biomass_kg"])
+    frame["mortality"] = 1000 * _safe_ratio(frame["dead"], frame["fish_stock"])
+    return frame
 
 
 def _safe_ratio(numerator: pd.Series, denominator: pd.Series) -> pd.Series:

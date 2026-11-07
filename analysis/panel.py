@@ -131,8 +131,12 @@ def weekly_to_monthly(weekly: pd.DataFrame, keys: list[str]) -> pd.DataFrame:
     return monthly
 
 
-def monthly_export_volume(ssb_weekly: pd.DataFrame) -> pd.DataFrame:
-    """Sum fresh export tonnes per month; incomplete months stay null."""
+def monthly_export_levels(ssb_weekly: pd.DataFrame) -> pd.Series:
+    """Fresh export tonnes per month on a month-start grid.
+
+    A month is the ISO weeks whose Thursday falls in it; a month missing any
+    of its weeks is null rather than an undercount.
+    """
 
     frame = ssb_weekly[["week_start", "volume_t"]].copy()
     frame["week_start"] = pd.to_datetime(frame["week_start"])
@@ -148,7 +152,14 @@ def monthly_export_volume(ssb_weekly: pd.DataFrame) -> pd.DataFrame:
     )
 
     grid = pd.date_range(month_starts.min(), month_starts.max(), freq="MS")
-    export = grouped["export_vol"].set_axis(month_starts).reindex(grid)
+    return grouped["export_vol"].set_axis(month_starts).reindex(grid)
+
+
+def monthly_export_volume(ssb_weekly: pd.DataFrame) -> pd.DataFrame:
+    """Monthly export volume and its full-sample anomaly, keyed by month."""
+
+    export = monthly_export_levels(ssb_weekly)
+    grid = export.index
     result = pd.DataFrame(
         {
             "month": grid.strftime("%Y-%m"),

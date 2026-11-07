@@ -47,6 +47,26 @@ def anomaly(
         Number of annual Fourier harmonics.
     """
 
+    result = decompose(x, freq, transform, fit_end, K)["anomaly"]
+    result.name = x.name
+    return result
+
+
+def decompose(
+    x: pd.Series,
+    freq: Frequency,
+    transform: Transform = "log",
+    fit_end: pd.Timestamp | None = None,
+    K: int = 3,
+) -> pd.DataFrame:
+    """Split ``transform(x)`` into level, season and anomaly.
+
+    Returns columns ``y``, ``level``, ``season`` and ``anomaly``, where
+    ``y = level + season + anomaly``. A forecast of the anomaly at t becomes a
+    forecast of ``y`` by adding back ``level + season``, both of which are
+    known before t when the series ends at t - 1 and ``fit_end`` is t - 1.
+    """
+
     _validate_inputs(x, freq, transform, fit_end, K)
 
     y = apply_transform(x.astype(float), transform)
@@ -55,10 +75,10 @@ def anomaly(
     level = y.shift(1).rolling(window=window, min_periods=minimum_periods).mean()
     residual = y - level
     season = _fit_season(residual, freq=freq, fit_end=fit_end, K=K)
-
-    result = residual - season
-    result.name = x.name
-    return result
+    return pd.DataFrame(
+        {"y": y, "level": level, "season": season, "anomaly": residual - season},
+        index=x.index,
+    )
 
 
 def apply_transform(x: pd.Series, transform: Transform) -> pd.Series:
