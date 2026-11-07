@@ -12,7 +12,7 @@ import { FarmMap, type MapPoint } from '../map/FarmMap';
 import { FarmSearch } from '../map/FarmSearch';
 import { MapKey } from '../map/MapKey';
 import { VIEW, bounds, padRect, project, type Rect } from '../map/projection';
-import { LAYERS, layerInfo, markFor, type LayerKey, type Values } from '../map/scales';
+import { layerInfo, markFor, type LayerKey, type Values } from '../map/scales';
 import { AREA_NAMES, areaLabel, displayName, weekDates, weekMonth, weekNumber } from '../map/text';
 
 type Props = { farms: Status<Farms>; index: Status<FarmWeeksIndex>; source: Source };
@@ -111,9 +111,9 @@ export function FarmExplorer({ farms, years, year, onYear, data, source }: Explo
   const [selected, setSelected] = useState<number | null>(null);
   const [playing, setPlaying] = useState(false);
   const [showAreas, setShowAreas] = useState(true);
-  const layerName = useId();
   const zoomName = useId();
   const sliderId = useId();
+  const yearId = useId();
 
   const loading = data.year !== year;
   // While the next year loads, hold the week that's on screen.
@@ -127,6 +127,7 @@ export function FarmExplorer({ farms, years, year, onYear, data, source }: Explo
   const activeLayer: LayerKey = layer === 'disease' && !data.disease ? 'lice' : layer;
 
   const byId = useMemo(() => new Map(farms.map((f) => [f.id, f])), [farms]);
+  const areas = useMemo(() => areaSummary(data, at, byId), [data, at, byId]);
   const points = useMemo<MapPoint[]>(() => {
     const out: MapPoint[] = [];
     data.ids.forEach((id, col) => {
@@ -254,57 +255,48 @@ export function FarmExplorer({ farms, years, year, onYear, data, source }: Explo
     );
   };
 
-  return (
-    <div className="farm-panel farm-explorer">
-      <div className="farm-toolbar">
-        <YearChips years={years} year={year} onYear={onYear} />
-        <fieldset className="chips layer-chips">
-          <legend>Colour the farms by</legend>
-          {LAYERS.map((l) => {
-            const off = l.key === 'disease' && !data.disease;
-            return (
-              <label key={l.key} className="chip">
-                <input type="radio" name={layerName} value={l.key} checked={activeLayer === l.key} disabled={off} onChange={() => setLayer(l.key)} />
-                <span title={off ? 'No disease flags in this year’s file' : undefined}>{l.label}</span>
-              </label>
-            );
-          })}
-        </fieldset>
-      </div>
+  const weekNo = weekNumber(weekLabel);
 
+  // On a desktop the explorer is one screen tall (styles.css, "fits the screen"):
+  // the map on the left, then the key and the week's numbers, then the chosen
+  // farm or the week by area. Phones get the same parts stacked.
+  return (
+    <div className="farm-panel farm-explorer" id="farm-map">
       <div className="explorer-grid">
         <div className="map-panel">
-          <div className="map-head">
-            <fieldset className="map-zoom">
-              <legend className="sr-only">Zoom to</legend>
-              {REGIONS.map((r) => (
-                <label key={r.key} className="map-pill">
-                  <input type="radio" name={zoomName} value={r.key} checked={region === r.key} onChange={() => setRegion(r.key)} />
-                  <span>{r.label}</span>
-                </label>
-              ))}
-            </fieldset>
-            <label className="map-check">
-              <input type="checkbox" checked={showAreas} aria-label="Show area numbers" onChange={(e) => setShowAreas(e.target.checked)} />
-              <span aria-hidden="true">
-                <span className="map-check-long">Area numbers</span>
-                <span className="map-check-short">Areas</span>
-              </span>
-            </label>
+          <div className="map-stage-wrap">
+            <FarmMap
+              basemap={basemap.state === 'ok' ? basemap.data : null}
+              points={points}
+              marks={marks}
+              view={regionRects[region]}
+              selectedId={selected}
+              selectedLabel={selectedFarm ? displayName(selectedFarm.name) : null}
+              showAreas={showAreas}
+              label={mapLabel}
+              tooltip={tooltip}
+              onPick={(id) => pickFarm(id)}
+            />
+            <div className="map-overlay">
+              <fieldset className="map-zoom">
+                <legend className="sr-only">Zoom to</legend>
+                {REGIONS.map((r) => (
+                  <label key={r.key} className="map-pill">
+                    <input type="radio" name={zoomName} value={r.key} checked={region === r.key} onChange={() => setRegion(r.key)} />
+                    <span>{r.label}</span>
+                  </label>
+                ))}
+              </fieldset>
+              <p className="map-week">
+                <span className="map-week-year">
+                  {data.year}
+                  {loading ? ` · loading ${year}…` : ''}
+                </span>
+                <span className="map-week-title">Week {weekNo || DASH}</span>
+                <span className="map-week-dates">{weekDates(weekLabel)}</span>
+              </p>
+            </div>
           </div>
-
-          <FarmMap
-            basemap={basemap.state === 'ok' ? basemap.data : null}
-            points={points}
-            marks={marks}
-            view={regionRects[region]}
-            selectedId={selected}
-            selectedLabel={selectedFarm ? displayName(selectedFarm.name) : null}
-            showAreas={showAreas}
-            label={mapLabel}
-            tooltip={tooltip}
-            onPick={(id) => pickFarm(id)}
-          />
           {basemap.state !== 'ok' && basemap.state !== 'loading' ? (
             <p className="map-problem" role="status">
               The coastline file (map/{'norway.json'}) didn't load, so the farms are shown without the land.
@@ -315,6 +307,20 @@ export function FarmExplorer({ farms, years, year, onYear, data, source }: Explo
             <button type="button" className="play-btn" onClick={togglePlay} aria-label={playing ? 'Pause' : 'Play through the weeks'}>
               {playing ? <IconPause size={20} /> : <IconPlay size={20} />}
             </button>
+            <label htmlFor={yearId} className="sr-only">
+              Year
+            </label>
+            <select id={yearId} className="year-select" value={year} onChange={(e) => onYear(Number(e.target.value))}>
+              {years.map((y) => (
+                <option key={y} value={y}>
+                  {y}
+                </option>
+              ))}
+            </select>
+            {/* Phones show the week here; bigger screens show it over the map. */}
+            <span className="map-time-week" aria-hidden="true">
+              <strong>Week {weekNo || DASH}</strong> {weekDates(weekLabel)}
+            </span>
             <div className="map-slider">
               <label htmlFor={sliderId} className="sr-only">
                 Week
@@ -340,34 +346,33 @@ export function FarmExplorer({ farms, years, year, onYear, data, source }: Explo
           </div>
         </div>
 
-        <div className="map-side">
-          <div className="week-head">
-            <p className="week-kicker">
-              {data.year}
-              {loading ? <span className="week-loading"> · loading {year}…</span> : null}
-            </p>
-            <p className="week-title">Week {weekNumber(weekLabel) || DASH}</p>
-            <p className="week-dates">{weekDates(weekLabel)}</p>
+        <div className="map-rail">
+          <div className="map-rail-main">
+            <MapKey layer={activeLayer} onLayer={setLayer} hasDisease={!!data.disease} showAreas={showAreas} onShowAreas={setShowAreas} />
+            <FarmSearch farms={farms} reporting={reporting} year={data.year} onPick={(id) => pickFarm(id, true)} />
+            <WeekStats data={data} at={at} />
           </div>
-          <MapKey layer={activeLayer} />
-          <FarmSearch farms={farms} reporting={reporting} year={data.year} onPick={(id) => pickFarm(id, true)} />
-          {selectedFarm ? (
-            <FarmCard
-              farm={selectedFarm}
-              data={data}
-              col={selectedCol}
-              week={at}
-              areaCols={areaCols}
-              onWeek={(i) => {
-                setPlaying(false);
-                setWeek(weekNumber(data.weeks[i] ?? ''));
-              }}
-              onClose={() => setSelected(null)}
-            />
-          ) : (
-            <p className="note map-hint">Click a farm on the map, or find one by name, to see its year week by week.</p>
-          )}
-          <WeekStats data={data} at={at} />
+          <div className="map-detail">
+            {selectedFarm ? (
+              <FarmCard
+                farm={selectedFarm}
+                data={data}
+                col={selectedCol}
+                week={at}
+                areaCols={areaCols}
+                onWeek={(i) => {
+                  setPlaying(false);
+                  setWeek(weekNumber(data.weeks[i] ?? ''));
+                }}
+                onClose={() => setSelected(null)}
+              />
+            ) : (
+              <>
+                <p className="map-hint">Click a farm on the map, or find one by name, to see its year week by week.</p>
+                <AreaBars rows={areas.areas} layer={activeLayer} />
+              </>
+            )}
+          </div>
         </div>
       </div>
 
@@ -378,7 +383,7 @@ export function FarmExplorer({ farms, years, year, onYear, data, source }: Explo
       ) : null}
 
       <Numbers title="This week by area">
-        <AreaTable data={data} at={at} byId={byId} />
+        <AreaTable week={weekLabel} summary={areas} />
       </Numbers>
 
       <p className="note">
@@ -402,70 +407,143 @@ export function indexOfWeek(weeks: string[], n: number): number {
   }
   return best;
 }
-
-/** The week's numbers for the whole coast. */
+/** The week's numbers for the whole coast, as a short list. */
 function WeekStats({ data, at }: { data: FarmWeeksYear; at: number }) {
   const mobile = data.mobile[at] ?? [];
   const treated = (data.treated[at] ?? []).filter((v) => v !== null);
   const disease = data.disease?.[at];
   const reporting = mobile.filter((v) => v !== null).length;
   const treatedShare = treated.length ? treated.filter((v) => v === 1).length / treated.length : null;
+  const rows: [string, string][] = [
+    ['Farms reporting lice', `${fmtInt(reporting)} of ${fmtInt(data.ids.length)}`],
+    ['Mobile lice per fish', fmt(mean(mobile))],
+    ['Reporting farms treated', treatedShare === null ? DASH : `${(treatedShare * 100).toFixed(1)}%`],
+    ['Sea temperature', `${fmt(mean(data.temp[at] ?? []), 1)} °C`],
+    ['Farms flagged ISA or PD', disease ? fmtInt(disease.filter((v) => v === 1).length) : 'No disease flags in the data'],
+  ];
   return (
-    <dl className="mini-stats">
-      <div>
-        <dt>Farms reporting lice</dt>
-        <dd>
-          {fmtInt(reporting)} of {fmtInt(data.ids.length)}
-        </dd>
-      </div>
-      <div>
-        <dt>Mobile lice per fish</dt>
-        <dd>{fmt(mean(mobile))}</dd>
-      </div>
-      <div>
-        <dt>Reporting farms treated</dt>
-        <dd>{treatedShare === null ? DASH : `${(treatedShare * 100).toFixed(1)}%`}</dd>
-      </div>
-      <div>
-        <dt>Sea temperature</dt>
-        <dd>{fmt(mean(data.temp[at] ?? []), 1)} °C</dd>
-      </div>
-      <div>
-        <dt>Farms flagged ISA or PD</dt>
-        <dd>{disease ? fmtInt(disease.filter((v) => v === 1).length) : 'No disease flags in the data'}</dd>
-      </div>
-    </dl>
+    <section className="week-stats" aria-label="This week, all farms">
+      <p className="week-stats-title">This week, all farms</p>
+      <dl>
+        {rows.map(([label, value]) => (
+          <div key={label}>
+            <dt>{label}</dt>
+            <dd>{value}</dd>
+          </div>
+        ))}
+      </dl>
+    </section>
+  );
+}
+
+type AreaRow = {
+  area: number;
+  farms: number;
+  reporting: number;
+  lice: number | null;
+  treated: number | null;
+  temp: number | null;
+  flagged: number | null;
+};
+type AreaSummary = { areas: AreaRow[]; all: AreaRow };
+
+/** One week, area by area (south to north) and for the whole coast. */
+function areaSummary(data: FarmWeeksYear, at: number, byId: Map<number, Farms[number]>): AreaSummary {
+  const by = new Map<number, number[]>();
+  data.ids.forEach((id, col) => {
+    const a = byId.get(id)?.area;
+    if (a === undefined) return;
+    by.set(a, [...(by.get(a) ?? []), col]);
+  });
+  const summarise = (area: number, cols: number[]): AreaRow => {
+    const pick = (grid: (number | null)[][] | undefined) => cols.map((c) => grid?.[at]?.[c] ?? null);
+    const lice = pick(data.mobile);
+    const treated = pick(data.treated).filter((v): v is number => v !== null);
+    const disease = data.disease ? pick(data.disease) : null;
+    return {
+      area,
+      farms: cols.length,
+      reporting: lice.filter((v) => v !== null).length,
+      lice: mean(lice),
+      treated: treated.length ? treated.filter((v) => v === 1).length / treated.length : null,
+      temp: mean(pick(data.temp)),
+      flagged: disease ? disease.filter((v) => v === 1).length : null,
+    };
+  };
+  const areas = [...by.keys()].sort((a, b) => a - b).map((a) => summarise(a, by.get(a)!));
+  return { areas, all: summarise(0, data.ids.map((_, c) => c)) };
+}
+
+type AreaMeasure = {
+  title: string;
+  value: (r: AreaRow) => number | null;
+  format: (v: number) => string;
+  /**
+   * Bars start at zero, on a scale that stays put from week to week (it only
+   * grows if a value outgrows it), so playing shows real change. Temperature
+   * has no true zero, so it's a dot on a fixed 0 to 18 °C line instead.
+   */
+  kind: 'bar' | 'dot';
+  scale: (values: number[]) => number;
+  ends?: [string, string];
+};
+
+const AREA_MEASURES: Record<LayerKey, AreaMeasure> = {
+  lice: { title: 'Mobile lice per fish', value: (r) => r.lice, format: (v) => fmt(v), kind: 'bar', scale: (vs) => Math.max(2, ...vs) },
+  temp: { title: 'Sea temperature', value: (r) => r.temp, format: (v) => `${fmt(v, 1)} °C`, kind: 'dot', scale: () => 18, ends: ['0 °C', '18 °C'] },
+  treated: { title: 'Reporting farms treated', value: (r) => (r.treated === null ? null : r.treated * 100), format: (v) => `${v.toFixed(0)}%`, kind: 'bar', scale: () => 100 },
+  disease: { title: 'Farms flagged for ISA or PD', value: (r) => r.flagged, format: (v) => fmtInt(v), kind: 'bar', scale: (vs) => Math.max(10, ...vs) },
+};
+
+/**
+ * This week by area for the map's current layer: one row per area, south to
+ * north, with its value in text. One neutral colour: length (or position) is
+ * the value, so the map's colours keep their one meaning.
+ */
+function AreaBars({ rows, layer }: { rows: AreaRow[]; layer: LayerKey }) {
+  const m = AREA_MEASURES[layer];
+  const values = rows.map(m.value);
+  const max = m.scale(values.filter((v): v is number => v !== null));
+  const pct = (v: number) => Math.min(100, (Math.max(v, 0) / max) * 100);
+  return (
+    <figure className="area-bars">
+      <figcaption>
+        <span>{m.title}, by area</span>
+        <span className="area-bars-sub">South to north</span>
+      </figcaption>
+      <ol>
+        {rows.map((r, i) => {
+          const v = values[i] ?? null;
+          const name = AREA_NAMES[r.area] ?? '';
+          return (
+            <li key={r.area} title={`Area ${r.area}, ${name}: ${v === null ? 'no reports' : m.format(v)}`}>
+              <span className="ab-area">{r.area}</span>
+              <span className="ab-name">{name}</span>
+              <span className={`ab-track ab-track-${m.kind}`} aria-hidden="true">
+                {v === null ? null : m.kind === 'dot' ? (
+                  <span className="ab-dot" style={{ left: `${pct(v)}%` }} />
+                ) : (
+                  <span className="ab-bar" style={{ width: `${Math.max(2, pct(v))}%` }} />
+                )}
+              </span>
+              <span className="ab-val">{v === null ? DASH : m.format(v)}</span>
+            </li>
+          );
+        })}
+      </ol>
+      {m.ends ? (
+        <div className="ab-axis" aria-hidden="true">
+          <span>{m.ends[0]}</span>
+          <span>{m.ends[1]}</span>
+        </div>
+      ) : null}
+    </figure>
   );
 }
 
 /** The map's text alternative: this week, area by area. */
-function AreaTable({ data, at, byId }: { data: FarmWeeksYear; at: number; byId: Map<number, Farms[number]> }) {
-  const rows = useMemo(() => {
-    const by = new Map<number, number[]>();
-    data.ids.forEach((id, col) => {
-      const a = byId.get(id)?.area;
-      if (a === undefined) return;
-      by.set(a, [...(by.get(a) ?? []), col]);
-    });
-    const summarise = (cols: number[]) => {
-      const pick = (grid: (number | null)[][] | undefined) => cols.map((c) => grid?.[at]?.[c] ?? null);
-      const lice = pick(data.mobile);
-      const treated = pick(data.treated).filter((v): v is number => v !== null);
-      const disease = data.disease ? pick(data.disease) : null;
-      return {
-        farms: cols.length,
-        reporting: lice.filter((v) => v !== null).length,
-        lice: mean(lice),
-        treated: treated.length ? treated.filter((v) => v === 1).length / treated.length : null,
-        temp: mean(pick(data.temp)),
-        flagged: disease ? disease.filter((v) => v === 1).length : null,
-      };
-    };
-    const areas = [...by.keys()].sort((a, b) => a - b).map((a) => ({ area: a, ...summarise(by.get(a)!) }));
-    return { areas, all: summarise(data.ids.map((_, c) => c)) };
-  }, [data, at, byId]);
-
-  const cells = (r: (typeof rows)['all']) => (
+function AreaTable({ week, summary }: { week: string; summary: AreaSummary }) {
+  const cells = (r: AreaRow) => (
     <>
       <td>
         {fmtInt(r.reporting)} of {fmtInt(r.farms)}
@@ -479,10 +557,10 @@ function AreaTable({ data, at, byId }: { data: FarmWeeksYear; at: number; byId: 
 
   return (
     <Table
-      caption={`${weekText(data.weeks[at] ?? '')}, by production area (south to north)`}
+      caption={`${weekText(week)}, by production area (south to north)`}
       head={['Area', 'Farms reporting', 'Mobile lice per fish', 'Treated', 'Sea temperature', 'ISA or PD flagged']}
     >
-      {rows.areas.map((r) => (
+      {summary.areas.map((r) => (
         <tr key={r.area}>
           <th scope="row">
             {r.area} <span className="area-name">{AREA_NAMES[r.area] ?? ''}</span>
@@ -492,7 +570,7 @@ function AreaTable({ data, at, byId }: { data: FarmWeeksYear; at: number; byId: 
       ))}
       <tr className="total-row">
         <th scope="row">All areas</th>
-        {cells(rows.all)}
+        {cells(summary.all)}
       </tr>
     </Table>
   );

@@ -1,4 +1,5 @@
-import { MAP, layerInfo, type LayerKey, type Mark, type Ramp } from './scales';
+import { useId } from 'react';
+import { LAYERS, MAP, layerInfo, type LayerKey, type Mark, type Ramp } from './scales';
 
 /** One legend mark, drawn the way the map draws it, on the map's own sea colour. */
 export function Swatch({ mark }: { mark: Mark }) {
@@ -51,11 +52,33 @@ function RampBar({ ramp }: { ramp: Ramp }) {
   );
 }
 
-/** The colour key for the map's current layer. */
-export function MapKey({ layer }: { layer: LayerKey }) {
+type KeyProps = {
+  layer: LayerKey;
+  onLayer: (l: LayerKey) => void;
+  /** False when this year's file has no disease flags. */
+  hasDisease: boolean;
+  showAreas: boolean;
+  onShowAreas: (on: boolean) => void;
+};
+
+/** Pick what the dots show, and read what the colours mean, in one place. */
+export function MapKey({ layer, onLayer, hasDisease, showAreas, onShowAreas }: KeyProps) {
+  const name = useId();
   const info = layerInfo(layer);
   return (
     <div className="map-key">
+      <fieldset className="key-layers">
+        <legend>Colour the farms by</legend>
+        {LAYERS.map((l) => {
+          const off = l.key === 'disease' && !hasDisease;
+          return (
+            <label key={l.key} className="key-layer" title={off ? 'No disease flags in this year’s file' : undefined}>
+              <input type="radio" name={name} value={l.key} checked={layer === l.key} disabled={off} onChange={() => onLayer(l.key)} />
+              <span>{l.label}</span>
+            </label>
+          );
+        })}
+      </fieldset>
       <p className="map-key-title">{info.title}</p>
       {info.ramp ? <RampBar ramp={info.ramp} /> : null}
       <ul className="map-key-items">
@@ -67,6 +90,10 @@ export function MapKey({ layer }: { layer: LayerKey }) {
         ))}
       </ul>
       {info.note ? <p className="map-key-note">{info.note}</p> : null}
+      <label className="map-check">
+        <input type="checkbox" checked={showAreas} onChange={(e) => onShowAreas(e.target.checked)} />
+        <span>Show production area numbers</span>
+      </label>
     </div>
   );
 }

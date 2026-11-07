@@ -1038,54 +1038,73 @@ input[type='range'] {
 /* ---------- Finding 1: the farm map ---------- */
 
 /* Grid items won't shrink below their content's natural width unless told to;
-   the scrolling chip rows on phones need them to. */
+   the scrolling rows on phones need them to. */
 .farm-panel,
 .farm-panel > *,
 .explorer-grid > *,
-.map-panel > * {
+.map-panel > *,
+.map-rail > * {
   min-width: 0;
 }
 
-.farm-toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  gap: 1.25rem 2.5rem;
+/* The farm map may run wider than the page column; its heading stays in line. */
+.container-wide {
+  max-width: calc(1520px + 2 * var(--gutter));
 }
 
-.chip input:disabled + span {
-  opacity: 0.45;
-  cursor: not-allowed;
+.container-wide > .section-head {
+  max-width: var(--page);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.farm-explorer {
+  scroll-margin-top: 84px;
 }
 
 .explorer-grid {
   display: grid;
-  gap: 1.5rem;
-  align-items: start;
-}
-
-@media (min-width: 980px) {
-  .explorer-grid {
-    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
-  }
+  gap: 1.25rem;
 }
 
 .map-panel {
   position: relative;
-  display: grid;
+  display: flex;
+  flex-direction: column;
   border-radius: var(--r-lg);
   background: var(--night);
   color: var(--night-text);
   overflow: hidden;
 }
 
-.map-head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem 1rem;
-  padding: 0.8rem 0.9rem 0.35rem;
+/* A size container, so the readout and zoom buttons scale with the map itself. */
+.map-stage-wrap {
+  position: relative;
+  container-type: inline-size;
+}
+
+@container (max-width: 460px) {
+  .map-stage-wrap .map-overlay {
+    gap: 0.6rem;
+  }
+
+  .map-stage-wrap .map-pill span {
+    min-height: 28px;
+    padding: 0 0.6rem;
+    font-size: 0.75rem;
+  }
+}
+
+/* Zoom buttons and the week sit on the open sea in the map's top-left corner. */
+.map-overlay {
+  position: absolute;
+  top: 0.8rem;
+  left: 0.8rem;
+  right: 0.8rem;
+  display: grid;
+  justify-items: start;
+  gap: 1rem;
+  pointer-events: none;
 }
 
 .map-zoom {
@@ -1095,6 +1114,35 @@ input[type='range'] {
   margin: 0;
   padding: 0;
   border: 0;
+  pointer-events: auto;
+}
+
+.map-week {
+  display: grid;
+  margin: 0 0 0 0.3rem;
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(20, 33, 48, 0.8);
+}
+
+.map-week-year {
+  color: var(--night-text);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.map-week-title {
+  font-size: clamp(1.3rem, 6cqw, 2.5rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums;
+}
+
+.map-week-dates {
+  color: var(--night-text);
+  font-family: var(--serif);
+  font-size: clamp(0.78rem, 2.4cqw, 0.95rem);
 }
 
 .map-pill {
@@ -1115,11 +1163,12 @@ input[type='range'] {
   min-height: 32px;
   padding: 0 0.8rem;
   border-radius: var(--r-pill);
-  background: rgba(255, 255, 255, 0.06);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14);
+  background: rgba(20, 33, 48, 0.78);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16);
   color: var(--night-text);
   font-size: 0.8125rem;
   font-weight: 650;
+  backdrop-filter: blur(4px);
 }
 
 .map-pill input:checked + span {
@@ -1135,9 +1184,12 @@ input[type='range'] {
 }
 
 .map-check {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 0.45rem;
+  gap: 0.5rem;
+  margin-top: 0.8rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
   font-size: 0.8125rem;
   font-weight: 600;
   cursor: pointer;
@@ -1252,8 +1304,40 @@ input[type='range'] {
 .map-time {
   display: flex;
   align-items: center;
-  gap: 0.9rem;
-  padding: 0.55rem 1rem 0.9rem;
+  gap: 0.75rem;
+  padding: 0.6rem 1rem 0.8rem;
+}
+
+.year-select {
+  flex: none;
+  min-height: 40px;
+  padding: 0 2rem 0 0.9rem;
+  border: 0;
+  border-radius: var(--r-pill);
+  background: rgba(255, 255, 255, 0.08)
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23c7d0d9' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")
+    no-repeat right 0.8rem center;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16);
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  appearance: none;
+}
+
+.year-select:hover {
+  background-color: rgba(255, 255, 255, 0.14);
+}
+
+.year-select:focus-visible {
+  outline: 3px solid #8ab4f8;
+  outline-offset: 2px;
+}
+
+.year-select option {
+  background: var(--paper);
+  color: var(--ink);
 }
 
 .play-btn {
@@ -1302,51 +1386,107 @@ input[type='range'] {
 .map-slider-scale {
   display: flex;
   justify-content: space-between;
+  gap: 0.5rem;
   color: #a7b4c2;
   font-size: 0.75rem;
 }
 
-.map-side {
+/* Phones show the week in the play bar instead of over the map. */
+.map-time-week {
+  display: none;
+  min-width: 0;
+  color: var(--night-text);
+  font-family: var(--serif);
+  font-size: 0.875rem;
+  line-height: 1.25;
+}
+
+.map-time-week strong {
+  display: block;
+  color: #fff;
+  font-family: var(--font);
+  font-size: 1rem;
+  font-weight: 750;
+}
+
+.map-rail,
+.map-rail-main,
+.map-detail {
   display: grid;
-  gap: 1.1rem;
+  gap: 1rem;
   align-content: start;
 }
 
-.week-head p {
-  margin: 0;
-}
-
-.week-kicker {
-  color: var(--ink-3);
-  font-size: 0.8125rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-}
-
-.week-loading {
-  font-weight: 600;
-  letter-spacing: 0;
-}
-
-.week-title {
-  font-size: clamp(2rem, 1.5rem + 1.6vw, 2.75rem);
-  font-weight: 800;
-  letter-spacing: -0.035em;
-  line-height: 1.05;
-  font-variant-numeric: tabular-nums;
-}
-
-.week-dates {
-  color: var(--ink-2);
-  font-family: var(--serif);
-  font-size: 1.05rem;
-}
-
 .map-key {
-  padding: 0.95rem 1.05rem 1rem;
+  padding: 0.85rem 1rem 0.85rem;
   border-radius: var(--r-md);
   background: var(--night);
   color: var(--night-text);
+}
+
+.key-layers {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.35rem;
+  margin: 0 0 0.9rem;
+  padding: 0;
+  border: 0;
+}
+
+.key-layers legend {
+  margin-bottom: 0.5rem;
+  padding: 0;
+  color: #a7b4c2;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.key-layer {
+  position: relative;
+}
+
+.key-layer input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.key-layer span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 0 0.6rem;
+  border-radius: var(--r-pill);
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14);
+  color: var(--night-text);
+  font-size: 0.8125rem;
+  font-weight: 650;
+  text-align: center;
+}
+
+.key-layer input:checked + span {
+  background: var(--cream);
+  color: var(--ink);
+  box-shadow: none;
+}
+
+.key-layer input:disabled + span {
+  opacity: 0.4;
+}
+
+.key-layer input:disabled {
+  cursor: not-allowed;
+}
+
+.key-layer input:focus-visible + span {
+  outline: 3px solid #8ab4f8;
+  outline-offset: 2px;
 }
 
 .map-key-title {
@@ -1510,18 +1650,163 @@ input[type='range'] {
 
 .map-hint {
   margin: 0;
+  color: var(--ink-2);
+  font-size: 0.875rem;
 }
 
-.map-side .mini-stats {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+.week-stats {
+  padding: 0.85rem 1rem 0.7rem;
+  border-radius: var(--r-md);
+  background: var(--cream);
 }
 
-.map-side .mini-stats div:last-child:nth-child(odd) {
-  grid-column: 1 / -1;
+.week-stats-title {
+  margin: 0 0 0.3rem;
+  color: var(--ink-2);
+  font-size: 0.8125rem;
+  font-weight: 700;
 }
 
-.map-side .mini-stats dd {
-  font-size: 1.2rem;
+.week-stats dl {
+  display: grid;
+  margin: 0;
+}
+
+.week-stats dl div {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  padding: 0.26rem 0;
+  border-top: 1px solid var(--hairline);
+}
+
+.week-stats dl div:first-child {
+  border-top: 0;
+}
+
+.week-stats dt {
+  color: var(--ink-2);
+  font-size: 0.8125rem;
+}
+
+.week-stats dd {
+  margin: 0;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.area-bars {
+  margin: 0;
+  padding: 0.9rem 1rem 1rem;
+  border-radius: var(--r-md);
+  background: var(--paper);
+  box-shadow: 0 0 0 1px var(--hairline);
+}
+
+.area-bars figcaption {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.75rem;
+  margin-bottom: 0.6rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.area-bars-sub {
+  color: var(--ink-3);
+  font-size: 0.75rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.area-bars ol {
+  display: grid;
+  gap: 0.15rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.area-bars li {
+  display: grid;
+  grid-template-columns: 1.3rem minmax(0, 1.1fr) minmax(48px, 1fr) 3.4rem;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 22px;
+  font-size: 0.8125rem;
+}
+
+.ab-area {
+  font-weight: 700;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.ab-name {
+  overflow: hidden;
+  color: var(--ink-2);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.ab-track {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--wash);
+  overflow: hidden;
+}
+
+.ab-bar {
+  display: block;
+  height: 100%;
+  border-radius: 4px;
+  background: var(--slate-500);
+}
+
+/* Temperature: a dot on a thin 0 to 18 °C line. */
+.ab-track-dot {
+  position: relative;
+  height: 12px;
+  overflow: visible;
+  background: linear-gradient(var(--hairline), var(--hairline)) center / 100% 2px no-repeat;
+}
+
+.ab-dot {
+  position: absolute;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--slate-500);
+  box-shadow: 0 0 0 2px var(--paper);
+  transform: translate(-50%, -50%);
+}
+
+.ab-axis {
+  display: grid;
+  grid-template-columns: 1.3rem minmax(0, 1.1fr) minmax(48px, 1fr) 3.4rem;
+  gap: 0.5rem;
+  margin-top: 0.2rem;
+  color: var(--ink-3);
+  font-size: 0.6875rem;
+}
+
+.ab-axis span {
+  grid-row: 1;
+  grid-column: 3;
+}
+
+.ab-axis span:last-child {
+  justify-self: end;
+}
+
+.ab-val {
+  text-align: right;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
 }
 
 .farm-card {
@@ -1720,64 +2005,155 @@ input[type='range'] {
   font-weight: 700;
 }
 
-.map-check-short {
-  display: none;
+/*
+ * Desktop: the explorer is exactly one screen tall, so nothing needs scrolling
+ * while you use it. "Farms" in the top bar lands on it (scroll-margin-top
+ * clears the floating bar). The map column is as wide as the map itself:
+ * Norway's view is 1330 × 1610 km, so width = 0.826 × the map's height, which
+ * is the explorer's height less the time bar (66px).
+ */
+@media (min-width: 1024px) and (min-height: 600px) {
+  .farm-explorer {
+    --explorer-h: clamp(520px, calc(100vh - 116px), 980px);
+    --map-w: calc((var(--explorer-h) - 66px) * 0.826);
+    padding: 1.25rem;
+    scroll-margin-top: 84px;
+  }
+
+  @supports (height: 100dvh) {
+    .farm-explorer {
+      --explorer-h: clamp(520px, calc(100dvh - 116px), 980px);
+    }
+  }
+
+  .explorer-grid {
+    height: var(--explorer-h);
+    grid-template-columns: minmax(0, var(--map-w)) minmax(0, 1fr);
+  }
+
+  .map-panel {
+    height: 100%;
+  }
+
+  .map-stage-wrap {
+    flex: 1;
+    min-height: 0;
+  }
+
+  .map-stage {
+    position: absolute;
+    inset: 0;
+    aspect-ratio: auto;
+    max-height: none;
+  }
+
+  /* Two columns (map, rail): the rail scrolls on its own if it runs long. */
+  .map-rail {
+    height: 100%;
+    overflow-y: auto;
+    padding-right: 0.25rem;
+    scrollbar-width: thin;
+  }
+
+  /* The farm card, tighter: small charts share one month axis at the bottom. */
+  .map-detail .farm-card {
+    gap: 0.65rem;
+  }
+
+  .map-detail .spark svg {
+    height: 34px;
+  }
+
+  .map-detail .spark:not(:last-of-type) .spark-axis {
+    display: none;
+  }
+}
+
+/* Short desktop screens: drop the key's explanatory note to keep things in view. */
+@media (min-width: 1024px) and (max-height: 760px) {
+  .map-key-note {
+    display: none;
+  }
+}
+
+/* Wide screens: three columns. Key, search and the week's numbers; then the
+   chosen farm, or the week by area. On a short screen each column scrolls on
+   its own; the page and the map never move. */
+@media (min-width: 1280px) and (min-height: 600px) {
+  .map-rail {
+    grid-template-columns: minmax(250px, 0.85fr) minmax(300px, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+    column-gap: 1.25rem;
+    overflow: hidden;
+    padding-right: 0;
+  }
+
+  .map-rail-main,
+  .map-detail {
+    min-height: 0;
+    overflow-y: auto;
+    scrollbar-width: thin;
+  }
+
+  .map-detail {
+    padding-right: 0.25rem;
+  }
 }
 
 @media (max-width: 560px) {
-  /* One scrolling row each, so the map stays near the top of the screen. */
-  .farm-toolbar {
-    gap: 1rem;
+  .map-overlay {
+    top: 0.55rem;
+    left: 0.55rem;
+    right: 0.55rem;
   }
 
-  .farm-toolbar .chips,
+  /* One scrolling row of zoom buttons, so they don't cover the map. */
   .map-zoom {
     flex-wrap: nowrap;
-    min-width: 0;
     max-width: 100%;
     margin: -4px;
-    padding: 4px 4px 6px;
+    padding: 4px;
     overflow-x: auto;
     scrollbar-width: none;
   }
 
-  .farm-toolbar .chips::-webkit-scrollbar,
   .map-zoom::-webkit-scrollbar {
     display: none;
   }
 
-  .farm-toolbar .chip,
   .map-pill {
     flex: none;
   }
 
-  .map-head {
-    flex-wrap: nowrap;
-    padding: 0.7rem 0.6rem 0.3rem;
-  }
-
-  .map-zoom {
-    flex: 1;
-  }
-
-  .map-check {
-    flex: none;
-  }
-
-  .map-check-long {
+  .map-week {
     display: none;
   }
 
-  .map-check-short {
-    display: inline;
-  }
-
+  /* Two rows: play, year and week on top; the slider across underneath. */
   .map-time {
-    padding: 0.45rem 0.75rem 0.75rem;
+    display: grid;
+    grid-template-columns: auto auto minmax(0, 1fr);
+    align-items: center;
+    gap: 0.5rem 0.6rem;
+    padding: 0.5rem 0.75rem 0.7rem;
   }
 
-  .farm-explorer .mini-stats {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .map-time-week {
+    display: block;
+  }
+
+  .map-slider {
+    grid-column: 1 / -1;
+  }
+
+  .play-btn {
+    width: 42px;
+    height: 42px;
+  }
+
+  .year-select {
+    padding: 0 1.7rem 0 0.7rem;
+    background-position: right 0.6rem center;
   }
 }
 

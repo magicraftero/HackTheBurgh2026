@@ -62,7 +62,9 @@ export function FarmSearch({
 
   return (
     <div className="farm-search">
-      <label htmlFor={`${id}-input`}>Find a farm</label>
+      <label htmlFor={`${id}-input`} className="sr-only">
+        Find a farm
+      </label>
       <div className="farm-search-box">
         <IconSearch size={18} />
         <input
@@ -71,7 +73,7 @@ export function FarmSearch({
           role="combobox"
           autoComplete="off"
           spellCheck={false}
-          placeholder="Name or site number"
+          placeholder="Find a farm by name or site number"
           aria-expanded={shown}
           aria-controls={`${id}-list`}
           aria-autocomplete="list"

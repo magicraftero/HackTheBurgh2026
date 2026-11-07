@@ -96,8 +96,8 @@ export const LAYERS: LayerInfo[] = [
     note: 'Each farm counts the lice on a sample of its fish every week.',
     ramp: { colors: LICE_COLORS, breaks: LICE_BREAKS, labels: LICE_LABELS, ends: ['Fewer', 'More'] },
     items: [
-      { mark: dot(LICE_COLORS[2]!, true), label: 'Ring: treated this week' },
-      { mark: EMPTY, label: 'No count this week' },
+      { mark: dot(LICE_COLORS[2]!, true), label: 'Ring: treated' },
+      { mark: EMPTY, label: 'No count' },
     ],
   },
   {
@@ -106,7 +106,7 @@ export const LAYERS: LayerInfo[] = [
     title: 'Sea temperature, °C',
     note: `Grey is about average: farm-weeks since 2019 average ${TEMP_MIDDLE}.2 °C.`,
     ramp: { colors: TEMP_COLORS, breaks: TEMP_BREAKS, labels: TEMP_LABELS, ends: ['Colder', 'Warmer'] },
-    items: [{ mark: EMPTY, label: 'No reading this week' }],
+    items: [{ mark: EMPTY, label: 'No reading' }],
   },
   {
     key: 'treated',
@@ -114,9 +114,9 @@ export const LAYERS: LayerInfo[] = [
     title: 'Treated for lice this week',
     note: 'Any delousing that week, with medicines or without (for example warm or fresh water).',
     items: [
-      { mark: { fill: TREATED, shape: 'dot', ring: true, rank: 0 }, label: 'Treated this week' },
-      { mark: dot(PLAIN), label: 'No treatment' },
-      { mark: EMPTY, label: 'No report this week' },
+      { mark: { fill: TREATED, shape: 'dot', ring: true, rank: 0 }, label: 'Treated' },
+      { mark: dot(PLAIN), label: 'Not treated' },
+      { mark: EMPTY, label: 'No report' },
     ],
   },
   {
@@ -125,9 +125,9 @@ export const LAYERS: LayerInfo[] = [
     title: 'Flagged for ISA or PD',
     note: 'Suspected or confirmed infectious salmon anaemia or pancreas disease.',
     items: [
-      { mark: { fill: FLAGGED, shape: 'diamond', ring: false, rank: 0 }, label: 'Flagged this week' },
+      { mark: { fill: FLAGGED, shape: 'diamond', ring: false, rank: 0 }, label: 'Flagged' },
       { mark: dot(PLAIN), label: 'Not flagged' },
-      { mark: EMPTY, label: 'No status this week' },
+      { mark: EMPTY, label: 'No status' },
     ],
   },
 ];

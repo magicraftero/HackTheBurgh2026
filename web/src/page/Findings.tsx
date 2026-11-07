@@ -34,7 +34,7 @@ export function Findings({ files, source }: { files: AllFiles; source: Source })
 
   return (
     <>
-      <Finding n={1} id="farms" band="cream" tag="Data" title="Every farm, every week." lede="Every salmon farm on Norway's coast reports lice, treatments, disease and sea temperature each week. Press play to watch a year go by, or pick a farm to see its own year.">
+      <Finding n={1} id="farms" band="cream" tag="Data" wide scrollTo="farm-map" title="Every farm, every week." lede="Every salmon farm on Norway's coast reports lice, treatments, disease and sea temperature each week. Press play to watch a year go by, or pick a farm to see its own year.">
         <FarmSection farms={data.farms} index={data.farmWeeksIndex} source={source} />
       </Finding>
 
@@ -139,13 +139,17 @@ type FindingProps = {
   tag: string;
   title: string;
   lede: string;
+  /** Let the body run wider than the page column on big screens (the farm map). */
+  wide?: boolean;
+  /** An element inside the section that links to it should land on instead (see goTo). */
+  scrollTo?: string;
   children: ReactNode;
 };
 
-function Finding({ n, id, band, tag, title, lede, children }: FindingProps) {
+function Finding({ n, id, band, tag, title, lede, wide = false, scrollTo, children }: FindingProps) {
   return (
-    <section className={`band band-${band} finding`} id={id} aria-labelledby={`${id}-title`}>
-      <div className="container">
+    <section className={`band band-${band} finding`} id={id} aria-labelledby={`${id}-title`} data-scroll-to={scrollTo}>
+      <div className={`container${wide ? ' container-wide' : ''}`}>
         <Reveal className="section-head">
           <div>
             <p className="eyebrow">

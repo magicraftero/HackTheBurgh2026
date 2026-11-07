@@ -11,7 +11,11 @@ export const REPO = 'https://github.com/magicraftero/HackTheBurgh2026';
 
 /** Smooth-scroll to a section instead of jumping (instant for reduced motion). */
 export function goTo(e: MouseEvent<HTMLElement>, id: string) {
-  const el = document.getElementById(id);
+  const section = document.getElementById(id);
+  // A section can hand over to an element inside it (the farm map lands with
+  // the whole map on screen); without that element, the section itself.
+  const inner = section?.dataset.scrollTo ? document.getElementById(section.dataset.scrollTo) : null;
+  const el = inner ?? section;
   if (!el) return;
   e.preventDefault();
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;

@@ -319,6 +319,8 @@ export default async function main(io: IO): Promise<number> {
         'Mobile lice per fish',
         'Find a farm',
         'This week by area',
+        'Mobile lice per fish, by area',
+        'South to north',
         'Farms reporting lice',
         scenario === 'pre' ? 'No disease flags in the data' : 'Farms flagged ISA or PD',
       ];

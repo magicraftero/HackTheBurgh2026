@@ -18,14 +18,14 @@ export const COUNTRIES: (Place & { main?: boolean })[] = [
 ];
 
 export const SEAS: Place[] = [
-  { name: 'Norwegian Sea', lon: 5.6, lat: 66.6 },
+  { name: 'Norwegian Sea', lon: 5.4, lat: 65.9 },
   { name: 'North Sea', lon: 5.25, lat: 57.55 },
   { name: 'Barents Sea', lon: 26.5, lat: 71.55 },
 ];
 
 /** Where each production area's number sits: just offshore of its farms. */
 export const AREA_SPOTS: Record<number, [number, number]> = {
-  1: [8.0, 57.75],
+  1: [8.4, 57.8],
   2: [4.55, 59.15],
   3: [4.15, 60.0],
   4: [3.95, 61.25],
