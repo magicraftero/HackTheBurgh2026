@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>My farm: Salmon Signal cockpit</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="top">
+  <div class="wrap top-row">
+    <span class="brand"><a href="../index.html" style="color:inherit;text-decoration:none">← Salmon Signal</a> <span class="pill pill-accent">Cockpit prototype</span></span>
+    <span class="note" id="made-on"></span>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="intro">
+    <p class="eyebrow"><span class="eyebrow-number">1</span> Set up your farm</p>
+    <h1>Run your own salmon farm</h1>
+    <p class="lede">Pick your area, stock your pens and set the conditions. See what Norway's data says you'll harvest next month, and why.</p>
+  </section>
+
+  <div class="layout">
+    <aside class="controls">
+      <div class="panel">
+        <h2 class="panel-title">Your farm</h2>
+        <label class="field-label" for="area">Production area</label>
+        <select id="area" class="select"></select>
+
+        <div class="field">
+          <div class="field-row"><label for="fish">Fish in your pens</label><output id="fish-out"></output></div>
+          <input type="range" id="fish" min="50000" max="2000000" step="10000" value="600000">
+        </div>
+        <div class="field">
+          <div class="field-row"><label for="weight">Average weight in the water</label><output id="weight-out"></output></div>
+          <input type="range" id="weight" min="0.5" max="6" step="0.05" value="2.4">
+          <p class="hint" id="weight-hint"></p>
+        </div>
+        <div class="field">
+          <span class="field-label">Month to harvest</span>
+          <div class="chips" id="months" role="group" aria-label="Month"></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2 class="panel-title">Conditions <span class="note">for the time of year</span></h2>
+        <div class="field">
+          <div class="field-row"><label for="lice">Lice</label><output id="lice-out"></output></div>
+          <input type="range" id="lice" min="0" max="100" value="50" class="cond">
+        </div>
+        <div class="field">
+          <div class="field-row"><label for="mortality">Deaths</label><output id="mortality-out"></output></div>
+          <input type="range" id="mortality" min="0" max="100" value="50" class="cond">
+        </div>
+        <div class="field">
+          <div class="field-row"><label for="temp">Sea temperature</label><output id="temp-out"></output></div>
+          <input type="range" id="temp" min="0" max="100" value="50" class="cond temp">
+        </div>
+        <p class="field-label">Try a scenario</p>
+        <div class="presets" id="presets"></div>
+      </div>
+    </aside>
+
+    <section class="stage">
+      <div class="pen-card">
+        <canvas id="pen" aria-label="Your pen: fish size, lice, deaths and water temperature change with the controls"></canvas>
+        <div class="pen-legend">
+          <span><i class="sw sw-fish"></i>Fish</span>
+          <span><i class="sw sw-harvest"></i>Harvested next month</span>
+          <span><i class="sw sw-lice"></i>Lice</span>
+          <span><i class="sw sw-dead"></i>Deaths</span>
+        </div>
+      </div>
+
+      <p class="eyebrow"><span class="eyebrow-number">2</span> Next month's harvest from your farm</p>
+      <div class="stats">
+        <div class="stat-tile tone-salmon"><span class="stat-label">Harvest</span><span class="stat-value" id="r-kg">-</span><span class="stat-note" id="r-kg-d"></span></div>
+        <div class="stat-tile tone-sky"><span class="stat-label">Fish out</span><span class="stat-value" id="r-count">-</span><span class="stat-note" id="r-count-d"></span></div>
+        <div class="stat-tile tone-butter"><span class="stat-label">Size per fish</span><span class="stat-value" id="r-weight">-</span><span class="stat-note" id="r-weight-d"></span></div>
+        <div class="stat-tile tone-lilac"><span class="stat-label">Worth about</span><span class="stat-value" id="r-value">-</span><span class="stat-note" id="r-value-d"></span></div>
+      </div>
+
+      <div class="panel">
+        <h2 class="panel-title">From a typical month to yours</h2>
+        <p class="note">Tonnes harvested. Each step is a pattern we measured across Norway's 13 areas since 2017.</p>
+        <div class="waterfall" id="waterfall"></div>
+      </div>
+
+      <div class="panel" id="why"></div>
+
+      <div class="panel live">
+        <p class="eyebrow"><span class="eyebrow-number">3</span> Your area right now</p>
+        <div id="live"></div>
+        <button class="btn btn-primary" id="load-real" type="button">Load my area's real conditions</button>
+      </div>
+    </section>
+  </div>
+
+  <footer class="foot">
+    <p class="disclaimer" id="disclaimer"></p>
+    <p class="note">Prototype for the team. How it works: your fish × weight × the share of stock your area usually harvests that month, then the measured effects of lice, deaths, sea temperature and heavy stock on fish numbers and size.</p>
+  </footer>
+</main>
+<script src="app.js"></script>
+</body>
+</html>

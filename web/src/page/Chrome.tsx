@@ -55,6 +55,9 @@ export function FloatNav() {
             {label}
           </a>
         ))}
+        <a className="nav-link" href="cockpit/index.html">
+          My farm
+        </a>
       </nav>
     </header>
   );
