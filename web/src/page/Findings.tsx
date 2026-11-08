@@ -8,6 +8,7 @@ import { DATA_FILES, type DataKey } from '../data/files';
 import { finalLatest, finalScore } from '../data/finalModel';
 import type { AreaMonth, Channels, Combined, PriceSisalmoni, Trap } from '../data/schemas';
 import type { AllFiles, Source } from '../data/source';
+import { FarmGame } from './FarmGame';
 import { FarmSection } from './FarmWeeks';
 
 // The five findings, in page order.
@@ -72,7 +73,11 @@ export function Findings({ files, source }: { files: AllFiles; source: Source })
         </StatusView>
       </Finding>
 
-      <Finding id="area-month" band="cream" tag="Appendix" title="Harvest by area and month." lede="The monthly table behind the other findings.">
+      <Finding id="game" band="cream" tag="The game" title="Run your own salmon farm." lede="Stock your pens and set the conditions. See what Norway's data says you'll harvest next month.">
+        <FarmGame />
+      </Finding>
+
+      <Finding id="area-month" band="paper" tag="Appendix" title="Harvest by area and month." lede="The monthly table behind the other findings.">
         <StatusView status={data.areaMonth} {...fileProps('areaMonth')}>
           {(rows) => (
             <>

@@ -41,6 +41,7 @@ const NAV_LINKS: [string, string][] = [
   ['nowcast', 'Historic view'],
   ['split', 'Harvest'],
   ['trap', 'Seasonality'],
+  ['game', 'Game'],
 ];
 
 export function FloatNav() {

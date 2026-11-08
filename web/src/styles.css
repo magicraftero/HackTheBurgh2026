@@ -456,7 +456,7 @@ section[id] {
   background: var(--wash);
 }
 
-@media (max-width: 820px) {
+@media (max-width: 900px) {
   .float-nav .nav-link {
     display: none;
   }
@@ -3592,4 +3592,16 @@ button.link {
   .btn {
     transition: none;
   }
+}
+
+/* ---------- The farm game (a framed static page, see FarmGame.tsx) ---------- */
+
+.farm-game {
+  display: block;
+  /* The game's own side padding cancels this, leaving room for its panel shadows. */
+  width: calc(100% + 32px);
+  margin-inline: -16px;
+  /* Roughly the game's height, until it loads and sets the real one. */
+  height: 1400px;
+  border: 0;
 }
