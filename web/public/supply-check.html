@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Supply check · Salmon Signal</title>
+<meta name="description" content="Enter what you need, or what your supplier says, and see whether our salmon harvest forecast backs it up.">
+<style>
+  :root {
+    --bg: #f4f0ea; --card: #fbf9f5; --ink: #142130; --soft: #44515f; --muted: #6b7785;
+    --line: #ddd6ca; --accent: #b4472c; --good: #1f6b4f; --warn: #8a5a00; --bad: #a3361f;
+    --good-bg: #e3efe8; --warn-bg: #f6ecd6; --bad-bg: #f6e1da;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #142130; --card: #1b2c3e; --ink: #f4f0ea; --soft: #c9d6de; --muted: #9fb0bd;
+      --line: #2c4157; --accent: #e0825f; --good: #8fd3b2; --warn: #f0c56b; --bad: #f29a80;
+      --good-bg: #1e3a32; --warn-bg: #3a3220; --bad-bg: #3e2620;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 17px/1.5 Inter, system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 1040px; margin: 0 auto; padding: 32px 16px 64px; }
+  a { color: var(--accent); }
+  .eyebrow { font-size: 13px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin: 0 0 6px; }
+  h1 { font-size: clamp(28px, 5vw, 40px); line-height: 1.15; margin: 0 0 10px; }
+  .lede { color: var(--soft); margin: 0 0 28px; max-width: 720px; }
+  .grid { display: grid; grid-template-columns: minmax(0, 380px) minmax(0, 1fr); gap: 24px; align-items: start; }
+  @media (max-width: 820px) { .grid { grid-template-columns: 1fr; } }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 20px; }
+  fieldset { border: 0; padding: 0; margin: 0 0 18px; }
+  legend { font-weight: 600; margin-bottom: 8px; padding: 0; }
+  label { display: block; font-size: 14px; color: var(--soft); margin: 10px 0 4px; }
+  input, select { width: 100%; font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 9px 10px; }
+  input:focus, select:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .hint { font-size: 13px; color: var(--muted); margin: 4px 0 0; }
+  .forecast { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-bottom: 16px; }
+  @media (max-width: 560px) { .forecast { grid-template-columns: 1fr; } }
+  .stat .label { font-size: 13px; color: var(--muted); margin: 0; }
+  .stat .value { font-size: 28px; font-weight: 700; margin: 2px 0; font-variant-numeric: tabular-nums; }
+  .stat .range { font-size: 14px; color: var(--soft); margin: 0; }
+  .check { border-radius: 12px; padding: 14px 16px; margin-top: 12px; border: 1px solid var(--line); }
+  .check h3 { margin: 0 0 4px; font-size: 16px; display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+  .check p { margin: 0; color: var(--soft); }
+  .pill { font-size: 13px; font-weight: 700; padding: 2px 10px; border-radius: 999px; }
+  .good { background: var(--good-bg); } .good .pill { color: var(--good); border: 1px solid var(--good); }
+  .warn { background: var(--warn-bg); } .warn .pill { color: var(--warn); border: 1px solid var(--warn); }
+  .bad  { background: var(--bad-bg);  } .bad  .pill { color: var(--bad);  border: 1px solid var(--bad); }
+  .note { font-size: 13px; color: var(--muted); margin-top: 18px; }
+  .status { color: var(--soft); }
+</style>
+</head>
+<body>
+<main>
+  <p class="eyebrow">Salmon Signal · Supply check</p>
+  <h1>Will the harvest meet your plan?</h1>
+  <p class="lede">Enter what you need, or what a farmer or supplier has told you, and see whether our forecast of Norway’s salmon harvest backs it up.</p>
+
+  <div class="grid">
+    <form class="card" id="form" autocomplete="off">
+      <fieldset>
+        <legend>Where and when</legend>
+        <label for="region">Region</label>
+        <select id="region"></select>
+        <label for="month">Month</label>
+        <select id="month"></select>
+      </fieldset>
+      <fieldset>
+        <legend>What you need</legend>
+        <label for="need">Tonnes you need from this region</label>
+        <input id="need" type="number" min="0" step="1" placeholder="e.g. 500">
+        <div class="row">
+          <div><label for="minkg">Fish size from (kg)</label><input id="minkg" type="number" min="0" step="0.1" placeholder="e.g. 4"></div>
+          <div><label for="maxkg">to (kg)</label><input id="maxkg" type="number" min="0" step="0.1" placeholder="e.g. 5"></div>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>What the farmer or supplier says <span class="hint">(optional)</span></legend>
+        <label for="saidT">Harvest they expect, tonnes</label>
+        <input id="saidT" type="number" min="0" step="1" placeholder="regional total">
+        <label for="saidKg">Average fish size they expect, kg</label>
+        <input id="saidKg" type="number" min="0" step="0.1" placeholder="e.g. 4.8">
+      </fieldset>
+    </form>
+
+    <section aria-live="polite">
+      <div class="card">
+        <p class="eyebrow" id="fcTitle">Our forecast</p>
+        <div class="forecast" id="forecast"><p class="status">Loading the forecast…</p></div>
+        <div id="checks"></div>
+        <p class="note" id="note"></p>
+      </div>
+    </section>
+  </div>
+</main>
+
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  const HLABEL = ["last month, not yet published", "this month", "next month", "in two months"];
+  const fmt = (v, d = 0) => v == null ? "–" : Number(v).toLocaleString("en-GB", { maximumFractionDigits: d, minimumFractionDigits: d });
+  const monthName = (ym) => { const [y, m] = ym.split("-"); return MONTHS[+m - 1] + " " + y; };
+  let data = null;
+
+  fetch("data/outlook_supply.json")
+    .then((r) => { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then((json) => { data = json; setup(); })
+    .catch(() => { $("forecast").innerHTML = '<p class="status">The forecast isn’t available yet. Please check back later.</p>'; });
+
+  function setup() {
+    const cur = data.current;
+    if (!cur || !cur.targets || !cur.targets.length) {
+      $("forecast").innerHTML = '<p class="status">No current forecast has been published yet.</p>';
+      return;
+    }
+    const names = data.areas.names;
+    const region = $("region");
+    region.add(new Option("All of Norway (" + data.national_label.replace(/^Sum of /, "").replace(/,.*$/, "") + ")", "national"));
+    cur.targets[0].areas.forEach((a) => region.add(new Option("Area " + a.area + " · " + names[a.area], String(a.area))));
+    cur.targets.forEach((t, i) => $("month").add(new Option(monthName(t.target) + " (" + HLABEL[t.h] + ")", String(i))));
+    $("month").value = String(Math.min(1, cur.targets.length - 1));
+    ["region","month","need","minkg","maxkg","saidT","saidKg"].forEach((id) => $(id).addEventListener("input", render));
+    render();
+  }
+
+  function entry() {
+    const t = data.current.targets[+$("month").value];
+    const r = $("region").value;
+    return { t, e: r === "national" ? t.national : t.areas.find((a) => String(a.area) === r) };
+  }
+
+  function render() {
+    const model = data.current.model;
+    const { t, e } = entry();
+    if (!e) { $("forecast").innerHTML = '<p class="status">No forecast for this region and month.</p>'; $("checks").innerHTML = ""; return; }
+    const p = e.pred[model] || {};
+    const band = e.band || {};
+    const tons = p.t, kg = p.avg_kg != null ? p.avg_kg : (p.t && p.count ? p.t * 1000 / p.count : null);
+    const tBand = band.t || [null, null];
+    const kgBand = band.avg_kg || [null, null];
+
+    $("fcTitle").textContent = "Our forecast · " + monthName(t.target) + " · " + ($("region").value === "national" ? "All of Norway" : "Area " + e.area);
+    $("forecast").innerHTML =
+      stat("Harvest", fmt(tons) + " t", tBand[0] != null ? "likely " + fmt(tBand[0]) + "–" + fmt(tBand[1]) + " t" : "range not available") +
+      stat("Average fish size", kg != null ? fmt(kg, 2) + " kg" : "–", kgBand[0] != null ? "likely " + fmt(kgBand[0], 2) + "–" + fmt(kgBand[1], 2) + " kg" : "range not available") +
+      stat("Fish harvested", p.count != null ? fmt(p.count / 1e6, 1) + " million" : "–", "");
+
+    const checks = [];
+    const need = num("need"), minkg = num("minkg"), maxkg = num("maxkg"), saidT = num("saidT"), saidKg = num("saidKg");
+
+    if (need != null && tons) {
+      const low = tBand[0] || tons;
+      const share = 100 * need / tons, shareLow = 100 * need / low;
+      const cls = shareLow < 5 ? "good" : shareLow < 20 ? "warn" : "bad";
+      const word = { good: "Plenty of supply", warn: "A big share", bad: "Tight" }[cls];
+      checks.push(check(cls, "Volume", word,
+        "Your " + fmt(need) + " t is " + fmt(share, 1) + "% of the expected harvest, or " + fmt(shareLow, 1) + "% if the harvest comes in at the low end."));
+    }
+
+    if ((minkg != null || maxkg != null) && kg != null) {
+      const lo = minkg != null ? minkg : 0, hi = maxkg != null ? maxkg : Infinity;
+      const [bl, bh] = kgBand[0] != null ? kgBand : [kg, kg];
+      let cls, word, text;
+      if (kg >= lo && kg <= hi && bl >= lo && bh <= hi) { cls = "good"; word = "Likely fits"; text = "The expected average of " + fmt(kg, 2) + " kg, and its whole likely range, sit inside your spec."; }
+      else if (kg >= lo && kg <= hi) { cls = "warn"; word = "Probably fits"; text = "The expected average of " + fmt(kg, 2) + " kg is inside your spec, but the likely range (" + fmt(bl, 2) + "–" + fmt(bh, 2) + " kg) goes outside it."; }
+      else { cls = "bad"; word = "Unlikely to fit"; text = "The expected average of " + fmt(kg, 2) + " kg is " + (kg < lo ? "below" : "above") + " your spec. Expect " + (kg < lo ? "smaller" : "bigger") + " fish than you want."; }
+      checks.push(check(cls, "Fish size", word, text + " This is the average fish; individual fish vary around it."));
+    }
+
+    if (saidT != null && tons) checks.push(compare("Supplier’s harvest figure", saidT, tons, tBand, " t", 0));
+    if (saidKg != null && kg != null) checks.push(compare("Supplier’s fish size", saidKg, kg, kgBand, " kg", 2));
+
+    $("checks").innerHTML = checks.length ? checks.join("") :
+      '<p class="status">Fill in what you need, or what your supplier says, to check it against the forecast.</p>';
+
+    $("note").innerHTML = "Forecast made on " + data.current.made_on + " with the " + model + " model, using only public data. " +
+      "Unverifiable until the Directorate of Fisheries publishes " + monthName(t.target) + " (around " + t.publishes_around + "). " +
+      "“Likely” ranges are 80% ranges from the model’s own past errors. A planning aid, not a guarantee.";
+  }
+
+  function compare(title, said, fc, band, unit, d) {
+    const [lo, hi] = band[0] != null ? band : [fc, fc];
+    const diff = 100 * (said / fc - 1);
+    let cls, word;
+    if (said >= lo && said <= hi) { cls = "good"; word = "In line with the data"; }
+    else if (said > hi) { cls = "warn"; word = "Higher than the data suggests"; }
+    else { cls = "warn"; word = "Lower than the data suggests"; }
+    return check(cls, title, word, "They say " + fmt(said, d) + unit + "; we forecast " + fmt(fc, d) + unit +
+      " (" + (diff >= 0 ? "+" : "") + fmt(diff, 0) + "% difference, likely range " + fmt(lo, d) + "–" + fmt(hi, d) + unit + ").");
+  }
+
+  function num(id) { const v = $(id).value.trim(); if (v === "") return null; const n = Number(v); return Number.isFinite(n) && n >= 0 ? n : null; }
+  function stat(label, value, range) { return '<div class="stat"><p class="label">' + label + '</p><p class="value">' + value + '</p><p class="range">' + range + "</p></div>"; }
+  function check(cls, title, word, text) { return '<div class="check ' + cls + '"><h3>' + title + ' <span class="pill">' + word + "</span></h3><p>" + text + "</p></div>"; }
+})();
+</script>
+</body>
+</html>
