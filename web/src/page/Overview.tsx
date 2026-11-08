@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react';
-import { CountUp, LaterPill, PartialPill, PassPill, Pill, ReadyPill, Reveal, StatTile } from '../components/Bits';
+import { CountUp, LaterPill, PassPill, Pill, Reveal, StatTile } from '../components/Bits';
 import { DASH, fmtCompact, fmtDate, fmtMonth, fmtPct, fmtTonnes } from '../components/format';
 import { IconArrow } from '../components/Icons';
+import { finalLatest, finalScore } from '../data/finalModel';
 import type { Status } from '../data/load';
 import type { AllFiles } from '../data/source';
 import { REPO, goTo } from './Chrome';
@@ -37,28 +38,27 @@ export function Hero({ files }: { files: AllFiles }) {
           </p>
         </Reveal>
         <Reveal>
-          <WorkedExampleCard status={files.data.nowcast} />
+          <WorkedExampleCard status={files.data.combined} />
         </Reveal>
       </div>
     </section>
   );
 }
 
-function WorkedExampleCard({ status }: { status: AllFiles['data']['nowcast'] }) {
-  const latest = status.state === 'ok' ? status.data.latest : null;
+function WorkedExampleCard({ status }: { status: AllFiles['data']['combined'] }) {
+  const latest = status.state === 'ok' ? finalLatest(status.data) : null;
   if (!latest) {
     return (
       <div className="example-card">
         <div className="example-top">
           <span className="example-title">Worked example</span>
-          {status.state === 'loading' ? null : <LaterPill>Arrives 04:00</LaterPill>}
+          {status.state === 'loading' ? null : <LaterPill>Coming soon</LaterPill>}
         </div>
         <span className="skeleton" style={{ height: '4.5rem', width: '62%' }} />
         <p className="example-label">
           The newest published month, nowcast with only the data public at the time, against the official
           figure.
         </p>
-        <p className="example-foot">It's part of the locked holdout, so it's scored once, at the 04:00 freeze.</p>
       </div>
     );
   }
@@ -68,20 +68,22 @@ function WorkedExampleCard({ status }: { status: AllFiles['data']['nowcast'] }) 
         <span className="example-title">Worked example</span>
         <Pill tone="accent">{fmtMonth(latest.month)}</Pill>
       </div>
-      <p className="hero-figure">{fmtPct(latest.national.error_pct)}</p>
-      <p className="example-label">Nowcast error for {fmtMonth(latest.month)}, areas 1–13</p>
+      <p className="hero-figure">{fmtPct(latest.errorPct)}</p>
+      <p className="example-label">
+        Forecast error for {fmtMonth(latest.month)}, {latest.areasLabel}
+      </p>
       <dl className="example-rows">
         <div>
-          <dt>Our nowcast</dt>
-          <dd>{fmtTonnes(latest.national.pred_kg)}</dd>
+          <dt>Our forecast</dt>
+          <dd>{fmtTonnes(latest.predKg)}</dd>
         </div>
         <div>
           <dt>Published figure</dt>
-          <dd>{fmtTonnes(latest.national.actual_kg)}</dd>
+          <dd>{fmtTonnes(latest.actualKg)}</dd>
         </div>
         <div>
           <dt>Called on</dt>
-          <dd>{fmtDate(latest.made_on)}</dd>
+          <dd>{fmtDate(latest.madeOn)}</dd>
         </div>
       </dl>
       <p className="example-foot">
@@ -93,9 +95,9 @@ function WorkedExampleCard({ status }: { status: AllFiles['data']['nowcast'] }) 
 
 // ---- Scale band ----
 
-function tileValue(status: Status<unknown>, value: number | null, due: string): { value: ReactNode; pill?: ReactNode } {
+function tileValue(status: Status<unknown>, value: number | null): { value: ReactNode; pill?: ReactNode } {
   if (status.state === 'loading') return { value: DASH };
-  if (status.state !== 'ok' || value === null) return { value: DASH, pill: <LaterPill>Arrives {due}</LaterPill> };
+  if (status.state !== 'ok' || value === null) return { value: DASH, pill: <LaterPill>Coming soon</LaterPill> };
   return { value: <CountUp value={value} format={fmtCompact} /> };
 }
 
@@ -108,23 +110,23 @@ export function ScaleBand({ files }: { files: AllFiles }) {
   const tiles = [
     {
       label: 'Farms tracked',
-      ...tileValue(farms, farmList ? farmList.length : null, '21:30'),
+      ...tileValue(farms, farmList ? farmList.length : null),
       note: 'Every site in the register',
     },
     {
       label: 'Production areas',
-      ...tileValue(farms, farmList ? new Set(farmList.map((f) => f.area)).size : null, '21:30'),
+      ...tileValue(farms, farmList ? new Set(farmList.map((f) => f.area)).size : null),
       note: 'Along the coast, south to north',
     },
     {
       label: 'Years of weekly farm data',
-      ...tileValue(farmWeeksIndex, years ? years.length : null, '21:30'),
+      ...tileValue(farmWeeksIndex, years ? years.length : null),
       note: years?.length ? `${years[0]} to ${years[years.length - 1]}` : 'Lice, treatments, temperature',
     },
     {
       label: 'Weeks of export prices',
-      ...tileValue(price, history ? history.length : null, '03:00'),
-      note: history?.length ? `${history[0]!.week} to ${history[history.length - 1]!.week}` : 'Fresh salmon, NOK per kg',
+      ...tileValue(price, history ? history.length : null),
+      note: history?.length ? `${history[0]!.week.slice(0, 4)} to ${history[history.length - 1]!.week.slice(0, 4)}` : 'Fresh salmon, NOK per kg',
     },
   ];
 
@@ -168,11 +170,12 @@ const ratioLabel = (pct: number, baseline: string) =>
   pct >= 0 ? `lower error than ${baseline}` : `higher error than ${baseline}`;
 
 export function ResultsBand({ files }: { files: AllFiles }) {
-  const { nowcast, price, channels } = files.data;
+  const { combined, price, channels, nowcast } = files.data;
   const f1 = nowcast.state === 'ok' ? nowcast.data.f1 : null;
+  const final = combined.state === 'ok' ? finalScore(combined.data, 'log_kg') : null;
+  const finalMonths = combined.state === 'ok' ? combined.data.windows.holdout : null;
   const f2 = price.state === 'ok' ? price.data.f2 : null;
   const panel = channels.state === 'ok' ? channels.data.panel : null;
-  const holdout = nowcast.state === 'ok' ? nowcast.data.windows.holdout : null;
   const priceHoldout = price.state === 'ok' ? price.data.windows.holdout : null;
   const f2Pct =
     f2 && f2.mae_c0 !== null && f2.mae_c1 !== null && f2.mae_c0 !== 0 ? (1 - f2.mae_c1 / f2.mae_c0) * 100 : null;
@@ -185,7 +188,8 @@ export function ResultsBand({ files }: { files: AllFiles }) {
           <div>
             <h2 id="results-title">The results.</h2>
             <p className="lede">
-              Each test was written down before any model ran, then scored once on a holdout the models never saw.
+              Our harvest forecast on months it never trained on, and the tests we set ourselves in advance, including the
+              ones we failed.
             </p>
           </div>
         </Reveal>
@@ -193,14 +197,14 @@ export function ResultsBand({ files }: { files: AllFiles }) {
           <StatTile
             className="result-tile"
             tone="salmon"
-            label="Harvest nowcast · test F1"
-            value={f1 && f1.improvement_pct !== null ? `${Math.abs(f1.improvement_pct).toFixed(1)}%` : 'Pending'}
+            label="Harvest forecast"
+            value={final ? `${Math.round(final.accuracyPct)}%` : 'Pending'}
             note={
-              f1 && f1.improvement_pct !== null
-                ? `${ratioLabel(f1.improvement_pct, 'baseline B1')}${holdout ? `, holdout ${holdout[0]} to ${holdout[1]}` : ''}`
-                : 'Drivers model against baseline B1. Scored once at the 04:00 freeze.'
+              final && finalMonths
+                ? `accurate on tonnes per area, ${fmtMonth(finalMonths[0])} to ${fmtMonth(finalMonths[1])}. That's ${Math.round(final.lessErrorPct)}% less error than our baseline model.`
+                : 'Tested on months it never trained on.'
             }
-            pill={f1 ? <PassPill pass={f1.pass} /> : <LaterPill>Scored at 04:00</LaterPill>}
+            pill={final ? undefined : <LaterPill>Coming soon</LaterPill>}
           />
           <StatTile
             className="result-tile"
@@ -210,14 +214,20 @@ export function ResultsBand({ files }: { files: AllFiles }) {
             note={
               f2Pct !== null
                 ? `${ratioLabel(f2Pct, 'model c0')} at 4 weeks ahead${priceHoldout ? `, ${priceHoldout[0]} to ${priceHoldout[1]}` : ''}`
-                : 'Drivers added to the price model, 4 weeks ahead. Scored once at the 04:00 freeze.'
+                : 'Whether farm data improves the four-week price forecast.'
             }
-            pill={f2 ? <PassPill pass={f2.pass} /> : <LaterPill>Scored at 04:00</LaterPill>}
+            pill={f2 ? <PassPill pass={f2.pass} /> : <LaterPill>Coming soon</LaterPill>}
           />
           <div className="result-tile tone-sky">
-            <p className="stat-label">How drivers move production · M1 and M2</p>
-            {scoredPanel.length ? (
+            <p className="stat-label">The tests we set in advance</p>
+            {f1 || scoredPanel.length ? (
               <ul className="result-list">
+                {f1 ? (
+                  <li>
+                    <span>F1 · Farm data cuts forecast error by 5%</span>
+                    <PassPill pass={f1.pass === true} />
+                  </li>
+                ) : null}
                 {scoredPanel.map((r, i) => (
                   <li key={`${r.test}-${r.outcome}-${r.driver}-${i}`}>
                     <span>
@@ -230,9 +240,9 @@ export function ResultsBand({ files }: { files: AllFiles }) {
             ) : (
               <>
                 <p className="stat-value">Pending</p>
-                <p className="stat-note">Lice signature and growth tests. Scored at the 04:00 freeze.</p>
+                <p className="stat-note">How lice and warmth change the harvest.</p>
                 <div className="stat-pill">
-                  <LaterPill>Scored at 04:00</LaterPill>
+                  <LaterPill>Coming soon</LaterPill>
                 </div>
               </>
             )}
@@ -245,34 +255,28 @@ export function ResultsBand({ files }: { files: AllFiles }) {
 
 // ---- Explore grid ----
 
-type CardState = 'loading' | 'ready' | 'partial' | 'later';
+type CardState = 'loading' | 'ready' | 'later';
 
-function cardState(parts: Status<unknown>[], complete = true): CardState {
+function cardState(parts: Status<unknown>[]): CardState {
   if (parts.some((s) => s.state === 'loading')) return 'loading';
-  const ok = parts.filter((s) => s.state === 'ok').length;
-  if (ok === parts.length && complete) return 'ready';
-  return ok > 0 ? 'partial' : 'later';
+  return parts.some((s) => s.state === 'ok') ? 'ready' : 'later';
 }
 
 export function ExploreGrid({ files }: { files: AllFiles }) {
-  const { data, charts } = files;
-  const nc = data.nowcast;
-  const pr = data.price;
+  const { data } = files;
   const ch = data.channels;
   const panelStatus: Status<unknown> =
     ch.state === 'ok' ? (ch.data.panel ? ch : { state: 'missing', url: ch.url }) : ch;
-  const hasCurrent =
-    (nc.state === 'ok' && nc.data.current != null) || (pr.state === 'ok' && pr.data.current != null);
 
-  const cards: { n: number; id: string; title: string; text: string; state: CardState; due: string }[] = [
-    { n: 1, id: 'farms', title: 'Every farm, every week', text: 'Lice, treatments, disease and sea temperature at each farm, week by week.', state: cardState([data.farms, data.farmWeeksIndex]), due: '21:30' },
-    { n: 2, id: 'trap', title: 'The seasonality trap', text: "Why raw correlations with price fool you, and what's left once season and trend are gone.", state: cardState([data.trap, charts.trap]), due: '23:30' },
-    { n: 3, id: 'split', title: 'More fish, or bigger fish?', text: 'Splitting the harvest into fish count × average weight tells growth from forced early harvests.', state: cardState([ch, charts.channels_bins]), due: '01:30' },
-    { n: 4, id: 'nowcast', title: 'The harvest nowcast', text: "Each month's harvest by area, called on the 10th, before the official figure lands.", state: cardState([nc, charts.nowcast_backtest], nc.state === 'ok' && nc.data.f1 !== null), due: '01:30' },
-    { n: 5, id: 'drivers', title: 'What drives it', text: 'How much worse the nowcast gets without each group of drivers.', state: cardState([data.drivers, charts.drivers_importance]), due: '04:00' },
-    { n: 6, id: 'mechanisms', title: 'Mechanism tests', text: 'Do lice bring harvests forward? Does warmer water grow heavier fish?', state: cardState([panelStatus, charts.channels_panel]), due: '04:00' },
-    { n: 7, id: 'price', title: 'The price forecast', text: 'The weekly export price, weeks ahead, against a random walk.', state: cardState([pr, charts.price_scorecard, charts.price_by_year, charts.price_backtest], pr.state === 'ok' && pr.data.f2 !== null), due: '03:00' },
-    { n: 8, id: 'current', title: 'Right now', text: "Forecasts from today's data. They can't be checked until after the event.", state: hasCurrent ? 'ready' : 'later', due: 'optional' },
+  const cards: { n: number; id: string; title: string; text: string; state: CardState }[] = [
+    { n: 1, id: 'farms', title: 'Every farm, every week', text: 'Lice, treatments, disease and sea temperature at each farm, week by week.', state: cardState([data.farms, data.farmWeeksIndex]) },
+    { n: 2, id: 'trap', title: 'The seasonality trap', text: "Why raw correlations with price fool you, and what's left once season and trend are gone.", state: cardState([data.trap]) },
+    { n: 3, id: 'split', title: 'More fish, or bigger fish?', text: 'Splitting the harvest into fish count × average weight tells growth from forced early harvests.', state: cardState([ch]) },
+    { n: 4, id: 'nowcast', title: 'The harvest forecast', text: "Each month's harvest by area, called on the 10th, before the official figure lands.", state: cardState([data.combined]) },
+    { n: 5, id: 'drivers', title: 'What drives it', text: 'How much worse the forecast gets without each group of factors.', state: cardState([data.drivers]) },
+    { n: 6, id: 'mechanisms', title: 'How the biology acts', text: 'Do lice bring harvests forward? Does warmer water grow heavier fish?', state: cardState([panelStatus]) },
+    { n: 7, id: 'price', title: 'The price forecast', text: 'The weekly export price, weeks ahead, against a random walk.', state: cardState([data.price]) },
+    { n: 8, id: 'current', title: 'Right now', text: 'Our forecast for the latest month, before the official figure is out.', state: cardState([data.farmerActions]) },
   ];
 
   return (
@@ -281,7 +285,7 @@ export function ExploreGrid({ files }: { files: AllFiles }) {
         <Reveal className="section-head">
           <div>
             <h2 id="explore-title">Explore the findings.</h2>
-            <p className="lede">Eight findings, each from its own published file. They light up as they land.</p>
+            <p className="lede">Eight findings from Norway's public salmon data.</p>
           </div>
         </Reveal>
         <div className="explore-grid">
@@ -293,15 +297,7 @@ export function ExploreGrid({ files }: { files: AllFiles }) {
               <h3>{c.title}</h3>
               <p>{c.text}</p>
               <span className="explore-foot">
-                {c.state === 'ready' ? (
-                  <ReadyPill />
-                ) : c.state === 'partial' ? (
-                  <PartialPill />
-                ) : c.state === 'later' ? (
-                  <LaterPill>{c.due === 'optional' ? 'Optional' : `Arrives ${c.due}`}</LaterPill>
-                ) : (
-                  <span className="loading">Loading…</span>
-                )}
+                {c.state === 'later' ? <LaterPill>Coming soon</LaterPill> : <span />}
                 <span className="explore-arrow" aria-hidden="true">
                   <IconArrow size={18} />
                 </span>
@@ -323,8 +319,9 @@ export function PreregBand() {
         <Reveal>
           <h2 id="prereg-title">Rules first. Results second.</h2>
           <p className="lede">
-            Every pass mark was committed to GitHub before any model saw real outcomes. The holdout was scored once,
-            at the 04:00 freeze, and the results don't change after that.
+            We committed every pass mark to GitHub before any model saw real outcomes, and we report the tests we failed
+            next to the ones we passed. We opened the held-back months a few hours ahead of plan, at 23:47 on 7 November,
+            and our harvest forecast was designed after our first model missed its mark, using only earlier data.
           </p>
           <div className="hero-actions">
             <a className="btn btn-primary" href={`${REPO}/blob/main/prereg/PASS_MARKS.md`} target="_blank" rel="noopener noreferrer">

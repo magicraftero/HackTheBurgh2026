@@ -179,6 +179,18 @@ export const NowcastSchema = z.object({
   current: z.unknown(),
 });
 
+// ---- Finding 4: the final harvest forecast (Production) ----
+// Written by analysis/combined.py. It came after 00-shared.md, so the contract doesn't list it.
+
+const combinedScore = z.object({ n: int, b1: num, drivers: num, ml: num, blend: num, combined: num }).nullable();
+const combinedScores = z.object({ log_kg: combinedScore, log_count: combinedScore, log_avg_kg: combinedScore });
+
+export const CombinedSchema = z.object({
+  windows: z.object({ dev: z.tuple([month, month]), holdout: z.tuple([month, month]) }),
+  scores: z.object({ dev: combinedScores, holdout: combinedScores }),
+  backtest: z.array(z.object({ area, month, window: windowName, actual: kgCountWeight, pred: kgCountWeight })),
+});
+
 // ---- Finding 5: driver ranking (Production, 04:00) ----
 
 export const DriversSchema = z.object({
@@ -262,6 +274,27 @@ export type AreaMonth = z.infer<typeof AreaMonthSchema>;
 export type Trap = z.infer<typeof TrapSchema>;
 export type Channels = z.infer<typeof ChannelsSchema>;
 export type Nowcast = z.infer<typeof NowcastSchema>;
+export type Combined = z.infer<typeof CombinedSchema>;
+
+// ---- Finding 8: the forecast for the latest month (Production) ----
+// Written by analysis/farmer.py. Only the parts the site shows are checked.
+
+export const FarmerActionsSchema = z.object({
+  made_on: day,
+  target_month: month,
+  publishes_around: day,
+  national: z.object({ areas: z.array(area), kg: num }),
+  areas: z.array(
+    z.object({
+      area,
+      name: z.string(),
+      forecast: z.object({ kg: num, kg_range: z.tuple([num, num]) }).nullable(),
+      vs_last_year_pct: num,
+    }),
+  ),
+});
+
+export type FarmerActions = z.infer<typeof FarmerActionsSchema>;
 export type Drivers = z.infer<typeof DriversSchema>;
 export type Price = z.infer<typeof PriceSchema>;
 export type ChartSpec = z.infer<typeof ChartSpecSchema>;

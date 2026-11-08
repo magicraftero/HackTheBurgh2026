@@ -7,8 +7,9 @@ import {
   useAllFiles,
   type Source,
 } from './data/source';
+import { showBuildNotes } from './data/debug';
 import { FishingIntro } from './intro/FishingIntro';
-import { FloatNav } from './page/Chrome';
+import { FloatNav, isUpcoming } from './page/Chrome';
 import { SitePage } from './page/SitePage';
 
 export function App() {
@@ -17,8 +18,10 @@ export function App() {
   const files = useAllFiles(source, generation);
   const siteRef = useRef<HTMLDivElement>(null);
 
-  const { nowcast } = files.data;
-  const hasCurrentCall = nowcast.state === 'ok' && nowcast.data.current != null;
+  const { nowcast, farmerActions } = files.data;
+  const hasCurrentCall =
+    (nowcast.state === 'ok' && nowcast.data.current != null) ||
+    (farmerActions.state === 'ok' && isUpcoming(farmerActions.data.publishes_around));
 
   const checkAgain = () => {
     clearCache();
@@ -34,7 +37,7 @@ export function App() {
           <SitePage files={files} source={source} generation={generation} onCheckAgain={checkAgain} />
         </div>
       </div>
-      {import.meta.env.DEV ? <DevBar source={source} /> : null}
+      {import.meta.env.DEV && (source.kind === 'mock' || showBuildNotes()) ? <DevBar source={source} /> : null}
     </>
   );
 }

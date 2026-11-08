@@ -2,9 +2,11 @@
 
 A static site that shows the findings. Every number comes from the files the back end writes; nothing is hard-coded. Plan: `docs/plans/frontend.md`. File formats: `docs/plans/00-shared.md`.
 
-**Salmon Signal.** Colours and mood come from the team's "reel-in hero" mockup: navy, coral, misty greys and cream, with serif subtitles. Buttons, pills and cards follow the feel of Klarna's site. It's original: no third-party branding, fonts or images.
+**Salmon Signal.** Colours and mood come from the team's "reel-in hero" mockup: navy, coral, misty greys and cream, with serif subtitles. Buttons, pills and cards follow the feel of Klarna's site. It's original: no third-party branding or images, and no font files. The name is set in Rockwell where the device has it (Macs, Microsoft Office), with a similar bold serif elsewhere.
 
-**The reel-in hero.** A misty fjord, a fisherman standing in a rowboat, a salmon on his line. "Reel in" (or scrolling) makes him heave the rod; the salmon comes out of the water and the site rises over the scene. It's driven by scroll position, so scrolling back up rewinds it, and any key, click or scroll stops the button's reel-in. People with reduced motion switched on get a still scene and an instant jump. The Oslo card's clock and its "next official figures in N days" (the 20th, per 00-shared.md) are worked out live. Code: `src/intro/FishingIntro.tsx`.
+**The reel-in hero.** A misty fjord, a fisherman standing in a rowboat, a salmon on his line. "Reel in" (or scrolling) makes him heave the rod; the salmon comes out of the water and the site rises over the scene. It's driven by scroll position, so scrolling back up rewinds it, and any key, click or scroll stops the button's reel-in. People with reduced motion switched on get a still scene and an instant jump.
+
+The scene has a small cast, all waiting for the same fish: the fisherman nods off and jerks awake at every tug (click him and he looks round); his cat stares at the line and stands up to follow the catch; the salmon looks unimpressed until it leaves the water, and watches your pointer; a gull sits on the title's last l, squawks if you point at it, flies to the other l if you click it, and flees when the reel-in starts; the left mountain is a sleeping giant who wakes for the catch or if you hover over him; and each tug sends a signal from the rod tip, which is the name's joke (as are the bars on the Oslo card). The boat is called *Out of Sample*, after the only kind of test that counts here. The Oslo card's clock and its "next official figures in N days" (the 20th, per 00-shared.md) are worked out live. Code: `src/intro/FishingIntro.tsx`.
 
 **The farm map (finding 1).** Norway's real coastline with every farm, from `farms.json` and the `farm_weeks/{year}.json` files. Colour the map by sea temperature (it opens on this, as its seasons read at a glance), lice, treatments, or ISA and PD (in the key); press play to step through the weeks (it carries on into the next year), or pick a year from the menu over the map; zoom to the south and west, the middle or the north; hover over a farm for its numbers, or click it (or find it by name) for its year week by week next to its area's average. With no farm picked, the week is shown area by area. "This week by area" under the map is the same week as a table. Code: `src/map/` and `src/page/FarmWeeks.tsx`.
 
@@ -34,7 +36,7 @@ npm ci          # installs the exact locked versions; .npmrc blocks install scri
 npm run dev     # http://localhost:5173
 ```
 
-In development, a bar at the top switches the data:
+In development, these addresses switch the data:
 
 | URL | Shows |
 | --- | --- |
@@ -42,6 +44,7 @@ In development, a bar at the top switches the data:
 | `/?mock=pre` | Mock data shaped as before the 04:00 freeze |
 | `/?mock=post` | Mock data shaped as after the freeze |
 | `/?mock=none` | Every file missing |
+| `/?debug` | The real files, plus which file is missing and why |
 
 Production builds never use mocks: the switch is compiled out, and `public/data/_mock/` is deleted from every build.
 
@@ -59,7 +62,9 @@ npm run build       # output in dist/
 - The back end writes `public/data/*.json`, `public/data/farm_weeks/*.json` and `public/charts/*.vl.json`. Never delete or overwrite those.
 - The front end owns everything else in `web/`, including `public/data/_mock/` (regenerate with `npm run mocks`) and `public/map/` (the coastline).
 
-A file shows up on the site once it's pushed to `main` and the host redeploys. The page fetches files at run time, so a missing file never breaks the build. A missing file, or one that doesn't match the agreed format, shows "coming later", and the file table at the top of the page says which and why.
+A file shows up on the site once it's pushed to `main` and the host redeploys. The page fetches files at run time, so a missing file never breaks the build. Visitors see a plain "Coming soon" for anything missing, or a file that doesn't match the agreed format. To see which file and why, open the development server with `?debug`: that adds the mock switch and a file status list in the footer. None of it exists in a production build.
+
+The site draws its charts itself from the data files (`src/charts/`), so they all share one style. Only `price_backtest` and `price_fan` still come from chart files, and they appear once they're real.
 
 ## Hosting (Vercel)
 
@@ -78,6 +83,7 @@ The build uses relative paths, so the same `dist/` also works under a sub-path s
 | `src/components/VegaChart.tsx` | Draws any `.vl.json` chart (vega-embed, responsive, no menu) |
 | `src/intro/FishingIntro.tsx` | The reel-in hero |
 | `src/map/` | The farm map: projection, coastline loader, colours, canvas map, farm card, search |
+| `src/charts/` | The findings as pictures, drawn from the data files |
 | `src/page/` | The page: floating nav, notice, hero, results, findings 1 to 8, footer, data status |
 | `src/styles.css` | The design system: colours, type, buttons, pills, cards |
 | `scripts/` | Mock generator, coastline generator and checks |

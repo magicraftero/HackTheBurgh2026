@@ -2,7 +2,9 @@ import type { z } from 'zod';
 import {
   AreaMonthSchema,
   ChannelsSchema,
+  CombinedSchema,
   DriversSchema,
+  FarmerActionsSchema,
   FarmsSchema,
   FarmWeeksIndexSchema,
   NowcastSchema,
@@ -40,6 +42,8 @@ export const DATA_FILES = {
     owner: 'Production',
     due: '01:30 (dev window), 04:00 (holdout)',
   },
+  combined: { path: 'data/combined.json', schema: CombinedSchema, owner: 'Production', due: '04:00' },
+  farmerActions: { path: 'data/farmer_actions.json', schema: FarmerActionsSchema, owner: 'Production', due: '04:00' },
   drivers: { path: 'data/drivers.json', schema: DriversSchema, owner: 'Production', due: '04:00' },
   price: {
     path: 'data/price.json',
@@ -52,14 +56,9 @@ export const DATA_FILES = {
 export type DataKey = keyof typeof DATA_FILES;
 export type DataOf<K extends DataKey> = z.infer<(typeof DATA_FILES)[K]['schema']>;
 
+// The site draws its charts from the data files (src/charts/), in one style.
+// These two need things only a chart file has, and appear once they're real.
 export const CHARTS = {
-  trap: { owner: 'Data', due: '00:00' },
-  channels_bins: { owner: 'Data', due: '02:00' },
-  nowcast_backtest: { owner: 'Data', due: '02:00 (dev window), 05:00 (holdout)' },
-  drivers_importance: { owner: 'Data', due: '05:00' },
-  channels_panel: { owner: 'Data', due: '05:00' },
-  price_scorecard: { owner: 'Price', due: '04:00' },
-  price_by_year: { owner: 'Price', due: '04:00' },
   price_backtest: { owner: 'Price', due: '04:00' },
   price_fan: { owner: 'Price', due: 'optional' },
 } as const;

@@ -7,7 +7,9 @@ import type {
   AreaMonth,
   Channels,
   ChartSpec,
+  Combined,
   Drivers,
+  FarmerActions,
   Farms,
   FarmWeeksIndex,
   FarmWeeksYear,
@@ -723,6 +725,63 @@ function priceBacktestSpec(p: Price): ChartSpec {
   };
 }
 
+// ---- The final harvest forecast: only exists after the freeze ----
+
+/** The forecast for the month after the backtest ends, from the backtest's last month. */
+function makeFarmerActions(combined: Combined): FarmerActions {
+  const last = combined.backtest.reduce((newest, r) => (r.month > newest ? r.month : newest), '');
+  const rows = combined.backtest.filter((r) => r.month === last).sort((a, b) => a.area - b.area);
+  return {
+    made_on: '2026-11-08',
+    target_month: '2026-10',
+    publishes_around: '2026-11-20',
+    national: { areas: rows.map((r) => r.area), kg: rows.reduce((sum, r) => sum + (r.pred.kg ?? 0), 0) },
+    areas: rows.map((r, i) => ({
+      area: r.area,
+      name: `Mock area ${r.area}`,
+      forecast: { kg: r.pred.kg, kg_range: [Math.round((r.pred.kg ?? 0) * 0.7), Math.round((r.pred.kg ?? 0) * 1.35)] },
+      vs_last_year_pct: i % 2 ? 6 : -9,
+    })),
+  };
+}
+
+function makeCombined(nowcast: Nowcast): Combined {
+  const rand = seeded(41); // its own seed, so the other mock files don't change
+  const noise: Record<string, number> = { ml: 0.11, blend: 0.1, combined: 0.08 };
+  const rows = nowcast.backtest
+    .filter((r) => r.area >= 2 && r.area <= 12)
+    .map((r) => {
+      const pred: Record<string, KCW> = { b1: r.pred.b1!, drivers: r.pred.drivers! };
+      for (const [model, size] of Object.entries(noise)) {
+        const pk = r.actual.kg! * Math.exp(jitter(rand, size));
+        const pa = r.actual.avg_kg! * Math.exp(jitter(rand, size / 3));
+        pred[model] = { kg: sig4(pk), count: Math.round(pk / pa), avg_kg: sig4(pa) };
+      }
+      return { ...r, pred };
+    });
+
+  const score = (window: 'dev' | 'holdout') => {
+    const part = rows.filter((r) => r.window === window);
+    const mae = (model: string, key: 'kg' | 'count' | 'avg_kg') =>
+      sig4(part.reduce((sum, r) => sum + Math.abs(Math.log(r.pred[model]![key]!) - Math.log(r.actual[key]!)), 0) / part.length);
+    const row = (key: 'kg' | 'count' | 'avg_kg') => ({
+      n: part.length,
+      b1: mae('b1', key),
+      drivers: mae('drivers', key),
+      ml: mae('ml', key),
+      blend: mae('blend', key),
+      combined: mae('combined', key),
+    });
+    return { log_kg: row('kg'), log_count: row('count'), log_avg_kg: row('avg_kg') };
+  };
+
+  return {
+    windows: nowcast.windows,
+    scores: { dev: score('dev'), holdout: score('holdout') },
+    backtest: rows.map(({ area, month, window, actual, pred }) => ({ area, month, window, actual, pred: pred.combined! })),
+  };
+}
+
 // ---- Putting a scenario together ----
 
 /** Every mock file for one scenario, keyed by its path inside _mock/<scenario>/. */
@@ -753,7 +812,10 @@ export function buildScenario(scenario: MockScenario): Record<string, unknown> {
   };
   if (scenario === 'post') {
     const drivers = makeDrivers(rand);
+    const combined = makeCombined(nowcast);
     Object.assign(files, {
+      'combined.json': combined,
+      'farmer_actions.json': makeFarmerActions(combined),
       'drivers.json': drivers,
       'charts/drivers_importance.vl.json': driversSpec(drivers),
       'charts/channels_panel.vl.json': panelSpec(channels),

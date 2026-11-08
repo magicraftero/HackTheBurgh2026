@@ -38,13 +38,6 @@ export const IconClock = ({ size, className }: P) => (
   </svg>
 );
 
-export const IconHalf = ({ size, className }: P) => (
-  <svg {...svgProps(size, className)}>
-    <circle cx="12" cy="12" r="8.5" />
-    <path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor" stroke="none" />
-  </svg>
-);
-
 export const IconArrow = ({ size, className }: P) => (
   <svg {...svgProps(size, className)}>
     <path d="M5 12h14M13 6l6 6-6 6" />

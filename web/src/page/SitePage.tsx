@@ -1,4 +1,5 @@
 import { useRef } from 'react';
+import { showBuildNotes } from '../data/debug';
 import type { AllFiles, Source } from '../data/source';
 import { DataStatusDialog, Footer, Notice } from './Chrome';
 import { Findings } from './Findings';
@@ -29,7 +30,7 @@ export function SitePage({ files, source, generation, onCheckAgain }: Props) {
         <PreregBand />
       </main>
       <Footer files={files} onOpenStatus={openStatus} />
-      <DataStatusDialog dialogRef={dialogRef} files={files} onCheckAgain={onCheckAgain} />
+      {showBuildNotes() ? <DataStatusDialog dialogRef={dialogRef} files={files} onCheckAgain={onCheckAgain} /> : null}
     </>
   );
 }

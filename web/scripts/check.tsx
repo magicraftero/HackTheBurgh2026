@@ -44,6 +44,8 @@ import {
 } from '../src/map/scales';
 import { displayName, searchKey, weekDates } from '../src/map/text';
 import { AREAS_NORTH_FIRST, areaWeeks } from '../src/map/YearStrip';
+import { logToPct } from '../src/charts/Figures';
+import { areaHeatSpec, forecastSpec, monthlyTotals, priceByYearSpec, scorecardSpec } from '../src/charts/specs';
 import { FarmExplorer, indexOfWeek } from '../src/page/FarmWeeks';
 import { SitePage } from '../src/page/SitePage';
 import * as ex from './contract-examples';
@@ -142,8 +144,8 @@ export default async function main(io: IO): Promise<number> {
     const files = filesIn(io, `${MOCK}/${scenario}`);
     for (const k of DATA_KEYS) {
       const s = files.data[k];
-      if (k === 'drivers' && scenario === 'pre') {
-        expect(s.state === 'missing', 'drivers.json is absent before the freeze', s.state);
+      if ((k === 'drivers' || k === 'combined' || k === 'farmerActions') && scenario === 'pre') {
+        expect(s.state === 'missing', `${DATA_FILES[k].path} is absent before the freeze`, s.state);
         continue;
       }
       expect(s.state === 'ok', `${DATA_FILES[k].path} passes`, describe(s));
@@ -256,41 +258,32 @@ export default async function main(io: IO): Promise<number> {
     [
       'before the freeze',
       pre,
-      [
-        'Mock data: made-up numbers, not findings',
-        'Holdout results land at the 04:00 analysis freeze.',
-        'Holdout scores arrive at the 04:00 freeze.',
-        'F1 is scored once, at the 04:00 freeze.',
-        'The worked example arrives at the 04:00 freeze.',
-        'Waiting for drivers.json from Production.',
-        'M1 and M2 are scored at the 04:00 freeze.',
-        'F2 is scored once, at the 04:00 freeze.',
-        'Waiting for charts/price_backtest.vl.json from Price.',
-        'Only if the back end has time.',
-        '10 of 17 files in.', // 7 data files + 3 charts
-      ],
+      ['Mock data: made-up numbers, not findings', "This test hasn't been scored yet.", 'Coming soon', 'Correlation with the salmon price', 'What happens to the harvest'],
     ],
     [
       'after the freeze',
       post,
       [
-        'The holdout results are in.',
         'Pass',
         'Fail',
         'No pass mark',
-        'lower error than baseline B1',
+        'less error than our baseline model',
+        'How accurate it was',
+        'Our first model, and the test it missed',
         'September 2026 by production area',
         'Lice and treatments',
-        '16 of 17 files in.', // price_fan is optional and absent
+        'How much worse the forecast gets without each factor',
+        'Does the effect clear zero?',
+        'Our forecast against the published harvest',
+        'Forecast for October 2026',
+        'Salmon harvested in each production area',
       ],
     ],
-    [
-      'with no files at all',
-      none,
-      ['Waiting for farms.json from Data.', 'Waiting for trap.json from Production.', 'Waiting for price.json from Price.', '0 of 17 files in.'],
-    ],
-    ['with a broken nowcast.json', broken, ["nowcast.json is there but doesn't match the agreed format yet", 'f1.pass', 'Fail']],
+    ['with no files at all', none, ['Coming soon']],
+    ['with a broken nowcast.json', broken, ['Not available right now', 'Fail']],
   ];
+  // Words from the build that must never reach a visitor.
+  const buildWords = /04:00|freeze|final model|final run|waiting for|arrives |from data\b|from production|from price|development window|back end|\.json/i;
   for (const [name, files, wants] of scenarios) {
     try {
       const text = textOf(
@@ -298,6 +291,8 @@ export default async function main(io: IO): Promise<number> {
       );
       const missing = wants.filter((w) => !text.includes(w));
       expect(!missing.length, `renders ${name}`, `missing text: ${missing.join(' | ')}`);
+      const leaked = text.match(buildWords);
+      expect(!leaked, `shows visitors no build notes ${name}`, leaked ? `found "${leaked[0]}" in: ${text.slice(Math.max(0, leaked.index! - 60), leaked.index! + 60)}` : '');
     } catch (e) {
       expect(false, `renders ${name}`, e instanceof Error ? e.stack : String(e));
     }
@@ -460,6 +455,41 @@ export default async function main(io: IO): Promise<number> {
       strip.find((r) => r.area === 5)!.mean.lice.every((v) => v === null),
     'the year strip averages only the farms that reported, area by area and week by week',
   );
+
+  // ---- 6 ----
+  heading('6. The charts the site draws');
+  const siteCharts: [string, ChartSpec | null][] =
+    post.data.combined.state === 'ok' && post.data.price.state === 'ok' && post.data.areaMonth.state === 'ok'
+      ? [
+          ['forecast against published harvest', forecastSpec(post.data.combined.data)],
+          ['price error by horizon', scorecardSpec(post.data.price.data)],
+          ['price error by year', priceByYearSpec(post.data.price.data)],
+          ['harvest by area and month', areaHeatSpec(post.data.areaMonth.data)],
+        ]
+      : [['the mock files', null]];
+  for (const [name, spec] of siteCharts) {
+    try {
+      if (!spec) throw new Error('missing');
+      const view = new vega.View(vega.parse(compile(spec as never).spec), { renderer: 'none' });
+      const svg = await view.toSVG();
+      view.finalize();
+      expect(svg.startsWith('<svg'), `draws: ${name}`);
+    } catch (e) {
+      expect(false, `draws: ${name}`, e instanceof Error ? e.message : String(e));
+    }
+  }
+  const kcw = (kg: number | null) => ({ kg, count: 1, avg_kg: 1 });
+  const row = (area: number, month: string, pred: number | null) => ({ area, month, window: 'dev' as const, actual: kcw(10), pred: kcw(pred) });
+  const totals = monthlyTotals({
+    windows: { dev: ['2021-01', '2021-02'], holdout: ['2021-03', '2021-03'] },
+    scores: { dev: { log_kg: null, log_count: null, log_avg_kg: null }, holdout: { log_kg: null, log_count: null, log_avg_kg: null } },
+    backtest: [row(2, '2021-02', 12), row(3, '2021-02', 8), row(2, '2021-01', 5), row(3, '2021-01', null)],
+  });
+  expect(
+    totals.length === 1 && totals[0]!.month === '2021-02' && totals[0]!.forecast === 20 && totals[0]!.published === 20,
+    'monthly totals add up the areas and skip a month that is missing one',
+  );
+  expect(Math.abs(logToPct(0.07917)! - 8.24) < 0.01 && logToPct(null) === null, 'differences in logs turn into percentages');
 
   console.log(failures ? `\n${failures} check(s) failed.` : '\nAll checks passed.');
   return failures ? 1 : 0;

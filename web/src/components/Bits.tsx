@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
-import { IconCheck, IconClock, IconCross, IconHalf, IconPlus } from './Icons';
+import { IconCheck, IconClock, IconCross, IconPlus } from './Icons';
 
 // ---- "Show the numbers": a disclosure with a table or stats inside ----
 
@@ -62,18 +62,6 @@ export const PassPill = ({ pass }: { pass: boolean }) =>
 export const LaterPill = ({ children }: { children: ReactNode }) => (
   <Pill tone="later" icon={<IconClock size={14} />}>
     {children}
-  </Pill>
-);
-
-export const ReadyPill = () => (
-  <Pill tone="good" icon={<IconCheck size={14} />}>
-    Ready
-  </Pill>
-);
-
-export const PartialPill = () => (
-  <Pill tone="partial" icon={<IconHalf size={14} />}>
-    Partly in
   </Pill>
 );
 

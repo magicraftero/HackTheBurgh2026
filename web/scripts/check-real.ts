@@ -5,7 +5,8 @@
 import * as vega from 'vega';
 import { compile } from 'vega-lite';
 import type { z } from 'zod';
-import { CHART_NAMES, CHARTS, DATA_FILES, DATA_KEYS, chartPath, farmWeeksYearPath } from '../src/data/files';
+import { CHART_NAMES, CHARTS, DATA_FILES, DATA_KEYS, chartPath, farmWeeksYearPath, type DataKey, type DataOf } from '../src/data/files';
+import { areaHeatSpec, forecastSpec, priceByYearSpec, scorecardSpec } from '../src/charts/specs';
 import { parseJson } from '../src/data/load';
 import { VIEW, project } from '../src/map/projection';
 import { ChartSpecSchema, FarmWeeksYearSchema, type ChartSpec, type Farms, type FarmWeeksIndex, type Price } from '../src/data/schemas';
@@ -133,6 +134,37 @@ export default async function main(io: IO): Promise<number> {
     } catch (e) {
       problems += 1;
       say('✕', `${path}: fails to draw (${e instanceof Error ? e.message : String(e)}). Tell ${CHARTS[name].owner}.`);
+    }
+  }
+
+  console.log('\nCharts the site draws (from public/data)');
+  const load = <K extends DataKey>(key: K): DataOf<K> | null => {
+    const text = io.read(`public/${DATA_FILES[key].path}`);
+    if (text === null) return null;
+    const r = parseJson(DATA_FILES[key].path, text, DATA_FILES[key].schema as never);
+    return r.state === 'ok' ? (r.data as DataOf<K>) : null;
+  };
+  const combined = load('combined');
+  const priceFile = load('price');
+  const areaMonth = load('areaMonth');
+  const siteCharts: [string, ChartSpec | null][] = [
+    ['forecast against published harvest', combined && forecastSpec(combined)],
+    ['price error by horizon', priceFile && scorecardSpec(priceFile)],
+    ['price error by year', priceFile && priceByYearSpec(priceFile)],
+    ['harvest by area and month', areaMonth && areaHeatSpec(areaMonth)],
+  ];
+  for (const [name, spec] of siteCharts) {
+    if (!spec) {
+      say('○', `${name}: its data isn't there yet`);
+      continue;
+    }
+    try {
+      const { svg, warnings } = await draw(spec);
+      say('✓', `${name}: draws (${Math.round(svg.length / 1024)} KB of SVG)`);
+      warnings.forEach((w) => detail(`note: ${w}`));
+    } catch (e) {
+      problems += 1;
+      say('✕', `${name}: fails to draw (${e instanceof Error ? e.message : String(e)})`);
     }
   }
 

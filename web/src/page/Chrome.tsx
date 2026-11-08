@@ -2,6 +2,8 @@ import type { MouseEvent, RefObject } from 'react';
 import { Pill } from '../components/Bits';
 import { HookMark, IconClose, IconRefresh } from '../components/Icons';
 import { StatusCell } from '../components/States';
+import { fmtMonth, fmtTonnes } from '../components/format';
+import { showBuildNotes } from '../data/debug';
 import { CHART_NAMES, CHARTS, DATA_FILES, DATA_KEYS, chartPath } from '../data/files';
 import type { Status } from '../data/load';
 import type { AllFiles, Source } from '../data/source';
@@ -35,10 +37,10 @@ export function fileRows(files: AllFiles): FileRow[] {
 // ---- The floating nav: one pill, fixed over the hero and the site ----
 
 const NAV_LINKS: [string, string][] = [
-  ['nowcast', 'Production'],
+  ['nowcast', 'Harvest'],
   ['price', 'Price'],
   ['farms', 'Farms'],
-  ['results', 'Tests'],
+  ['results', 'Results'],
 ];
 
 export function FloatNav() {
@@ -53,7 +55,7 @@ export function FloatNav() {
             {label}
           </a>
         ))}
-        <a className="btn btn-primary btn-sm" href="#top" onClick={(e) => goTo(e, 'top')}>
+        <a className="btn btn-primary btn-sm" href="#nowcast" onClick={(e) => goTo(e, 'nowcast')}>
           See the forecast
         </a>
       </nav>
@@ -64,30 +66,38 @@ export function FloatNav() {
 // ---- Notice at the top of the site ----
 
 export function Notice({ files, source }: { files: AllFiles; source: Source }) {
-  const { nowcast, price } = files.data;
-  const scored = (nowcast.state === 'ok' && nowcast.data.f1 !== null) || (price.state === 'ok' && price.data.f2 !== null);
+  const { farmerActions, combined } = files.data;
+  const live = farmerActions.state === 'ok' && isUpcoming(farmerActions.data.publishes_around) ? farmerActions.data : null;
+  const results = combined.state === 'ok';
+  const mock = source.kind === 'mock';
+  if (!live && !results && !mock) return null;
   return (
     <div className="notice">
       <span className="notice-pill">
-        {source.kind === 'mock' ? <Pill tone="mock">Mock data: made-up numbers, not findings</Pill> : null}
-        {scored ? (
+        {mock ? <Pill tone="mock">Mock data: made-up numbers, not findings</Pill> : null}
+        {live ? (
           <span>
-            The holdout results are in.{' '}
+            Our {fmtMonth(live.target_month)} forecast: {fmtTonnes(live.national.kg)}, ahead of the official figure.{' '}
+            <a href="#current" onClick={(e) => goTo(e, 'current')}>
+              See it
+            </a>
+          </span>
+        ) : results ? (
+          <span>
+            Our forecasts against the published figures.{' '}
             <a href="#results" onClick={(e) => goTo(e, 'results')}>
-              See how the forecasts did
+              See the results
             </a>
           </span>
-        ) : (
-          <span>
-            Holdout results land at the 04:00 analysis freeze.{' '}
-            <a href="#prereg" onClick={(e) => goTo(e, 'prereg')}>
-              How we test
-            </a>
-          </span>
-        )}
+        ) : null}
       </span>
     </div>
   );
+}
+
+/** True until the day an official figure is due ("2026-11-20"). */
+export function isUpcoming(day: string, now = new Date()): boolean {
+  return day >= now.toISOString().slice(0, 10);
 }
 
 // ---- Data status dialog ----
@@ -223,8 +233,8 @@ export function Footer({ files, onOpenStatus }: { files: AllFiles; onOpenStatus:
                 </a>
               </li>
               <li>
-                <a href={`${REPO}/tree/main/docs/plans`} target="_blank" rel="noopener noreferrer">
-                  How it was built
+                <a href={`${REPO}/blob/main/analysis/RESULTS.md`} target="_blank" rel="noopener noreferrer">
+                  The full results
                 </a>
               </li>
             </ul>
@@ -232,11 +242,13 @@ export function Footer({ files, onOpenStatus }: { files: AllFiles; onOpenStatus:
           <div>
             <h3>This site</h3>
             <ul>
-              <li>
-                <button type="button" className="link" onClick={onOpenStatus}>
-                  Data status ({loaded}/{rows.length} files)
-                </button>
-              </li>
+              {showBuildNotes() ? (
+                <li>
+                  <button type="button" className="link" onClick={onOpenStatus}>
+                    Data status ({loaded}/{rows.length} files)
+                  </button>
+                </li>
+              ) : null}
               <li>
                 <button type="button" className="link" onClick={backToBoat}>
                   Back to the fisherman
@@ -251,8 +263,7 @@ export function Footer({ files, onOpenStatus }: { files: AllFiles; onOpenStatus:
           </div>
         </div>
         <p className="footer-small">
-          Every number on this page is read from the project's published files; none is typed in by hand.
-          Research, not investment advice.
+          Every result on this page is read from the project's published files. Research, not investment advice.
         </p>
       </div>
     </footer>

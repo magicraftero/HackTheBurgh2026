@@ -1,9 +1,10 @@
 import type { ReactNode } from 'react';
+import { showBuildNotes } from '../data/debug';
 import type { Status } from '../data/load';
 import { IconAlert, IconCheck, IconClock } from './Icons';
 
-/** The "coming later" state: a file, or one part of a file, isn't there yet. */
-export function Later({ title = 'Coming later', children }: { title?: string; children?: ReactNode }) {
+/** The "still to come" state: a file, or one part of a file, isn't there yet. */
+export function Later({ title = 'Coming soon', children }: { title?: string; children?: ReactNode }) {
   return (
     <div className="later">
       <span className="later-icon">
@@ -26,8 +27,12 @@ type ViewProps<T> = {
   children: (data: T) => ReactNode;
 };
 
-/** Shows a loaded file's content, or the right "not yet" state. */
+/**
+ * Shows a loaded file's content, or a plain "still to come". What's missing and
+ * who owes it are build notes, shown only with ?debug (data/debug.ts).
+ */
 export function StatusView<T>({ status, file, owner, due, children }: ViewProps<T>) {
+  const notes = showBuildNotes();
   switch (status.state) {
     case 'loading':
       return <p className="loading">Loading…</p>;
@@ -36,14 +41,17 @@ export function StatusView<T>({ status, file, owner, due, children }: ViewProps<
     case 'missing':
       return (
         <Later>
-          <p>{due ? `Arrives ${due}.` : 'Not published yet.'}</p>
-          <p className="note">
-            Waiting for <code>{file}</code>
-            {owner ? ` from ${owner}` : ''}.
-          </p>
+          {notes ? (
+            <p className="note">
+              Waiting for <code>{file}</code>
+              {owner ? ` from ${owner}` : ''}
+              {due ? `, due ${due}` : ''}.
+            </p>
+          ) : null}
         </Later>
       );
     case 'invalid':
+      if (!notes) return <Later title="Not available right now" />;
       return (
         <Later title="Held back">
           <p>
@@ -61,10 +69,13 @@ export function StatusView<T>({ status, file, owner, due, children }: ViewProps<
       );
     case 'error':
       return (
-        <Later title="Couldn't load">
-          <p>
-            <code>{file}</code> didn't load ({status.message}). Reload the page to try again.
-          </p>
+        <Later title="Couldn't load this">
+          <p>Reload the page to try again.</p>
+          {notes ? (
+            <p className="note">
+              <code>{file}</code>: {status.message}
+            </p>
+          ) : null}
         </Later>
       );
   }

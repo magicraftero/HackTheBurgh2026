@@ -3,6 +3,7 @@ import { Numbers, Table } from '../components/Bits';
 import { DASH, fmt, fmtInt, mean } from '../components/format';
 import { IconPause, IconPlay } from '../components/Icons';
 import { Later, StatusView } from '../components/States';
+import { showBuildNotes } from '../data/debug';
 import type { Status } from '../data/load';
 import type { Farms, FarmWeeksIndex, FarmWeeksYear } from '../data/schemas';
 import { loadFarmWeeksYear, useFarmWeeksYear, type Source } from '../data/source';
@@ -44,14 +45,7 @@ function FarmYears({ farms, years, source }: { farms: Farms; years: number[]; so
   }
 
   if (!sorted.length || year === null) {
-    return (
-      <Later>
-        <p>No years listed yet.</p>
-        <p className="note">
-          Waiting for years in <code>farm_weeks/index.json</code> from Data.
-        </p>
-      </Later>
-    );
+    return <Later />;
   }
   const data = status?.state === 'ok' ? status.data : last;
   const problem = status && status.state !== 'ok' && status.state !== 'loading' ? status : null;
@@ -392,7 +386,7 @@ export function FarmExplorer({ farms, years, year, onYear, data, source }: Explo
         </div>
       </div>
 
-      {unplaced ? (
+      {unplaced && showBuildNotes() ? (
         <p className="warn" role="status">
           {fmtInt(unplaced)} farm IDs in this year's file aren't in farms.json or have no position, so they're not on the map. Tell Data.
         </p>

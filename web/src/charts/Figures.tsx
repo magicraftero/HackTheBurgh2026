@@ -1,0 +1,365 @@
+// The findings as pictures, drawn from the published data. Simple comparisons
+// are plain HTML (they scale with the page and stay crisp); time series use
+// Vega-Lite (./specs.ts). Each has a table under "Show the numbers".
+
+import { useMemo, type ReactNode } from 'react';
+import { PassPill } from '../components/Bits';
+import { DASH, fmtDate, fmtMonth, fmtPct, fmtR, fmtTonnes } from '../components/format';
+import { IconAlert } from '../components/Icons';
+import { VegaChart } from '../components/VegaChart';
+import type { AreaMonth, Channels, Combined, Drivers, FarmerActions, Price, Trap } from '../data/schemas';
+import { areaHeatSpec, forecastSpec, priceByYearSpec, priceWindow, scorecardSpec } from './specs';
+
+function Figure({ title, legend, note, children }: { title: string; legend?: ReactNode; note?: ReactNode; children: ReactNode }) {
+  return (
+    <div className="chart-card">
+      <figure className="figure" aria-label={title}>
+        <figcaption className="figure-head">
+          <h3>{title}</h3>
+          {legend}
+        </figcaption>
+        {children}
+        {note ? <p className="figure-note">{note}</p> : null}
+      </figure>
+    </div>
+  );
+}
+
+function VegaFigure({ title, note, spec }: { title: string; note?: ReactNode; spec: Parameters<typeof VegaChart>[0]['spec'] }) {
+  return (
+    <Figure title={title} note={note}>
+      <VegaChart spec={spec} label={title} />
+    </Figure>
+  );
+}
+
+/** A signed percentage that never says "−0.0%". */
+export const rise = (v: number | null) => (v === null ? DASH : Math.abs(v) < 0.05 ? '0.0%' : fmtPct(v));
+
+const lowerFirst = (s: string) => (/^[A-Z][a-z]/.test(s) ? s[0]!.toLowerCase() + s.slice(1) : s);
+
+// ---- Finding 2: correlation with price, before and after ----
+
+export function TrapFigure({ trap }: { trap: Trap }) {
+  const rows = trap.drivers
+    .flatMap((d) => (d.raw_r === null || d.anom_r === null ? [] : [{ label: d.label, raw: d.raw_r, clean: d.anom_r }]))
+    .sort((a, b) => Math.abs(b.raw) - Math.abs(a.raw));
+  const top = rows[0];
+  if (!top) return null;
+  const all = rows.flatMap((r) => [r.raw, r.clean]);
+  const lo = Math.min(-0.8, Math.floor(Math.min(...all) * 5) / 5);
+  const hi = Math.max(0, Math.ceil(Math.max(...all) * 5) / 5);
+  const x = (v: number) => ((v - lo) / (hi - lo)) * 100;
+  const ticks: number[] = [];
+  for (let t = lo; t <= hi + 1e-9; t += 0.2) ticks.push(Math.round(t * 10) / 10);
+  const grew = rows.find((r) => Math.abs(r.clean) > Math.abs(r.raw));
+  return (
+    <Figure
+      title="Correlation with the salmon price, before and after removing the seasons"
+      legend={
+        <p className="fig-legend" aria-hidden="true">
+          <span>
+            <i className="db-dot is-raw" /> Raw
+          </span>
+          <span>
+            <i className="db-dot is-clean" /> Season and trend removed
+          </span>
+        </p>
+      }
+      note={
+        <>
+          The strongest raw link, {lowerFirst(top.label)} at {fmtR(top.raw)}, falls to {fmtR(top.clean)} once season and trend are
+          gone.{grew ? ` ${grew.label} is the exception: its link gets stronger.` : ''}
+        </>
+      }
+    >
+      <div className="db" aria-hidden="true">
+        {rows.map((r) => (
+          <div className="db-row" key={r.label}>
+            <span className="db-label">{r.label}</span>
+            <span className="db-track">
+              {ticks.map((t) => (
+                <i key={t} className="db-tick" style={{ left: `${x(t)}%` }} />
+              ))}
+              <i className="db-link" style={{ left: `${Math.min(x(r.raw), x(r.clean))}%`, width: `${Math.abs(x(r.raw) - x(r.clean))}%` }} />
+              <i className="db-dot is-raw" style={{ left: `${x(r.raw)}%` }} />
+              <i className="db-dot is-clean" style={{ left: `${x(r.clean)}%` }} />
+            </span>
+            <span className="db-values">
+              {fmtR(r.raw)} → {fmtR(r.clean)}
+            </span>
+          </div>
+        ))}
+        <div className="db-row db-axis">
+          <span />
+          <span className="db-track">
+            {ticks.map((t) => (
+              <em key={t} style={{ left: `${x(t)}%` }}>
+                {t === 0 ? '0' : `${t < 0 ? '−' : ''}${Math.abs(t).toFixed(1)}`}
+              </em>
+            ))}
+          </span>
+          <span />
+        </div>
+      </div>
+    </Figure>
+  );
+}
+
+// ---- Finding 3: fish count and weight after low, middle and high months ----
+
+export const FACTOR_NAMES: Record<string, string> = { lice: 'Lice', mortality: 'Deaths', temp: 'Sea temperature', feed: 'Feed' };
+const FACTOR_ORDER = ['lice', 'mortality', 'temp', 'feed'];
+export const THIRDS: Record<number, string> = { 1: 'Low', 2: 'Middle', 3: 'High' };
+
+/** A difference in logs from normal, as a percentage: 0.079 is +8.2%. */
+export const logToPct = (v: number | null) => (v === null ? null : (Math.exp(v) - 1) * 100);
+
+function SplitBar({ value, max, kind }: { value: number | null; max: number; kind: 'count' | 'weight' }) {
+  const width = value === null ? 0 : (Math.abs(value) / max) * 50;
+  return (
+    <span className="split-cell">
+      <span className="split-track">
+        <i className={`split-bar is-${kind}`} style={value !== null && value < 0 ? { right: '50%', width: `${width}%` } : { left: '50%', width: `${width}%` }} />
+      </span>
+      <span className="split-value">{rise(value)}</span>
+    </span>
+  );
+}
+
+export function SplitFigure({ bins }: { bins: Channels['bins'] }) {
+  const rows = bins.map((b) => ({ ...b, count: logToPct(b.count_anom), weight: logToPct(b.weight_anom) }));
+  const maxOf = (key: 'count' | 'weight') => Math.max(0.1, ...rows.map((r) => Math.abs(r[key] ?? 0)));
+  const maxCount = maxOf('count');
+  const maxWeight = maxOf('weight');
+  const drivers = [...new Set(rows.map((r) => r.driver))].sort((a, b) => FACTOR_ORDER.indexOf(a) - FACTOR_ORDER.indexOf(b));
+  return (
+    <Figure
+      title="What happens to the harvest after a low, middle or high month"
+      note="Each factor's months are split into thirds. Bars show the difference from normal for the time of year. Each column has its own scale."
+    >
+      <div className="split-grid" aria-hidden="true">
+        {drivers.map((driver) => {
+          const part = rows.filter((r) => r.driver === driver).sort((a, b) => a.tercile - b.tercile);
+          return (
+            <div className="split-card" key={driver}>
+              <p className="split-name">
+                {FACTOR_NAMES[driver] ?? driver}
+                <span>{part[0]?.window.replace('-', ' to ')} months later</span>
+              </p>
+              <div className="split-row split-columns">
+                <span />
+                <span>Fish harvested</span>
+                <span>Average weight</span>
+              </div>
+              {part.map((r) => (
+                <div className="split-row" key={r.tercile}>
+                  <span className="split-third">{THIRDS[r.tercile] ?? r.tercile}</span>
+                  <SplitBar value={r.count} max={maxCount} kind="count" />
+                  <SplitBar value={r.weight} max={maxWeight} kind="weight" />
+                </div>
+              ))}
+            </div>
+          );
+        })}
+      </div>
+    </Figure>
+  );
+}
+
+// ---- Finding 4: forecast against the published harvest ----
+
+export function ForecastFigure({ c }: { c: Combined }) {
+  const spec = useMemo(() => forecastSpec(c), [c]);
+  return (
+    <VegaFigure
+      title="Our forecast against the published harvest, month by month"
+      note="Total for the areas forecast. Area 1 and area 13 harvest too irregularly to forecast."
+      spec={spec}
+    />
+  );
+}
+
+// ---- Finding 5: what the forecast loses without each factor ----
+
+const GROUP_NAMES: Record<string, string> = {
+  stock: 'Stock',
+  market: 'Exports',
+  pipeline: 'Smolt pipeline',
+  feed: 'Feed',
+  temperature: 'Sea temperature',
+  losses: 'Deaths and disease',
+  lice: 'Lice and treatments',
+};
+
+
+function RankBars({ title, rows, max }: { title: string; rows: { label: string; value: number | null }[]; max: number }) {
+  const sorted = [...rows].sort((a, b) => (b.value ?? -Infinity) - (a.value ?? -Infinity));
+  return (
+    <div className="rank">
+      <p className="rank-title">{title}</p>
+      {sorted.map((r, i) => (
+        <div className={`rank-row${i === 0 ? ' is-top' : ''}`} key={r.label}>
+          <span className="rank-label">{r.label}</span>
+          <span className="rank-track">
+            <i className="rank-bar" style={{ width: `${(Math.max(r.value ?? 0, 0) / max) * 100}%` }} />
+          </span>
+          <span className="rank-value">{rise(r.value)}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export function RankingFigure({ d }: { d: Drivers }) {
+  const label = new Map(d.groups.map((g) => [g.group, GROUP_NAMES[g.group] ?? g.label]));
+  const tonnes = d.groups.map((g) => ({ label: label.get(g.group)!, value: g.increase_pct }));
+  const size = (d.by_outcome.log_avg_kg ?? []).map((g) => ({ label: label.get(g.group) ?? g.group, value: g.increase_pct }));
+  const max = Math.max(0.1, ...[...tonnes, ...size].map((r) => r.value ?? 0));
+  const [from, to] = d.window.split(' to ');
+  return (
+    <Figure
+      title="How much worse the forecast gets without each factor"
+      note={`${from && to ? `${fmtMonth(from)} to ${fmtMonth(to)}. ` : ''}Near zero means the forecast barely needs that factor. Both sides share a scale.`}
+    >
+      <div className="rank-grid" aria-hidden="true">
+        <RankBars title="Tonnes harvested" rows={tonnes} max={max} />
+        <RankBars title="Fish size" rows={size} max={max} />
+      </div>
+    </Figure>
+  );
+}
+
+// ---- Finding 6: the tests of how lice and warmth act ----
+
+export const DRIVER_LABELS: Record<string, string> = { mobile_lice: 'Mobile lice', treatments: 'Treatments', dd_below14: 'Warmth under 14 °C' };
+export const OUTCOME_LABELS: Record<string, string> = { log_count: 'fish harvested', log_avg_kg: 'average weight', log_kg: 'harvest' };
+const EXPECTED: Record<string, string> = {
+  'M1|log_count|mobile_lice': 'Should be above zero',
+  'M1|log_avg_kg|mobile_lice': 'Should be below zero',
+  'M2|log_avg_kg|dd_below14': 'Should be above zero',
+};
+
+const twoFigures = (v: number | null) => {
+  if (v === null) return DASH;
+  return `${v < 0 ? '−' : ''}${Math.abs(v).toLocaleString('en-GB', { minimumSignificantDigits: 2, maximumSignificantDigits: 2 })}`;
+};
+
+export function MechanismFigure({ panel }: { panel: NonNullable<Channels['panel']> }) {
+  const rows = [...panel].sort((a, b) => Number(a.pass === null) - Number(b.pass === null));
+  return (
+    <Figure
+      title="Does the effect clear zero?"
+      note="Bars show the 95% interval, dots the estimate. A test passes if its whole interval sits on the side we said it would. Each row has its own scale, because the factors are in different units."
+    >
+      <div className="forest">
+        {rows.map((r, i) => {
+          const reach = Math.max(Math.abs(r.lo ?? 0), Math.abs(r.hi ?? 0), Math.abs(r.coef_sum ?? 0)) * 1.15 || 1;
+          const x = (v: number) => 50 + (v / reach) * 50;
+          const lo = x(r.lo ?? 0);
+          const hi = x(r.hi ?? 0);
+          return (
+            <div className={`forest-row${r.pass === null ? ' is-unscored' : ''}`} key={`${r.test}-${r.outcome}-${r.driver}-${i}`}>
+              <p className="forest-label">
+                <strong>
+                  {DRIVER_LABELS[r.driver] ?? r.driver} → {OUTCOME_LABELS[r.outcome] ?? r.outcome}
+                </strong>
+                <span>
+                  {r.test}
+                  {EXPECTED[`${r.test}|${r.outcome}|${r.driver}`] ? ` · ${EXPECTED[`${r.test}|${r.outcome}|${r.driver}`]}` : ''}
+                </span>
+              </p>
+              <span className="forest-plot" aria-hidden="true">
+                <i className="forest-zero" />
+                <i className="forest-ci" style={{ left: `${lo}%`, width: `${hi - lo}%` }} />
+                <i className="forest-dot" style={{ left: `${x(r.coef_sum ?? 0)}%` }} />
+              </span>
+              <span className="forest-value">
+                {twoFigures(r.coef_sum)}
+                <small>
+                  {twoFigures(r.lo)} to {twoFigures(r.hi)}
+                </small>
+              </span>
+              <span className="forest-result">{r.pass === null ? <span className="forest-none">No pass mark</span> : <PassPill pass={r.pass} />}</span>
+            </div>
+          );
+        })}
+      </div>
+    </Figure>
+  );
+}
+
+// ---- Finding 7: the price forecasts ----
+
+export function ScorecardFigure({ p }: { p: Price }) {
+  const spec = useMemo(() => scorecardSpec(p), [p]);
+  const years = priceWindow(p) === 'holdout' ? 'The weeks the models never saw.' : 'The years the models were built on, 2021 to 2024.';
+  return <VegaFigure title="Price forecast error at each horizon" note={`Below the line beats a random walk. ${years}`} spec={spec} />;
+}
+
+export function ByYearFigure({ p }: { p: Price }) {
+  const spec = useMemo(() => priceByYearSpec(p), [p]);
+  const years = p.by_year.map((y) => y.year);
+  const span = years.length ? ` ${Math.min(...years)} to ${Math.max(...years)}, the years the models were built on.` : '';
+  return <VegaFigure title="Does farm data help the four-week forecast?" note={`Lower is better.${priceWindow(p) === 'dev' ? span : ''}`} spec={spec} />;
+}
+
+// ---- Finding 8: the forecast for the latest month ----
+
+export function LiveForecast({ f }: { f: FarmerActions }) {
+  const areas = f.areas.flatMap((a) => (a.forecast?.kg == null ? [] : [{ ...a, kg: a.forecast.kg }])).sort((a, b) => a.area - b.area);
+  const max = Math.max(1, ...areas.map((a) => a.kg));
+  const first = f.national.areas[0];
+  const last = f.national.areas[f.national.areas.length - 1];
+  return (
+    <div className="chart-card">
+      <p className="unverifiable">
+        <IconAlert size={18} /> Can't be checked until the official figure is out
+      </p>
+      <div className="live-grid">
+        <div>
+          <p className="live-label">
+            Forecast for {fmtMonth(f.target_month)}
+            {first !== undefined && last !== undefined ? `, areas ${first} to ${last}` : ''}
+          </p>
+          <p className="hero-figure">{fmtTonnes(f.national.kg)}</p>
+          <dl className="example-rows">
+            <div>
+              <dt>Forecast made</dt>
+              <dd>{fmtDate(f.made_on)}</dd>
+            </div>
+            <div>
+              <dt>Official figure due around</dt>
+              <dd>{fmtDate(f.publishes_around)}</dd>
+            </div>
+          </dl>
+        </div>
+        <div className="rank live-areas">
+          <p className="rank-title">By production area, south to north</p>
+          {areas.map((a) => (
+            <div className="rank-row" key={a.area}>
+              <span className="rank-label" title={a.name}>
+                <b>{a.area}</b> {a.name}
+              </span>
+              <span className="rank-track">
+                <i className="rank-bar" style={{ width: `${(a.kg / max) * 100}%` }} />
+              </span>
+              <span className="rank-value">{fmtTonnes(a.kg)}</span>
+              <span className="live-change" title="Compared with the same month last year">
+                {a.vs_last_year_pct === null ? DASH : fmtPct(a.vs_last_year_pct, 0)}
+              </span>
+            </div>
+          ))}
+          <p className="figure-note">Right-hand column: compared with the same month last year.</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ---- Appendix: every area, every month ----
+
+export function AreaHeatFigure({ rows }: { rows: AreaMonth }) {
+  const spec = useMemo(() => areaHeatSpec(rows), [rows]);
+  return <VegaFigure title="Salmon harvested in each production area, every month" spec={spec} />;
+}
