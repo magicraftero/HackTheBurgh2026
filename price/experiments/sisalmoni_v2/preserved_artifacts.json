@@ -1,0 +1,17 @@
+{
+  "price/RESULTS.md": "6dc4bbacd40cee46910b364f9cd211e6617fc81ff9587cf863874c56fb868076",
+  "price/provenance.json": "fcd87ecb05d6fd37c556a845fbeac2699a786cab9ae0291765b6e576d05df5b4",
+  "price/final_run.json": "fcd87ecb05d6fd37c556a845fbeac2699a786cab9ae0291765b6e576d05df5b4",
+  "price/sisalmoni.py": "c002b6d1eaaa4c6afa65e0bf0bb52ce393344b841c5e9827266fcef204cf6af7",
+  "data/processed/price_backtest.parquet": "d40eb7b4423cb327a074b2698e0aa73136bbf571a2a9ee40f7ac14690cf3f627",
+  "web/public/data/price.json": "443fe97fa7be6436fc1ea86da1b6ae536938c529da27eb8e0bd23c3edb2cf9d4",
+  "web/public/charts/price_scorecard.vl.json": "03347ca19c88b53dd1ad7c460212a4776393971988c4d1d41b1ae75421a74c10",
+  "web/public/charts/price_by_year.vl.json": "cecee19bd5b78ae97279c98047b81f177b8f0d518616352115d274dabfde2a94",
+  "web/public/charts/price_backtest.vl.json": "3bb8dbb9378774f8769a8d1bab2c158cb351d17f67d13cc4e1cfbbbfe25a7b3e",
+  "price/experiments/sisalmoni/metrics.json": "70d11694f1ce13b4fb9ed544d4ba5c32411010ef0b4fe85e50c47a926f55f0c7",
+  "price/experiments/sisalmoni/provenance.json": "f4530a6ba20528582bfbf37a714ec7dbdbfd6ebbf8424e99368b457d728b8a87",
+  "price/experiments/sisalmoni/SOURCES.md": "3ce808254247e56988468e8f06cf82c9870394ea5874a58b8e433ef9aad1f5b9",
+  "price/experiments/sisalmoni/RESULTS.md": "a27f446cffa1634d23464b6c9f15a79cddc5dc3f42858ac99801f4cbb45bec7a",
+  "price/experiments/sisalmoni/PLAN.md": "0e77d1cc2f7e740c6e0e904818b4b016888dd552e197283d6015eae4c97d7fa4",
+  "price/experiments/sisalmoni/predictions.parquet": "07fa998f1dc3d6e8d1933fa00b745ab980dde881334d648f35492b536ba8ad22"
+}

@@ -348,14 +348,24 @@ def _flags(signals: dict[str, Any]) -> list[dict[str, str]]:
 
 
 def _national_entry(areas: list[dict[str, Any]], backtest: pd.DataFrame | None) -> dict[str, Any]:
-    kg = [a["baseline"]["kg"] for a in areas]
-    count = [a["baseline"]["count"] for a in areas]
-    complete = all(v is not None for v in kg + count)
-    total_kg = float(sum(kg)) if complete else None
-    total_count = float(sum(count)) if complete else None
-    bounds = _national_interval(backtest)
+    """Sum of the areas that have a forecast; the label says which ones those are."""
+
+    covered = [
+        a for a in areas if a["baseline"]["kg"] is not None and a["baseline"]["count"] is not None
+    ]
+    complete = bool(covered)
+    total_kg = float(sum(a["baseline"]["kg"] for a in covered)) if complete else None
+    total_count = float(sum(a["baseline"]["count"] for a in covered)) if complete else None
+    covered_ids = [a["area"] for a in covered]
+    missing_ids = [a["area"] for a in areas if a not in covered]
+    bounds = _national_interval(backtest, covered_ids)
+    label = f"Areas {_describe_areas(covered_ids)}"
+    if missing_ids:
+        noun, verb = ("area", "harvests") if len(missing_ids) == 1 else ("areas", "harvest")
+        label += f" ({noun} {_describe_areas(missing_ids)} {verb} too irregularly to forecast)"
     return {
-        "label": "Areas 1-13 (the Directorate's suppressed-data row is not forecast)",
+        "label": label,
+        "areas": covered_ids,
         "kg": round_significant(total_kg),
         "count": round_significant(total_count),
         "avg_kg": round_significant(total_kg / total_count) if complete and total_count else None,
@@ -367,12 +377,22 @@ def _national_entry(areas: list[dict[str, Any]], backtest: pd.DataFrame | None) 
     }
 
 
-def _national_interval(backtest: pd.DataFrame | None) -> list[float] | None:
-    if backtest is None:
+def _describe_areas(ids: list[int]) -> str:
+    if ids and ids == list(range(ids[0], ids[-1] + 1)) and len(ids) > 2:
+        return f"{ids[0]}-{ids[-1]}"
+    return ", ".join(str(i) for i in ids[:-1]) + (" and " if len(ids) > 1 else "") + str(ids[-1])
+
+
+def _national_interval(backtest: pd.DataFrame | None, areas: list[int]) -> list[float] | None:
+    if backtest is None or not areas:
         return None
-    kg = backtest.loc[(backtest["window"] == "dev") & (backtest["outcome"] == "log_kg")]
+    kg = backtest.loc[
+        (backtest["window"] == "dev")
+        & (backtest["outcome"] == "log_kg")
+        & backtest["area"].isin(areas)
+    ]
     kg = kg.loc[kg[["actual", "drivers"]].notna().all(axis=1)]
-    complete = kg.groupby("month")["area"].transform("count") == len(AREAS)
+    complete = kg.groupby("month")["area"].transform("count") == len(areas)
     sums = kg.loc[complete].groupby("month")[["actual", "drivers"]].agg(lambda s: np.exp(s).sum())
     if sums.empty:
         return None

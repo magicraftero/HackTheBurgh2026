@@ -107,3 +107,15 @@ def test_rejects_an_irregular_weekly_grid() -> None:
 
     with pytest.raises(ValueError, match="regular grid"):
         anomaly(values, "W")
+
+
+def test_season_needs_three_rows_per_parameter() -> None:
+    rng = np.random.default_rng(5)
+
+    def monthly(periods: int) -> pd.Series:
+        index = pd.date_range("2018-01-01", periods=periods, freq="MS")
+        return pd.Series(np.exp(3 + rng.normal(0, 0.1, periods)), index=index)
+
+    with pytest.raises(ValueError, match="need at least 24"):
+        anomaly(monthly(30), "M")
+    assert anomaly(monthly(40), "M").notna().sum() > 0

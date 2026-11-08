@@ -91,3 +91,18 @@ def test_extreme_lice_this_month_raises_a_flag(nowcast_world: World, backtest: p
 
     assert "lice_high" in {flag["id"] for flag in area["flags"]}
     assert area["signals"]["lice"]["percentile"] >= 80
+
+
+def test_national_sums_only_areas_with_a_forecast(nowcast_world: World, backtest: pd.DataFrame) -> None:
+    directorate, weekly, ssb = nowcast_world
+    directorate = directorate.copy()
+    directorate.loc[directorate["area"] == 1, ["harvest_kg", "harvest_count"]] = 0
+
+    lab = build_decision_lab(PreparedInputs(directorate, weekly, ssb), TARGET, CUTOFF, backtest)
+    national = lab["national"]
+
+    assert lab["areas"][0]["baseline"]["kg"] is None
+    assert national["areas"] == list(range(2, 14))
+    assert national["label"].startswith("Areas 2-13 (area 1 harvests")
+    assert national["kg"] == pytest.approx(sum(a["baseline"]["kg"] for a in lab["areas"][1:]), rel=1e-3)
+    assert national["kg_range"][0] < national["kg"] < national["kg_range"][1]

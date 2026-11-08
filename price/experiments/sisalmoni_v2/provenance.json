@@ -1,0 +1,41 @@
+{
+  "generated_at": "2026-11-08T10:29:36.359148+00:00",
+  "hashes": {
+    "inputs": {
+      "/Users/ryanlam/Desktop/Personal Projects/HackTheBurgh2026/data/processed/directorate_area_month.parquet": "af653ae619518a1634bc0c0c4a863682b01264eb290d348873a664f58f72f3d9",
+      "/Users/ryanlam/Desktop/Personal Projects/HackTheBurgh2026/data/processed/drivers_national_month.parquet": "1d2cde5a49457e002b72595f3c3befc231cf7d346657a492d9449ec87ea8466a",
+      "/Users/ryanlam/Desktop/Personal Projects/HackTheBurgh2026/data/processed/fx_daily.parquet": "949e26de3712c592a45359efde338a593b3d2e7e2d08083b214990429b857d1d",
+      "/Users/ryanlam/Desktop/Personal Projects/HackTheBurgh2026/data/processed/ssb_weekly.parquet": "f22ea7bd13ea8a5523bf705aebde2e80236ff830cad9457dd14c5bd609155304",
+      "/Users/ryanlam/Desktop/Personal Projects/HackTheBurgh2026/data/processed/weekly_national_index.parquet": "f4b98366f6da3521b21a19d3a5052bbf225bbddf26b8c9689901c6fa33366524",
+      "/Users/ryanlam/Desktop/Personal Projects/HackTheBurgh2026/price/experiments/sisalmoni/predictions.parquet": "07fa998f1dc3d6e8d1933fa00b745ab980dde881334d648f35492b536ba8ad22",
+      "/Users/ryanlam/Desktop/Personal Projects/HackTheBurgh2026/price/experiments/sisalmoni/provenance.json": "f4530a6ba20528582bfbf37a714ec7dbdbfd6ebbf8424e99368b457d728b8a87",
+      "/Users/ryanlam/Desktop/Personal Projects/HackTheBurgh2026/price/experiments/sisalmoni_v2/PLAN.md": "b3c01155c09b33e55e8339333a11bfc403828482fe15bc6f31dbaa61e7d8ee4d",
+      "/Users/ryanlam/Desktop/Personal Projects/HackTheBurgh2026/price/final_run.json": "fcd87ecb05d6fd37c556a845fbeac2699a786cab9ae0291765b6e576d05df5b4",
+      "/Users/ryanlam/Desktop/Personal Projects/HackTheBurgh2026/requirements.txt": "388acca7b4d742406268168ef95e6c91c1a0e8b26c02e196a50fe04287a38eb1",
+      "/Users/ryanlam/Desktop/Personal Projects/HackTheBurgh2026/data/raw/sisalmoni/2024.json": "bea73821809f0728b41a98c0c7b2dd12349b94bdf8d13de72e897100126f33d1",
+      "/Users/ryanlam/Desktop/Personal Projects/HackTheBurgh2026/data/raw/sisalmoni/2025.json": "20f716b6f67664906436c339702863ab3d37cb3f918f2a78facb0d61bdbd7236",
+      "/Users/ryanlam/Desktop/Personal Projects/HackTheBurgh2026/data/raw/sisalmoni/2026.json": "7867cee6165d20aeb656431b49195a376ab11332ef57d0556a3dd498281ed1d2"
+    },
+    "code": {
+      "/Users/ryanlam/Desktop/Personal Projects/HackTheBurgh2026/analysis/anomalies.py": "386c19e2b99e9710c4bbe32bd6745d05e53da54c70fed3690074e42ce05e96a8",
+      "/Users/ryanlam/Desktop/Personal Projects/HackTheBurgh2026/price/anomalies.py": "8b0ca00147193872d37d768477487e9dd833423112096f8687104132e0461494",
+      "/Users/ryanlam/Desktop/Personal Projects/HackTheBurgh2026/price/calendar.py": "eaeb3cc9029f15410397ab0c2e3fcbc97409438f0ac84d827760fcc848fc895b",
+      "/Users/ryanlam/Desktop/Personal Projects/HackTheBurgh2026/price/dataset.py": "fac070b1173e3f0b6e279ab336387c3531d821f1a1588c8142a99a038738e999",
+      "/Users/ryanlam/Desktop/Personal Projects/HackTheBurgh2026/price/sisalmoni.py": "c002b6d1eaaa4c6afa65e0bf0bb52ce393344b841c5e9827266fcef204cf6af7",
+      "/Users/ryanlam/Desktop/Personal Projects/HackTheBurgh2026/price/sisalmoni_v2.py": "dbd59f594dee05379565e7f2227f077236fd46c00f2fdafcb571746fa403fe62",
+      "/Users/ryanlam/Desktop/Personal Projects/HackTheBurgh2026/price/sisalmoni_v2_core.py": "83e884cf23cf8c560bfcf18a8c2521c1a39ec5c8444af6a6239a4ad7fb3eb460"
+    }
+  },
+  "selection_sha256": "d7e398c6b22f36d9cd6b5177dfd680897bed1be5b8b9405eb7202e5d4bbc1d81",
+  "runtime": {
+    "python": "3.13.5",
+    "executable": "/private/tmp/htb-price-venv/bin/python",
+    "packages": {
+      "pandas": "2.3.3",
+      "numpy": "2.4.6",
+      "scipy": "1.18.1",
+      "statsmodels": "0.15.0",
+      "pyarrow": "26.0.1"
+    }
+  }
+}

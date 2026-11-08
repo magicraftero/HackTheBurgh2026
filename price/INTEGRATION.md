@@ -1,5 +1,18 @@
 # Price integration verification
 
+## Current display handoff, 8 November 2026
+
+**The pricing results to present are SISALMONI v2 in EUR/kg.** Follow
+[PRICE_DISPLAY_HANDOFF.md](../docs/PRICE_DISPLAY_HANDOFF.md), using
+`web/public/data/price_display_manifest.json` and its versioned payload/charts.
+The old `price.json` and `price_*.vl.json` files described below are the separate
+registered SSB/NOK evaluation. Historical pending-work statements below describe
+the earlier integration snapshots; they do not identify the preferred display.
+
+Regenerate display assets with `python -m price.export_display`. The selected
+experimental Ridge is the model shown in the v2 result, while `rw` remains the
+recorded live recommendation. Do not merge those two meanings into one label.
+
 ## Original verification, 7 November 2026
 
 Price was implemented on `priceRyan`. At the start this worktree contained only

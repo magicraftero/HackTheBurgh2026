@@ -1,0 +1,7 @@
+{
+  "initial_selection_sha256": "a68ad57039a4bf39139e8e4a86afca408a863c0cbfab37a7498070240c20a31c",
+  "reason": "Bind final CLI input paths to the frozen development manifest; no model, hyperparameter, feature, date, metric, selection or development-prediction change. No final score existed at amendment.",
+  "changed_code_files": [
+    "/Users/ryanlam/Desktop/Personal Projects/HackTheBurgh2026/price/sisalmoni_v2.py"
+  ]
+}

@@ -19,6 +19,7 @@ Transform = Literal["log", "log1p", "none"]
 
 _WINDOWS: dict[Frequency, int] = {"W": 52, "M": 12}
 _MINIMUM_COVERAGE = 0.75
+_MIN_ROWS_PER_SEASON_PARAMETER = 3
 
 
 def anomaly(
@@ -105,11 +106,11 @@ def _fit_season(
     if fit_end is not None:
         fit_mask &= residual.index <= pd.Timestamp(fit_end)
 
-    n_parameters = design.shape[1]
-    if int(fit_mask.sum()) < n_parameters:
+    needed = _MIN_ROWS_PER_SEASON_PARAMETER * design.shape[1]
+    if int(fit_mask.sum()) < needed:
         raise ValueError(
             "Not enough usable observations to fit seasonality: "
-            f"need at least {n_parameters}, found {int(fit_mask.sum())}."
+            f"need at least {needed}, found {int(fit_mask.sum())}."
         )
 
     coefficients, *_ = np.linalg.lstsq(

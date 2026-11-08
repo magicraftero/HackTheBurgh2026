@@ -531,8 +531,10 @@ def main(argv: Sequence[str] | None = None) -> None:
 
     if not prepared.include_disease:
         print("NOTE: disease_share is null everywhere, so it is left out of the Drivers model.")
-    skipped = results.loc[results["drivers"].isna(), "month"].unique()
-    print(f"Months with no Drivers nowcast (too little training data): {list(skipped)}")
+    covered = results.groupby("month")["drivers"].apply(lambda values: values.notna().any())
+    print(f"Months with no Drivers nowcast at all: {list(covered.index[~covered])}")
+    by_area = results.groupby("area")["drivers"].apply(lambda values: values.notna().mean())
+    print(f"Share of rows nowcast, by area: {by_area.round(2).to_dict()}")
     first = results.loc[results["outcome"] == "log_kg"].groupby("month")["n_train"].first()
     print(f"Training rows: {first.iloc[0]} for {first.index[0]}, {first.iloc[-1]} for {first.index[-1]}")
     print(f"Development-window MAE: {nowcast['scores']['dev']}")

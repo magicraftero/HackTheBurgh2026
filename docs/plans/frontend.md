@@ -2,6 +2,12 @@
 
 For: the coding agent working with the front-end person. Read `docs/plans/00-shared.md` first, because it defines every file the back end produces, its schema and when it arrives. If this plan disagrees with it, 00-shared.md wins; tell your human.
 
+**Pricing display update, 8 November:** use the SISALMONI v2 package from
+[PRICE_DISPLAY_HANDOFF.md](../PRICE_DISPLAY_HANDOFF.md). The original `price.json`
+and `PriceSchema` below describe the separate SSB/NOK evaluation. The new version
+has explicit EUR units, model selection, final-period metrics and caveats; wire
+it as a separate schema rather than coercing it into the old contract.
+
 ## Your job
 
 Build a properly hosted static website that shows the findings. **The team decides how the site looks once the back-end work is under way.** Don't invent a visual design or a story order. Build the design-independent foundation now, then build whatever design the team chooses.
