@@ -12,8 +12,9 @@ import { FarmMap, type MapPoint } from '../map/FarmMap';
 import { FarmSearch } from '../map/FarmSearch';
 import { MapKey } from '../map/MapKey';
 import { VIEW, bounds, padRect, project, type Rect } from '../map/projection';
-import { layerInfo, markFor, type LayerKey, type Values } from '../map/scales';
-import { AREA_NAMES, areaLabel, displayName, weekDates, weekMonth, weekNumber } from '../map/text';
+import { heatValue, layerInfo, markFor, type LayerKey, type Values } from '../map/scales';
+import { AREA_NAMES, areaLabel, displayName, weekDates, weekNumber } from '../map/text';
+import { YearStrip, areaWeeks } from '../map/YearStrip';
 
 type Props = { farms: Status<Farms>; index: Status<FarmWeeksIndex>; source: Source };
 
@@ -92,6 +93,14 @@ const REGIONS: { key: RegionKey; label: string; areas: number[] | null }[] = [
 
 const STEP_MS = 420;
 
+/** One area-week in words, for the year strip's tooltip. */
+const STRIP_WORDS: Record<LayerKey, (v: number, farms: number) => string> = {
+  lice: (v, n) => `${fmt(v)} lice per fish, ${fmtInt(n)} farms`,
+  temp: (v, n) => `${fmt(v, 1)} °C, ${fmtInt(n)} farms`,
+  treated: (v, n) => `${Math.round(v * 100)}% of ${fmtInt(n)} farms treated`,
+  disease: (v, n) => `${Math.round(v * 100)}% of ${fmtInt(n)} farms flagged`,
+};
+
 type ExplorerProps = {
   farms: Farms;
   years: number[];
@@ -106,7 +115,8 @@ type ExplorerProps = {
 export function FarmExplorer({ farms, years, year, onYear, data, source }: ExplorerProps) {
   const basemap = useBasemap();
   const [week, setWeek] = useState(() => weekNumber(data.weeks[data.weeks.length - 1] ?? ''));
-  const [layer, setLayer] = useState<LayerKey>('lice');
+  // Sea temperature first: its seasons read at a glance.
+  const [layer, setLayer] = useState<LayerKey>('temp');
   const [region, setRegion] = useState<RegionKey>('all');
   const [selected, setSelected] = useState<number | null>(null);
   const [playing, setPlaying] = useState(false);
@@ -114,6 +124,7 @@ export function FarmExplorer({ farms, years, year, onYear, data, source }: Explo
   const zoomName = useId();
   const sliderId = useId();
   const yearId = useId();
+  const phoneYearId = useId();
 
   const loading = data.year !== year;
   // While the next year loads, hold the week that's on screen.
@@ -124,7 +135,7 @@ export function FarmExplorer({ farms, years, year, onYear, data, source }: Explo
     held.current = at;
   }
   const weekLabel = data.weeks[at] ?? '';
-  const activeLayer: LayerKey = layer === 'disease' && !data.disease ? 'lice' : layer;
+  const activeLayer: LayerKey = layer === 'disease' && !data.disease ? 'temp' : layer;
 
   const byId = useMemo(() => new Map(farms.map((f) => [f.id, f])), [farms]);
   const areas = useMemo(() => areaSummary(data, at, byId), [data, at, byId]);
@@ -152,6 +163,12 @@ export function FarmExplorer({ farms, years, year, onYear, data, source }: Explo
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [points, activeLayer, at, data],
   );
+  const heat = useMemo(
+    () => points.map((p) => heatValue(activeLayer, values(p.col))),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [points, activeLayer, at, data],
+  );
+  const stripRows = useMemo(() => areaWeeks(data, (id) => byId.get(id)?.area), [data, byId]);
 
   const regionRects = useMemo(() => {
     const rects: Record<RegionKey, Rect> = { all: VIEW, south: VIEW, middle: VIEW, north: VIEW };
@@ -215,8 +232,17 @@ export function FarmExplorer({ farms, years, year, onYear, data, source }: Explo
   const info = layerInfo(activeLayer);
   const mapLabel =
     `Map of Norway's coast with ${fmtInt(points.length)} salmon farms. ${weekText(weekLabel)}: ` +
-    `${fmtInt(reportingNow)} farms reported. Colour shows ${info.title.toLowerCase()}. ` +
+    `${fmtInt(reportingNow)} farms reported. Colour shows ${info.title.toLowerCase()}, averaged over nearby farms. ` +
     'The same numbers are in the table "This week by area" below the map.';
+  const pickWeek = (i: number) => {
+    setPlaying(false);
+    setWeek(weekNumber(data.weeks[i] ?? ''));
+  };
+  const yearOptions = years.map((y) => (
+    <option key={y} value={y}>
+      {y}
+    </option>
+  ));
 
   const tooltip = (i: number) => {
     const p = points[i];
@@ -269,6 +295,8 @@ export function FarmExplorer({ farms, years, year, onYear, data, source }: Explo
               basemap={basemap.state === 'ok' ? basemap.data : null}
               points={points}
               marks={marks}
+              heat={heat}
+              ramp={info.ramp}
               view={regionRects[region]}
               selectedId={selected}
               selectedLabel={selectedFarm ? displayName(selectedFarm.name) : null}
@@ -289,8 +317,13 @@ export function FarmExplorer({ farms, years, year, onYear, data, source }: Explo
               </fieldset>
               <p className="map-week">
                 <span className="map-week-year">
-                  {data.year}
-                  {loading ? ` · loading ${year}…` : ''}
+                  <label htmlFor={yearId} className="sr-only">
+                    Year
+                  </label>
+                  <select id={yearId} className="map-year" value={year} onChange={(e) => onYear(Number(e.target.value))}>
+                    {yearOptions}
+                  </select>
+                  {loading ? <span className="map-week-loading">Loading {year}…</span> : null}
                 </span>
                 <span className="map-week-title">Week {weekNo || DASH}</span>
                 <span className="map-week-dates">{weekDates(weekLabel)}</span>
@@ -307,42 +340,28 @@ export function FarmExplorer({ farms, years, year, onYear, data, source }: Explo
             <button type="button" className="play-btn" onClick={togglePlay} aria-label={playing ? 'Pause' : 'Play through the weeks'}>
               {playing ? <IconPause size={20} /> : <IconPlay size={20} />}
             </button>
-            <label htmlFor={yearId} className="sr-only">
+            {/* Phones show the year and week here; bigger screens show them over the map. */}
+            <label htmlFor={phoneYearId} className="sr-only">
               Year
             </label>
-            <select id={yearId} className="year-select" value={year} onChange={(e) => onYear(Number(e.target.value))}>
-              {years.map((y) => (
-                <option key={y} value={y}>
-                  {y}
-                </option>
-              ))}
+            <select id={phoneYearId} className="year-select" value={year} onChange={(e) => onYear(Number(e.target.value))}>
+              {yearOptions}
             </select>
-            {/* Phones show the week here; bigger screens show it over the map. */}
             <span className="map-time-week" aria-hidden="true">
               <strong>Week {weekNo || DASH}</strong> {weekDates(weekLabel)}
             </span>
-            <div className="map-slider">
-              <label htmlFor={sliderId} className="sr-only">
-                Week
-              </label>
-              <input
-                id={sliderId}
-                type="range"
-                min={0}
-                max={Math.max(data.weeks.length - 1, 0)}
-                step={1}
-                value={at}
-                aria-valuetext={weekText(weekLabel)}
-                onChange={(e) => {
-                  setPlaying(false);
-                  setWeek(weekNumber(data.weeks[Number(e.target.value)] ?? ''));
-                }}
-              />
-              <div className="map-slider-scale" aria-hidden="true">
-                <span>{weekMonth(data.weeks[0] ?? '')}</span>
-                <span>{weekMonth(data.weeks[data.weeks.length - 1] ?? '')}</span>
-              </div>
-            </div>
+            <YearStrip
+              rows={stripRows}
+              layer={activeLayer}
+              weeks={data.weeks}
+              at={at}
+              ramp={info.ramp}
+              describe={STRIP_WORDS[activeLayer]}
+              focus={REGIONS.find((r) => r.key === region)?.areas ?? null}
+              inputId={sliderId}
+              valueText={weekText(weekLabel)}
+              onWeek={pickWeek}
+            />
           </div>
         </div>
 
@@ -360,10 +379,7 @@ export function FarmExplorer({ farms, years, year, onYear, data, source }: Explo
                 col={selectedCol}
                 week={at}
                 areaCols={areaCols}
-                onWeek={(i) => {
-                  setPlaying(false);
-                  setWeek(weekNumber(data.weeks[i] ?? ''));
-                }}
+                onWeek={pickWeek}
                 onClose={() => setSelected(null)}
               />
             ) : (

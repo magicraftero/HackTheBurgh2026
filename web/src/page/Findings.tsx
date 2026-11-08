@@ -34,7 +34,7 @@ export function Findings({ files, source }: { files: AllFiles; source: Source })
 
   return (
     <>
-      <Finding n={1} id="farms" band="cream" tag="Data" wide scrollTo="farm-map" title="Every farm, every week." lede="Every salmon farm on Norway's coast reports lice, treatments, disease and sea temperature each week. Press play to watch a year go by, or pick a farm to see its own year.">
+      <Finding n={1} id="farms" band="cream" tag="Data" wide scrollTo="farm-map" title="Every farm, every week." lede="Every salmon farm on Norway's coast reports lice, treatments, disease and sea temperature each week. Press play to watch a year go by, read the whole year in the strip under the map, or pick a farm to see its own year.">
         <FarmSection farms={data.farms} index={data.farmWeeksIndex} source={source} />
       </Finding>
 

@@ -32,7 +32,7 @@ function RampBar({ ramp }: { ramp: Ramp }) {
         <div className="key-ramp-ticks">
           {ramp.breaks.map((b, i) => (
             <span key={b} style={{ left: `${((i + 1) / n) * 100}%` }}>
-              {b}
+              {ramp.ticks?.[i] ?? b}
             </span>
           ))}
         </div>
@@ -61,7 +61,7 @@ type KeyProps = {
   onShowAreas: (on: boolean) => void;
 };
 
-/** Pick what the dots show, and read what the colours mean, in one place. */
+/** Pick what the map shows, and read what the colours mean, in one place. */
 export function MapKey({ layer, onLayer, hasDisease, showAreas, onShowAreas }: KeyProps) {
   const name = useId();
   const info = layerInfo(layer);
@@ -80,8 +80,10 @@ export function MapKey({ layer, onLayer, hasDisease, showAreas, onShowAreas }: K
         })}
       </fieldset>
       <p className="map-key-title">{info.title}</p>
-      {info.ramp ? <RampBar ramp={info.ramp} /> : null}
+      <RampBar ramp={info.ramp} />
+      <p className="map-key-heat">Averaged over the farms within about 10 km.</p>
       <ul className="map-key-items">
+        <li className="map-key-lead">Zoomed in:</li>
         {info.items.map((item) => (
           <li key={item.label}>
             <Swatch mark={item.mark} />

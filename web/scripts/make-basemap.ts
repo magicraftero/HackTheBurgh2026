@@ -12,7 +12,7 @@
 // compact SVG paths. Coastlines and land borders are separate stroke-only
 // paths, so the clip edges are never drawn as coast.
 
-import { PROJECTION, VIEW, bounds, padRect, project, type Point, type Rect } from '../src/map/projection';
+import { PROJECTION, VIEW, bounds, project, type Point, type Rect } from '../src/map/projection';
 import type { IO } from './io';
 
 type Ring = number[];
@@ -32,7 +32,10 @@ type Topology = {
 const OUT = 'public/map/norway.json';
 const SIMPLIFY_KM = 0.25; // Douglas–Peucker tolerance; Natural Earth 1:10m is ~0.2 km apart
 const MIN_ISLAND_KM2 = 0.4; // drop specks smaller than this
-const CLIP = padRect(VIEW, 25);
+// The view plus a margin: 25 km above and below, 180 km either side, because on
+// a short desktop screen the map's column is wider than the map (styles.css,
+// --map-w), so a little more land and sea shows left and right.
+const CLIP = { x: VIEW.x - 180, y: VIEW.y - 25, w: VIEW.w + 360, h: VIEW.h + 50 };
 // Points outside this box are pulled onto its edge before projecting: a transverse
 // Mercator blows up 90° from its meridian, and everything out there is clipped
 // away anyway. Clamping keeps each ring closed and the part inside unchanged.

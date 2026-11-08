@@ -5,7 +5,8 @@
 // 3. The loader turns every kind of server answer into the right state.
 // 4. Every mock chart compiles and draws with Vega.
 // 5. The page renders in every scenario, including a broken file.
-// 6. The farm map: coastline file, projection, week dates, names, colour bins.
+// 6. The farm map: coastline file, projection, week dates, names, colour bins,
+//    the heat's values and the year strip's area averages.
 
 import { renderToString } from 'react-dom/server';
 import * as vega from 'vega';
@@ -30,8 +31,19 @@ import {
 import type { AllFiles } from '../src/data/source';
 import { BasemapSchema } from '../src/map/basemap';
 import { VIEW, project } from '../src/map/projection';
-import { LICE_BREAKS, TEMP_BREAKS, TEMP_COLORS, binIndex, markFor } from '../src/map/scales';
+import {
+  FLAGGED_SHARE_BREAKS,
+  LAYERS,
+  LICE_BREAKS,
+  TEMP_BREAKS,
+  TEMP_COLORS,
+  TREATED_SHARE_BREAKS,
+  binIndex,
+  heatValue,
+  markFor,
+} from '../src/map/scales';
 import { displayName, searchKey, weekDates } from '../src/map/text';
+import { AREAS_NORTH_FIRST, areaWeeks } from '../src/map/YearStrip';
 import { FarmExplorer, indexOfWeek } from '../src/page/FarmWeeks';
 import { SitePage } from '../src/page/SitePage';
 import * as ex from './contract-examples';
@@ -319,10 +331,14 @@ export default async function main(io: IO): Promise<number> {
         'Mobile lice per fish',
         'Find a farm',
         'This week by area',
-        'Mobile lice per fish, by area',
+        'Sea temperature, by area',
         'South to north',
         'Farms reporting lice',
         scenario === 'pre' ? 'No disease flags in the data' : 'Farms flagged ISA or PD',
+        'Averaged over the farms within about 10 km.',
+        'Zoomed in:',
+        'North',
+        'Jul',
       ];
       const missing = wants.filter((w) => !text.includes(w));
       expect(!missing.length, `finding 1 renders the map's controls and a week (${scenario})`, `missing text: ${missing.join(' | ')}`);
@@ -372,8 +388,8 @@ export default async function main(io: IO): Promise<number> {
   expect(!badNames.length, 'capitalised farm names read as names', badNames.join('; '));
   expect(searchKey('Revøy') === 'revoy' && searchKey('ÆRØY') === 'aeroy' && searchKey('Hågardsneset') === 'hagardsneset', 'search ignores ø, æ and å');
 
-  const liceBins = [0, 0.1, 0.249, 0.25, 0.5, 1, 2, 63].map((v) => binIndex(v, LICE_BREAKS));
-  expect(liceBins.join() === '0,1,1,2,3,4,5,5', 'lice values land in the right colour bins', liceBins.join());
+  const liceBins = [0, 0.249, 0.25, 0.5, 0.75, 0.999, 1, 63].map((v) => binIndex(v, LICE_BREAKS));
+  expect(liceBins.join() === '0,0,1,2,3,3,4,4', 'lice values land in the right colour bins', liceBins.join());
   const tempBins = [-0.2, 3.9, 4, 9, 9.99, 14, 21].map((v) => binIndex(v, TEMP_BREAKS));
   expect(tempBins.join() === '0,0,1,3,3,6,6' && TEMP_COLORS.length === TEMP_BREAKS.length + 1, 'temperatures land in the right bins, grey in the middle', tempBins.join());
   const blank = { mobile: null, temp: null, treated: null, disease: null };
@@ -383,6 +399,66 @@ export default async function main(io: IO): Promise<number> {
       markFor('disease', { ...blank, disease: 1 }).shape === 'diamond' &&
       markFor('lice', { ...blank, mobile: 0.3, treated: 1 }).ring,
     'treated farms get a ring and flagged farms a diamond, not just a colour',
+  );
+
+  const badRamps = LAYERS.filter(
+    (l) =>
+      l.ramp.colors.length !== l.ramp.breaks.length + 1 ||
+      l.ramp.labels.length !== l.ramp.colors.length ||
+      (l.ramp.ticks !== undefined && l.ramp.ticks.length !== l.ramp.breaks.length),
+  ).map((l) => l.key);
+  expect(!badRamps.length, 'every layer has a heat ramp with one colour and label per bin', badRamps.join());
+  const shareBins = [
+    ...[0, 0.049, 0.05, 0.2, 0.349, 0.35, 1].map((v) => binIndex(v, TREATED_SHARE_BREAKS)),
+    ...[0, 0.019, 0.02, 0.15, 0.3, 1].map((v) => binIndex(v, FLAGGED_SHARE_BREAKS)),
+  ];
+  expect(shareBins.join() === '0,0,1,3,3,4,4,0,0,1,3,4,4', 'shares of farms treated and flagged land in the right bins', shareBins.join());
+  expect(
+    heatValue('lice', { ...blank, mobile: 0.4 }) === 0.4 &&
+      heatValue('treated', { ...blank, treated: 1 }) === 1 &&
+      heatValue('disease', { ...blank, disease: 0 }) === 0 &&
+      heatValue('temp', blank) === null,
+    'the heat averages lice and temperature as they are, and treated and flagged as 1 or 0',
+  );
+
+  // Two weeks, three farms: two in area 1, one in area 13. No disease flags.
+  const tiny = FarmWeeksYearSchema.parse({
+    year: 2025,
+    weeks: ['2025-W01', '2025-W02'],
+    ids: [1, 2, 3],
+    mobile: [
+      [0.2, 0.4, null],
+      [null, null, 1],
+    ],
+    treated: [
+      [1, 0, null],
+      [0, 0, 1],
+    ],
+    temp: [
+      [6, 7, 3],
+      [6.5, null, 2],
+    ],
+  });
+  const areaOf = (id: number) => ({ 1: 1, 2: 1, 3: 13 })[id];
+  const strip = areaWeeks(tiny, areaOf);
+  const a1 = strip.find((r) => r.area === 1)!;
+  const a13 = strip.find((r) => r.area === 13)!;
+  const close = (a: number | null | undefined, b: number) => a != null && Math.abs(a - b) < 1e-9;
+  expect(
+    strip.map((r) => r.area).join() === AREAS_NORTH_FIRST.join() && AREAS_NORTH_FIRST[0] === 13 && AREAS_NORTH_FIRST.length === 13,
+    'the year strip has all 13 areas, north at the top like the map',
+  );
+  expect(
+    close(a1.mean.lice[0], 0.3) &&
+      a1.count.lice[0] === 2 &&
+      a1.mean.lice[1] === null &&
+      a1.count.lice[1] === 0 &&
+      close(a13.mean.lice[1], 1) &&
+      close(a1.mean.treated[0], 0.5) &&
+      close(a1.mean.temp[1], 6.5) &&
+      a1.mean.disease.every((v) => v === null) &&
+      strip.find((r) => r.area === 5)!.mean.lice.every((v) => v === null),
+    'the year strip averages only the farms that reported, area by area and week by week',
   );
 
   console.log(failures ? `\n${failures} check(s) failed.` : '\nAll checks passed.');

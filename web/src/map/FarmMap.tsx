@@ -1,25 +1,33 @@
-// The farm map: Norway's coast (public/map/norway.json) with one dot per farm.
+// The farm map: Norway's coast (public/map/norway.json) and its farms.
 //
 // Two stacked canvases share one projection (./projection.ts): the land and
-// labels underneath, redrawn only when the view or size changes, and the farm
-// dots on top, redrawn when the week, layer or hover changes. Changing week
-// fades the colours over a fifth of a second; changing region glides the view.
-// Both are instant for people who ask for reduced motion.
+// labels underneath, redrawn only when the view or size changes, and the farms
+// on top, redrawn when the week, layer or hover changes.
+//
+// On the whole coast, ~600 dots are too small to read, so the farms are drawn
+// as heat: each spot is coloured by the average of the farms around it
+// (Gaussian weights, sigma about 9 km), and fades out where there are none.
+// Zoomed in to a region, each farm's own dot comes back over a fainter heat.
+// Changing week fades the colours over a fifth of a second; changing region
+// glides the view. Both are instant for people who ask for reduced motion.
 
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { prefersReducedMotion } from '../components/Bits';
 import type { Basemap } from './basemap';
 import { AREA_SPOTS, CITIES, COUNTRIES, SEAS } from './places';
-import { fit, lerpRect, project, type Rect } from './projection';
-import { MAP, type Mark } from './scales';
+import { VIEW, fit, lerpRect, project, type Rect } from './projection';
+import { MAP, binIndex, type Mark, type Ramp } from './scales';
 
 export type MapPoint = { id: number; col: number; x: number; y: number };
 
 type Props = {
   basemap: Basemap | null;
   points: MapPoint[];
-  /** One mark per point, in the same order. */
+  /** One mark per point, in the same order: how each farm is drawn zoomed in. */
   marks: Mark[];
+  /** One value per point for the heat (null: no report), and its colours. */
+  heat: (number | null)[];
+  ramp: Ramp;
   view: Rect;
   selectedId: number | null;
   selectedLabel: string | null;
@@ -35,8 +43,35 @@ const GLIDE_MS = 650;
 const HOVER_PX = 14;
 const TOUCH_PX = 24;
 
+// The heat is worked out on a grid of HEAT_CELL × HEAT_CELL screen pixels and
+// scaled up smoothly. Sigma is HEAT_KM, kept between HEAT_MIN_PX and HEAT_MAX_PX
+// on screen. Below HEAT_FLOOR total weight nothing is drawn; from HEAT_FULL
+// (about one farm's worth) it's fully opaque.
+const HEAT_CELL = 2;
+const HEAT_KM = 9;
+const HEAT_MIN_PX = 3.5;
+const HEAT_MAX_PX = 12;
+const HEAT_FLOOR = 0.05;
+const HEAT_FULL = 0.6;
+const HEAT_OPACITY = 0.94;
+
+/** 0 on the whole coast, 1 once zoomed in to a region: heat gives way to dots. */
+const zoomedIn = (k: number, kAll: number) => Math.min(1, Math.max(0, (k / kAll - 1.25) / 0.75));
+
 type Size = { w: number; h: number; dpr: number };
 type Paths = { norway: Path2D; neighbours: Path2D; coast: Path2D; borders: Path2D };
+type Shown = { points: MapPoint[]; marks: Mark[]; heat: (number | null)[]; ramp: Ramp };
+type HeatGrid = {
+  cw: number;
+  ch: number;
+  weight: Float32Array;
+  sum: Float32Array;
+  canvas: HTMLCanvasElement;
+  ctx: CanvasRenderingContext2D;
+  img: ImageData;
+  /** What's in `canvas` now, so a hover alone doesn't redo the sums. */
+  key: unknown[];
+};
 
 const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 const dotRadius = (k: number) => Math.max(2.1, Math.min(5, 1.2 + 2.6 * Math.sqrt(k)));
@@ -63,7 +98,7 @@ const countryXY = COUNTRIES.map((c) => ({ ...c, xy: project(c.lon, c.lat) }));
 const seaXY = SEAS.map((c) => ({ ...c, xy: project(c.lon, c.lat) }));
 const areaXY = Object.entries(AREA_SPOTS).map(([area, [lon, lat]]) => ({ area, xy: project(lon, lat) }));
 
-export function FarmMap({ basemap, points, marks, view, selectedId, selectedLabel, showAreas, label, tooltip, onPick }: Props) {
+export function FarmMap({ basemap, points, marks, heat, ramp, view, selectedId, selectedLabel, showAreas, label, tooltip, onPick }: Props) {
   const stageRef = useRef<HTMLDivElement>(null);
   const baseRef = useRef<HTMLCanvasElement>(null);
   const dotsRef = useRef<HTMLCanvasElement>(null);
@@ -75,8 +110,9 @@ export function FarmMap({ basemap, points, marks, view, selectedId, selectedLabe
   const paths = useRef<Paths | null>(null);
   const drawn = useRef<Rect>(view); // the view on screen right now
   const glide = useRef<{ from: Rect; to: Rect; start: number } | null>(null);
-  const fade = useRef<{ from: Mark[]; start: number } | null>(null);
-  const shown = useRef<{ points: MapPoint[]; marks: Mark[] }>({ points, marks });
+  const fade = useRef<{ from: Mark[]; fromHeat: (number | null)[] | null; start: number } | null>(null);
+  const shown = useRef<Shown>({ points, marks, heat, ramp });
+  const heatGrid = useRef<HeatGrid | null>(null);
   const frame = useRef(0);
   const baseDirty = useRef(true);
   const live = useRef({ size, hover, selectedId, selectedLabel, showAreas });
@@ -124,7 +160,7 @@ export function FarmMap({ basemap, points, marks, view, selectedId, selectedLabe
       if (t < 1) again = true;
       else fade.current = null;
     }
-    drawDots(s, t, f?.from ?? null);
+    drawDots(s, t, f?.from ?? null, f?.fromHeat ?? null);
     if (again) schedule();
   }
 
@@ -191,36 +227,127 @@ export function FarmMap({ basemap, points, marks, view, selectedId, selectedLabe
       centred(s.name, x, y);
     }
 
-    if (live.current.showAreas) {
-      const r = small ? 7.5 : 9;
-      ctx.font = `700 ${small ? 9 : 10.5}px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif`;
-      ctx.textAlign = 'center';
-      for (const a of areaXY) {
-        const [x, y] = at(a.xy);
-        ctx.beginPath();
-        ctx.arc(x, y, r, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(20, 33, 48, 0.9)';
-        ctx.fill();
-        ctx.lineWidth = 1;
-        ctx.strokeStyle = MAP.labelSoft;
-        ctx.stroke();
-        ctx.fillStyle = MAP.label;
-        ctx.fillText(a.area, x, y + 0.5);
-      }
-    }
   }
 
-  function drawDots({ w, h, dpr }: Size, t: number, from: Mark[] | null) {
+  /**
+   * The heat: every farm with a value adds a Gaussian bump of weight to the
+   * grid, and weight × value; each cell's colour is their ratio (the weighted
+   * average) and its opacity grows with the weight. Mid-fade, each farm's value
+   * slides from the old week to the new one, and farms that start or stop
+   * reporting fade their weight in or out.
+   */
+  function drawHeat(ctx: CanvasRenderingContext2D, { w, h }: Size, k: number, tx: number, ty: number, t: number, fromHeat: (number | null)[] | null, opacity: number) {
+    const g = heatGrid.current;
+    if (!g || opacity <= 0) return;
+    const { points: pts, heat: vals, ramp: rmp } = shown.current;
+    const key = [k, tx, ty, w, h, t, vals, fromHeat, rmp];
+    if (g.key.length !== key.length || g.key.some((v, i) => v !== key[i])) {
+      g.key = key;
+      const { cw, ch, weight, sum } = g;
+      weight.fill(0);
+      sum.fill(0);
+      const sigma = Math.min(HEAT_MAX_PX, Math.max(HEAT_MIN_PX, HEAT_KM * k)) / HEAT_CELL;
+      const reach = Math.ceil(sigma * 2.6);
+      const inv = 1 / (2 * sigma * sigma);
+      const gx = new Float32Array(2 * reach + 3);
+      for (let i = 0; i < pts.length; i++) {
+        const to = vals[i] ?? null;
+        const was = fromHeat && t < 1 ? (fromHeat[i] ?? null) : to;
+        let v: number;
+        let wt: number;
+        if (to !== null && was !== null) {
+          v = was + (to - was) * t;
+          wt = 1;
+        } else if (to !== null) {
+          v = to;
+          wt = t;
+        } else if (was !== null) {
+          v = was;
+          wt = 1 - t;
+        } else continue;
+        if (wt <= 0) continue;
+        const p = pts[i]!;
+        const fx = (p.x * k + tx) / HEAT_CELL;
+        const fy = (p.y * k + ty) / HEAT_CELL;
+        if (fx < -reach || fy < -reach || fx > cw + reach || fy > ch + reach) continue;
+        const x0 = Math.max(0, Math.floor(fx - reach));
+        const x1 = Math.min(cw - 1, Math.ceil(fx + reach));
+        const y0 = Math.max(0, Math.floor(fy - reach));
+        const y1 = Math.min(ch - 1, Math.ceil(fy + reach));
+        for (let x = x0; x <= x1; x++) {
+          const d = x + 0.5 - fx;
+          gx[x - x0] = Math.exp(-d * d * inv);
+        }
+        for (let y = y0; y <= y1; y++) {
+          const d = y + 0.5 - fy;
+          const gy = Math.exp(-d * d * inv) * wt;
+          if (gy < 1e-4) continue;
+          const row = y * cw;
+          for (let x = x0; x <= x1; x++) {
+            const gw = gx[x - x0]! * gy;
+            weight[row + x] += gw;
+            sum[row + x] += gw * v;
+          }
+        }
+      }
+      const colours = rmp.colors.map(rgb);
+      const px = g.img.data;
+      for (let c = 0; c < cw * ch; c++) {
+        const wsum = weight[c]!;
+        const o = c * 4;
+        if (wsum < HEAT_FLOOR) {
+          px[o + 3] = 0;
+          continue;
+        }
+        const col = colours[binIndex(sum[c]! / wsum, rmp.breaks)]!;
+        const u = Math.min(1, (wsum - HEAT_FLOOR) / (HEAT_FULL - HEAT_FLOOR));
+        px[o] = col[0];
+        px[o + 1] = col[1];
+        px[o + 2] = col[2];
+        px[o + 3] = Math.round(u * u * (3 - 2 * u) * 255);
+      }
+      g.ctx.putImageData(g.img, 0, 0);
+    }
+    ctx.save();
+    ctx.globalAlpha = opacity * HEAT_OPACITY;
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(g.canvas, 0, 0, g.cw * HEAT_CELL, g.ch * HEAT_CELL);
+    ctx.restore();
+  }
+
+  function drawDots(size: Size, t: number, from: Mark[] | null, fromHeat: (number | null)[] | null) {
+    const { w, h, dpr } = size;
     const ctx = dotsRef.current?.getContext('2d');
     if (!ctx) return;
-    const { points: pts, marks: mks } = shown.current;
+    const { points: pts, marks: mks, heat: vals } = shown.current;
     const { k, tx, ty } = fit(drawn.current, w, h);
+    const zoom = zoomedIn(k, fit(VIEW, w, h).k);
     const r = dotRadius(k);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, w, h);
     ctx.lineJoin = 'round';
 
-    for (const i of orderRef.current) {
+    drawHeat(ctx, size, k, tx, ty, t, fromHeat, 1 - 0.6 * zoom);
+
+    // On the whole coast, a fine dark speck marks each farm in the heat.
+    if (zoom < 1) {
+      ctx.globalAlpha = 1 - zoom;
+      ctx.fillStyle = 'rgba(12, 20, 30, 0.55)';
+      for (let i = 0; i < pts.length; i++) {
+        if ((vals[i] ?? null) === null) continue;
+        const x = pts[i]!.x * k + tx;
+        const y = pts[i]!.y * k + ty;
+        if (x < -4 || y < -4 || x > w + 4 || y > h + 4) continue;
+        ctx.beginPath();
+        ctx.arc(x, y, 1.15, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    // Zoomed in, each farm's own dot.
+    for (const i of zoom > 0 ? orderRef.current : []) {
       const p = pts[i];
       const to = mks[i];
       if (!p || !to) continue;
@@ -233,6 +360,7 @@ export function FarmMap({ basemap, points, marks, view, selectedId, selectedLabe
       const shape = blend && t < 0.5 ? was.shape : to.shape;
       const ring = blend ? (was.ring ? 1 - t : 0) + (to.ring ? t : 0) : to.ring ? 1 : 0;
 
+      ctx.globalAlpha = zoom;
       if (shape === 'empty') {
         ctx.beginPath();
         ctx.arc(x, y, r * 0.72, 0, Math.PI * 2);
@@ -258,18 +386,40 @@ export function FarmMap({ basemap, points, marks, view, selectedId, selectedLabe
       ctx.strokeStyle = MAP.sea;
       ctx.stroke();
       if (ring > 0) {
-        ctx.globalAlpha = ring;
+        ctx.globalAlpha = ring * zoom;
         ctx.beginPath();
         ctx.arc(x, y, r + 2.3, 0, Math.PI * 2);
         ctx.lineWidth = 1.3;
         ctx.strokeStyle = MAP.ring;
         ctx.stroke();
-        ctx.globalAlpha = 1;
+      }
+    }
+    ctx.globalAlpha = 1;
+
+    // Production area numbers sit over the heat, so it never hides them.
+    const small = k < 0.35;
+    if (live.current.showAreas) {
+      const ar = small ? 7.5 : 9;
+      ctx.font = `700 ${small ? 9 : 10.5}px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      for (const a of areaXY) {
+        const x = a.xy[0] * k + tx;
+        const y = a.xy[1] * k + ty;
+        ctx.beginPath();
+        ctx.arc(x, y, ar, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(20, 33, 48, 0.9)';
+        ctx.fill();
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = MAP.labelSoft;
+        ctx.stroke();
+        ctx.fillStyle = MAP.label;
+        ctx.fillText(a.area, x, y + 0.5);
       }
     }
 
-    // City names go on top of the dots, with a halo, so they stay readable.
-    ctx.font = `600 ${k < 0.35 ? 10.5 : 11.5}px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif`;
+    // City names go on top of everything else, with a halo, so they stay readable.
+    ctx.font = `600 ${small ? 10.5 : 11.5}px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif`;
     ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
     for (const c of cityXY) {
@@ -345,6 +495,15 @@ export function FarmMap({ basemap, points, marks, view, selectedId, selectedLabe
       c.width = Math.round(size.w * size.dpr);
       c.height = Math.round(size.h * size.dpr);
     }
+    const cw = Math.max(1, Math.ceil(size.w / HEAT_CELL));
+    const ch = Math.max(1, Math.ceil(size.h / HEAT_CELL));
+    const canvas = document.createElement('canvas');
+    canvas.width = cw;
+    canvas.height = ch;
+    const hctx = canvas.getContext('2d');
+    heatGrid.current = hctx
+      ? { cw, ch, weight: new Float32Array(cw * ch), sum: new Float32Array(cw * ch), canvas, ctx: hctx, img: hctx.createImageData(cw, ch), key: [] }
+      : null;
     baseDirty.current = true;
     schedule();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -360,7 +519,6 @@ export function FarmMap({ basemap, points, marks, view, selectedId, selectedLabe
   }, [basemap]);
 
   useEffect(() => {
-    baseDirty.current = true;
     schedule();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showAreas]);
@@ -383,15 +541,20 @@ export function FarmMap({ basemap, points, marks, view, selectedId, selectedLabe
   }, [view]);
 
   // Fade to the new week or layer (only when the same farms are on the map).
+  // The heat slides its values only within one layer; a new layer swaps it.
   useEffect(() => {
     const prev = shown.current;
     const same = prev.points === points && prev.marks.length === marks.length;
-    fade.current = same && prev.marks !== marks && !prefersReducedMotion() ? { from: prev.marks, start: performance.now() } : null;
-    shown.current = { points, marks };
+    const changed = prev.marks !== marks || prev.heat !== heat;
+    fade.current =
+      same && changed && !prefersReducedMotion()
+        ? { from: prev.marks, fromHeat: prev.ramp === ramp ? prev.heat : null, start: performance.now() }
+        : null;
+    shown.current = { points, marks, heat, ramp };
     if (!same) setHover(null);
     schedule();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [points, marks]);
+  }, [points, marks, heat, ramp]);
 
   useEffect(() => {
     schedule();
