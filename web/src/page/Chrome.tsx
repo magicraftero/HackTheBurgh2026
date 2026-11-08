@@ -7,9 +7,6 @@ import { showBuildNotes } from '../data/debug';
 import { CHART_NAMES, CHARTS, DATA_FILES, DATA_KEYS, chartPath } from '../data/files';
 import type { Status } from '../data/load';
 import type { AllFiles, Source } from '../data/source';
-import { REPLAY_EVENT } from '../intro/FishingIntro';
-
-export const REPO = 'https://github.com/magicraftero/HackTheBurgh2026';
 
 /** Smooth-scroll to a section instead of jumping (instant for reduced motion). */
 export function goTo(e: MouseEvent<HTMLElement>, id: string) {
@@ -37,10 +34,13 @@ export function fileRows(files: AllFiles): FileRow[] {
 // ---- The floating nav: one pill, fixed over the hero and the site ----
 
 const NAV_LINKS: [string, string][] = [
-  ['nowcast', 'Harvest'],
-  ['price', 'Price'],
-  ['farms', 'Farms'],
   ['results', 'Results'],
+  ['current', 'Next forecast'],
+  ['farms', 'Data'],
+  ['nowcast', 'Forecast'],
+  ['split', 'Harvest'],
+  ['trap', 'Seasonality'],
+  ['price', 'Price'],
 ];
 
 export function FloatNav() {
@@ -55,9 +55,6 @@ export function FloatNav() {
             {label}
           </a>
         ))}
-        <a className="btn btn-primary btn-sm" href="#nowcast" onClick={(e) => goTo(e, 'nowcast')}>
-          See the forecast
-        </a>
       </nav>
     </header>
   );
@@ -174,42 +171,50 @@ export function DataStatusDialog({ dialogRef, files, onCheckAgain }: DialogProps
 export function Footer({ files, onOpenStatus }: { files: AllFiles; onOpenStatus: () => void }) {
   const rows = fileRows(files);
   const loaded = rows.filter((r) => r.status.state === 'ok').length;
-  const backToBoat = () => window.dispatchEvent(new Event(REPLAY_EVENT));
   return (
     <footer className="footer">
       <div className="container">
         <div className="footer-grid">
           <div>
             <span className="brand">
-              <HookMark size={22} /> Salmon Signal
+              <HookMark size={40} /> Salmon Signal
             </span>
             <p className="footer-about">
-              Made in 24 hours at HackTheBurgh XIII, Edinburgh, by The Edinburgers. Forecasting Norway's salmon
-              harvest and price from public data.
+              Forecasting Norway's salmon harvest and price from public data.
             </p>
           </div>
           <div>
-            <h3>The data</h3>
+            <h3>The data we used</h3>
             <ul>
               <li>
                 <a href="https://www.fiskeridir.no" target="_blank" rel="noopener noreferrer">
                   Directorate of Fisheries
-                </a>
+                </a>{' '}
+                (fish stocks, harvest, farm register)
               </li>
               <li>
                 <a href="https://www.barentswatch.no" target="_blank" rel="noopener noreferrer">
                   BarentsWatch
-                </a>
+                </a>{' '}
+                (lice, treatments, disease)
               </li>
               <li>
                 <a href="https://www.ssb.no" target="_blank" rel="noopener noreferrer">
                   Statistics Norway
-                </a>
+                </a>{' '}
+                (weekly salmon exports)
               </li>
               <li>
                 <a href="https://www.norges-bank.no" target="_blank" rel="noopener noreferrer">
                   Norges Bank
-                </a>
+                </a>{' '}
+                (exchange rates)
+              </li>
+              <li>
+                <a href="https://salmonprice.com/fishpool/public/priceHistory" target="_blank" rel="noopener noreferrer">
+                  SISALMONI
+                </a>{' '}
+                (the salmon price)
               </li>
               <li>
                 <a href="https://www.naturalearthdata.com" target="_blank" rel="noopener noreferrer">
@@ -217,31 +222,6 @@ export function Footer({ files, onOpenStatus }: { files: AllFiles; onOpenStatus:
                 </a>{' '}
                 (the coastline)
               </li>
-            </ul>
-          </div>
-          <div>
-            <h3>The project</h3>
-            <ul>
-              <li>
-                <a href={REPO} target="_blank" rel="noopener noreferrer">
-                  Code on GitHub
-                </a>
-              </li>
-              <li>
-                <a href={`${REPO}/blob/main/prereg/PASS_MARKS.md`} target="_blank" rel="noopener noreferrer">
-                  The pass marks
-                </a>
-              </li>
-              <li>
-                <a href={`${REPO}/blob/main/analysis/RESULTS.md`} target="_blank" rel="noopener noreferrer">
-                  The full results
-                </a>
-              </li>
-            </ul>
-          </div>
-          <div>
-            <h3>This site</h3>
-            <ul>
               {showBuildNotes() ? (
                 <li>
                   <button type="button" className="link" onClick={onOpenStatus}>
@@ -249,21 +229,11 @@ export function Footer({ files, onOpenStatus }: { files: AllFiles; onOpenStatus:
                   </button>
                 </li>
               ) : null}
-              <li>
-                <button type="button" className="link" onClick={backToBoat}>
-                  Back to the fisherman
-                </button>
-              </li>
-              <li>
-                <a href="#top" onClick={(e) => goTo(e, 'top')}>
-                  Back to top
-                </a>
-              </li>
             </ul>
           </div>
         </div>
         <p className="footer-small">
-          Every result on this page is read from the project's published files. Research, not investment advice.
+          Research, not investment advice.
         </p>
       </div>
     </footer>

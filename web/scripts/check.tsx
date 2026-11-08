@@ -45,7 +45,7 @@ import {
 import { displayName, searchKey, weekDates } from '../src/map/text';
 import { AREAS_NORTH_FIRST, areaWeeks } from '../src/map/YearStrip';
 import { logToPct, splitRange } from '../src/charts/Figures';
-import { finalHeadlines, forecastFish, vsSameMonthLastYear } from '../src/data/finalModel';
+import { finalHeadlines } from '../src/data/finalModel';
 import { areaHeatSpec, forecastSpec, monthlyTotals, priceByYearSpec, scorecardSpec } from '../src/charts/specs';
 import { FarmExplorer, indexOfWeek } from '../src/page/FarmWeeks';
 import { SitePage } from '../src/page/SitePage';
@@ -245,46 +245,35 @@ export default async function main(io: IO): Promise<number> {
   const pre = filesIn(io, `${MOCK}/pre`);
   const post = filesIn(io, `${MOCK}/post`);
   const none = filesIn(io, `${MOCK}/none`);
-  const brokenNowcast =
-    post.data.nowcast.state === 'ok'
-      ? parseJson(
-          'nowcast.json',
-          JSON.stringify({ ...post.data.nowcast.data, f1: { ...post.data.nowcast.data.f1, pass: 'yes' } }),
-          NowcastSchema,
-        )
-      : post.data.nowcast;
-  const broken: AllFiles = { ...post, data: { ...post.data, nowcast: brokenNowcast } };
+  const brokenTrap =
+    post.data.trap.state === 'ok'
+      ? parseJson('trap.json', JSON.stringify({ ...post.data.trap.data, drivers: 'none' }), TrapSchema)
+      : post.data.trap;
+  const broken: AllFiles = { ...post, data: { ...post.data, trap: brokenTrap } };
 
   const scenarios: [string, AllFiles, string[]][] = [
     [
       'before the freeze',
       pre,
-      ['Mock data: made-up numbers, not findings', "This test hasn't been scored yet.", 'Coming soon', 'Correlation with the salmon price', 'What happens to the harvest'],
+      ['Mock data: made-up numbers, not findings', 'Coming soon', 'Correlation with the salmon price', 'What happens to the harvest'],
     ],
     [
       'after the freeze',
       post,
       [
-        'Pass',
-        'Fail',
-        'No pass mark',
         'tonnes of salmon harvested',
         "How close we've been",
         'accurate on the total harvest',
         'How we tested it',
         'How accurate it was',
-        'Our first model, and the test it missed',
         'September 2026 by production area',
-        'Lice and treatments',
-        'How much worse the forecast gets without each factor',
-        'Does the effect clear zero?',
         'Our forecast against the published harvest',
-        'Forecast for October 2026',
+        'Our forecast for October 2026',
         'Salmon harvested in each production area',
       ],
     ],
     ['with no files at all', none, ['Coming soon']],
-    ['with a broken nowcast.json', broken, ['Not available right now', 'Fail']],
+    ['with a broken trap.json', broken, ['Not available right now']],
   ];
   // Words from the build that must never reach a visitor.
   const buildWords = /04:00|freeze|final model|final run|waiting for|arrives |from data\b|from production|from price|development window|back end|\.json/i;
@@ -517,26 +506,6 @@ export default async function main(io: IO): Promise<number> {
   );
   // January's misses cancel out exactly; February's total is 10% high.
   expect(heads !== null && Math.abs(heads.totalAccuracyPct - 100 * (1 - Math.log(1.1) / 2)) < 1e-9, "the total's accuracy is scored month by month, after adding up the areas");
-  const yearAgo = {
-    backtest: [fc(2, '2025-10', 'holdout', 1, 100), fc(3, '2025-10', 'holdout', 1, 100), fc(2, '2024-10', 'dev', 1, 50)],
-  } as never;
-  expect(
-    vsSameMonthLastYear(yearAgo, '2026-10', [2, 3], 220) !== null &&
-      Math.abs(vsSameMonthLastYear(yearAgo, '2026-10', [2, 3], 220)! - 10) < 1e-9 &&
-      vsSameMonthLastYear(yearAgo, '2026-10', [2, 3, 4], 220) === null,
-    'the forecast is compared with the same month a year earlier, only if every area has a figure',
-  );
-  const live = (counts: (number | null)[]) =>
-    ({
-      national: { areas: [2, 3], kg: 300 },
-      areas: [
-        { area: 1, forecast: null },
-        { area: 2, forecast: { kg: 100, count: counts[0] } },
-        { area: 3, forecast: { kg: 200, count: counts[1] } },
-      ],
-    }) as never;
-  const counted = forecastFish(live([20, 40]));
-  expect(counted !== null && counted.count === 60 && counted.avgKg === 5 && forecastFish(live([20, null])) === null, 'a national forecast adds up its fish, only if every area has a count');
   const span = splitRange([-2, null, 5]);
   const allUp = splitRange([1, 2]);
   expect(span.lo === -2 && span.hi === 5 && allUp.lo === 0 && allUp.hi === 2, 'a column of the low, middle, high chart always includes zero');

@@ -349,10 +349,6 @@ section[id] {
   background: var(--cream);
 }
 
-.band-coral {
-  background: var(--coral-300);
-}
-
 .eyebrow {
   display: inline-flex;
   align-items: center;
@@ -421,8 +417,8 @@ section[id] {
   display: flex;
   align-items: center;
   gap: 0.25rem;
-  padding: 6px 6px 6px 14px;
-  border-radius: 16px;
+  padding: 6px 10px 6px 18px;
+  border-radius: var(--r-pill);
   background: rgba(255, 255, 255, 0.9);
   backdrop-filter: saturate(1.4) blur(14px);
   -webkit-backdrop-filter: saturate(1.4) blur(14px);
@@ -440,10 +436,9 @@ section[id] {
   align-items: center;
   gap: 0.45rem;
   padding-right: 0.6rem;
-  font-family: var(--display);
-  font-weight: 700;
-  font-size: 1rem;
-  letter-spacing: -0.01em;
+  font-weight: 800;
+  font-size: 1.0625rem;
+  letter-spacing: -0.035em;
   color: var(--ink);
 }
 
@@ -452,7 +447,7 @@ section[id] {
   align-items: center;
   min-height: 38px;
   padding: 0 0.75rem;
-  border-radius: 10px;
+  border-radius: var(--r-pill);
   font-weight: 600;
   font-size: 0.9rem;
 }
@@ -461,13 +456,7 @@ section[id] {
   background: var(--wash);
 }
 
-.float-nav .btn {
-  min-height: 38px;
-  border-radius: 11px;
-  margin-left: 0.25rem;
-}
-
-@media (max-width: 760px) {
+@media (max-width: 820px) {
   .float-nav .nav-link {
     display: none;
   }
@@ -504,7 +493,7 @@ section[id] {
 }
 
 .hero {
-  padding: clamp(2.5rem, 6vw, 5rem) 0 clamp(4rem, 8vw, 6.5rem);
+  padding: clamp(2.5rem, 6vw, 5rem) 0 clamp(2.5rem, 5vw, 4rem);
 }
 
 .hero-grid {
@@ -617,6 +606,52 @@ section[id] {
   }
 }
 
+/* ---------- Scale strip: the small facts at the foot of the hero ---------- */
+
+.scale-strip {
+  margin-top: clamp(2rem, 4vw, 3rem);
+}
+
+.scale-strip h2 {
+  margin-bottom: 0.75rem;
+  font-family: inherit;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: 1.3;
+  color: var(--ink-2);
+}
+
+.scale-tiles {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+@media (max-width: 860px) {
+  .scale-tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.scale-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--r-md);
+}
+
+.scale-tile .stat-label,
+.scale-tile .stat-note {
+  font-size: 0.8125rem;
+  line-height: 1.35;
+}
+
+.scale-tile .stat-value {
+  font-size: 1.625rem;
+}
+
 /* ---------- Grids ---------- */
 
 .tiles {
@@ -674,20 +709,6 @@ section[id] {
   white-space: nowrap;
 }
 
-.forecast-card .forecast-card-fish {
-  margin-top: 1.5rem;
-  font-size: 1.25rem;
-  font-weight: 600;
-  line-height: 1.3;
-}
-
-.forecast-card .forecast-card-change {
-  margin-top: 0.6rem;
-  font-size: 1.25rem;
-  font-weight: 600;
-  line-height: 1.3;
-}
-
 .forecast-card-foot {
   display: flex;
   flex-wrap: wrap;
@@ -700,17 +721,12 @@ section[id] {
   font-size: 0.9375rem;
 }
 
-.forecast-card-foot a,
 .results-table-foot a {
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
   font-weight: 600;
   white-space: nowrap;
-}
-
-.forecast-card-foot a {
-  color: var(--coral-200);
 }
 
 .results-table-card {
@@ -847,70 +863,81 @@ section[id] {
   line-height: 1.5;
 }
 
-.explore-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 16.5rem), 1fr));
-  gap: 1rem;
-}
-
-.explore-card {
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-  padding: 1.5rem;
-  border-radius: var(--r-lg);
-  background: var(--paper);
-  color: inherit;
-  text-decoration: none;
-  box-shadow: 0 0 0 1px var(--hairline);
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
-}
-
-.band-paper .explore-card {
-  background: var(--cream);
-  box-shadow: none;
-}
-
-.explore-card:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-lift);
-}
-
-.explore-card h3 {
-  font-size: 1.2rem;
-}
-
-.explore-card p {
-  color: var(--ink-2);
-  font-size: 0.9375rem;
-}
-
-.explore-foot {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: auto;
-  padding-top: 0.75rem;
-}
-
-.explore-arrow {
-  display: grid;
-  place-items: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: var(--ink);
-  color: #fff;
-  transition: transform 0.2s ease;
-}
-
-.explore-card:hover .explore-arrow {
-  transform: translateX(3px);
-}
-
 /* ---------- Findings ---------- */
+
+/* A finding that fits on one screen: heading beside the chart, tighter rows. */
+@media (min-width: 1100px) {
+  .finding-fit {
+    padding-block: 2.5rem;
+  }
+
+  .finding-fit .container {
+    display: grid;
+    grid-template-columns: minmax(0, 19rem) minmax(0, 1fr);
+    gap: clamp(2rem, 3vw, 3rem);
+    align-items: center;
+  }
+
+  .finding-fit .section-head {
+    margin-bottom: 0;
+  }
+
+  .finding-fit h2 {
+    font-size: 2.75rem;
+  }
+
+  .finding-fit .chart-card {
+    padding: 1.25rem 1.5rem;
+  }
+
+  .finding-fit .split-chart {
+    --factor: 8.5rem;
+  }
+
+  .finding-fit .split-block {
+    padding-block: 0.25rem;
+  }
+
+  .finding-fit .split-track {
+    height: 1.5rem;
+  }
+}
+
+.finding-body .results-facts {
+  margin-top: 0;
+}
+
+.band-paper .farm-panel {
+  box-shadow: 0 0 0 1px var(--hairline);
+}
+
+.forecast-card-dates {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+/* Results: the table with the three accuracy figures stacked beside it. */
+.results-lead-table .results-facts {
+  margin-top: 0;
+}
+
+@media (min-width: 901px) {
+  .results-lead-table {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  }
+
+  .results-lead-table .results-facts {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.band-paper .results-table-card {
+  box-shadow: 0 0 0 1px var(--hairline);
+}
+
+.card-note {
+  margin-top: 1rem;
+}
 
 .finding-body {
   display: grid;
@@ -1072,21 +1099,6 @@ section[id] {
   font-style: normal;
   font-variant-numeric: tabular-nums;
   transform: translateX(-50%);
-}
-
-/* Two panels side by side */
-.rank-grid,
-.live-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1.5rem 2.5rem;
-}
-
-@media (max-width: 820px) {
-  .rank-grid,
-  .live-grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
 }
 
 /* More fish or bigger fish: every row sits on one of two zero lines, and a
@@ -1358,120 +1370,13 @@ section[id] {
   background: #8f9ba5;
 }
 
-.rank-row.is-top .rank-bar {
-  background: #d0603a;
-}
-
 .rank-value {
   font-variant-numeric: tabular-nums;
   font-weight: 600;
   text-align: right;
 }
 
-/* An estimate and its interval, against zero */
-.forest-row {
-  display: grid;
-  grid-template-columns: minmax(0, 18rem) minmax(0, 1fr) 10rem 6.5rem;
-  gap: 1rem;
-  align-items: center;
-  padding: 0.8rem 0;
-  border-top: 1px solid var(--hairline);
-}
-
-.forest-row:first-child {
-  padding-top: 0;
-  border-top: 0;
-}
-
-.forest-label {
-  display: grid;
-  gap: 0.1rem;
-  margin: 0;
-}
-
-.forest-label strong {
-  font-size: 0.9375rem;
-}
-
-.forest-label span {
-  color: var(--ink-3);
-  font-size: 0.8125rem;
-}
-
-.forest-plot {
-  position: relative;
-  display: block;
-  height: 1.4rem;
-}
-
-.forest-zero {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 50%;
-  width: 1px;
-  background: var(--ink-3);
-}
-
-.forest-ci {
-  position: absolute;
-  top: 50%;
-  height: 3px;
-  margin-top: -1.5px;
-  border-radius: 2px;
-  background: #2f6fa7;
-}
-
-.forest-dot {
-  position: absolute;
-  top: 50%;
-  width: 0.7rem;
-  height: 0.7rem;
-  margin: -0.35rem 0 0 -0.35rem;
-  border-radius: 50%;
-  background: #2f6fa7;
-}
-
-.forest-row.is-unscored .forest-ci,
-.forest-row.is-unscored .forest-dot {
-  background: #aeb8bf;
-}
-
-.forest-value {
-  font-size: 0.9rem;
-  font-variant-numeric: tabular-nums;
-  font-weight: 600;
-  line-height: 1.25;
-  text-align: right;
-}
-
-.forest-value small {
-  display: block;
-  color: var(--ink-3);
-  font-size: 0.75rem;
-  font-weight: 400;
-}
-
-.forest-result {
-  justify-self: end;
-}
-
-.forest-none {
-  color: var(--ink-3);
-  font-size: 0.75rem;
-}
-
 /* The forecast for the latest month */
-.live-grid {
-  margin-top: 1rem;
-}
-
-.live-label {
-  margin: 0;
-  color: var(--ink-2);
-  font-weight: 600;
-}
-
 .live-areas .rank-row {
   grid-template-columns: minmax(0, 13.5rem) minmax(0, 1fr) 5rem 2.8rem;
 }
@@ -1505,26 +1410,6 @@ section[id] {
 
   .db-axis span:empty {
     display: none;
-  }
-
-  .forest-row {
-    grid-template-columns: minmax(0, 1fr) auto;
-    row-gap: 0.4rem;
-  }
-
-  .forest-plot {
-    grid-column: 1 / -1;
-    grid-row: 2;
-  }
-
-  .forest-value {
-    grid-row: 3;
-    text-align: left;
-  }
-
-  .forest-result {
-    grid-row: 1;
-    grid-column: 2;
   }
 
   .live-areas .rank-row {
@@ -1698,13 +1583,6 @@ tbody th {
 
 .warn {
   font-weight: 650;
-}
-
-.unverifiable {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-  font-weight: 700;
 }
 
 .raw-json {
@@ -2568,9 +2446,77 @@ input[type='range'] {
 }
 
 .map-hint {
-  margin: 0;
+  margin: 0.75rem 0 0;
   color: var(--ink-2);
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+}
+
+/* Fills the column beside the map until a farm is picked. */
+.map-detail:has(> .area-panel) {
+  align-content: stretch;
+}
+
+.area-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 0.85rem 1rem;
+  border-radius: var(--r-md);
+  background: var(--cream);
+}
+
+.area-panel table {
+  flex: 1;
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.area-panel th,
+.area-panel td {
+  padding: 0.25rem 0 0.25rem 0.625rem;
+  border-top: 1px solid var(--hairline);
+  color: var(--ink-2);
+  font-weight: 500;
+  text-align: right;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.area-panel thead th {
+  border-top: 0;
+  color: var(--ink-3);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.area-panel th:first-child {
+  max-width: 0;
+  width: 100%;
+  padding-left: 0;
+  overflow: hidden;
+  text-align: left;
+  text-overflow: ellipsis;
+}
+
+.area-panel .is-on {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.area-panel-no {
+  display: inline-grid;
+  place-items: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-right: 0.4rem;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px var(--ink-3);
+  color: var(--ink);
+  font-size: 0.6875rem;
+  font-weight: 600;
 }
 
 .week-stats {
@@ -3033,21 +2979,7 @@ input[type='range'] {
   }
 }
 
-/* ---------- Bands: pre-registration, footer ---------- */
-
-.prereg {
-  text-align: center;
-}
-
-.prereg .lede {
-  margin-left: auto;
-  margin-right: auto;
-  color: var(--ink);
-}
-
-.prereg .hero-actions {
-  justify-content: center;
-}
+/* ---------- Footer ---------- */
 
 .footer {
   padding: clamp(3.5rem, 7vw, 5.5rem) 0 2.5rem;
@@ -3057,19 +2989,20 @@ input[type='range'] {
 
 .footer-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.4fr) repeat(3, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
   gap: 2rem;
 }
 
 @media (max-width: 860px) {
   .footer-grid {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
 .footer .brand {
   color: #fff;
-  font-size: 1.3rem;
+  font-size: clamp(2.25rem, 1.75rem + 2vw, 3.25rem);
+  gap: 0.6rem;
 }
 
 .footer h3 {
@@ -3651,9 +3584,7 @@ button.link {
     transition: none;
   }
 
-  .btn,
-  .explore-card,
-  .explore-arrow {
+  .btn {
     transition: none;
   }
 }

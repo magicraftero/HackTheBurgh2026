@@ -1,13 +1,14 @@
 import type { ReactNode } from 'react';
+import { LiveForecast } from '../charts/Figures';
 import { monthlyTotals } from '../charts/specs';
 import { CountUp, LaterPill, Pill, Reveal, StatTile } from '../components/Bits';
 import { DASH, fmtCompact, fmtDate, fmtInt, fmtMonth, fmtMonthShort, fmtPct, fmtTonnes } from '../components/format';
 import { IconArrow } from '../components/Icons';
-import { describeAreas, finalHeadlines, finalLatest, finalScore, forecastFish, vsSameMonthLastYear } from '../data/finalModel';
+import { describeAreas, finalHeadlines, finalLatest, finalScore } from '../data/finalModel';
 import type { Status } from '../data/load';
 import type { Combined } from '../data/schemas';
 import type { AllFiles } from '../data/source';
-import { REPO, goTo, isUpcoming } from './Chrome';
+import { goTo, isUpcoming } from './Chrome';
 
 // ---- Hero ----
 
@@ -16,9 +17,6 @@ export function Hero({ files }: { files: AllFiles }) {
     <section className="hero" id="top">
       <div className="container hero-grid">
         <Reveal>
-          <p className="eyebrow">
-            <Pill tone="accent">HackTheBurgh XIII · Edinburgh</Pill>
-          </p>
           <h2 id="top-heading" className="display" tabIndex={-1}>
             The harvest, called early.
           </h2>
@@ -28,11 +26,8 @@ export function Hero({ files }: { files: AllFiles }) {
             never saw.
           </p>
           <div className="hero-actions">
-            <a className="btn btn-primary" href="#nowcast" onClick={(e) => goTo(e, 'nowcast')}>
+            <a className="btn btn-primary" href="#current" onClick={(e) => goTo(e, 'current')}>
               See the forecast <IconArrow size={18} />
-            </a>
-            <a className="btn btn-secondary" href="#prereg" onClick={(e) => goTo(e, 'prereg')}>
-              How we tested it
             </a>
           </div>
           <p className="footnote">
@@ -43,6 +38,7 @@ export function Hero({ files }: { files: AllFiles }) {
           <WorkedExampleCard status={files.data.combined} />
         </Reveal>
       </div>
+      <ScaleStrip files={files} />
     </section>
   );
 }
@@ -53,7 +49,7 @@ function WorkedExampleCard({ status }: { status: AllFiles['data']['combined'] })
     return (
       <div className="example-card">
         <div className="example-top">
-          <span className="example-title">Worked example</span>
+          <span className="example-title">Latest checked forecast</span>
           {status.state === 'loading' ? null : <LaterPill>Coming soon</LaterPill>}
         </div>
         <span className="skeleton" style={{ height: '4.5rem', width: '62%' }} />
@@ -67,7 +63,7 @@ function WorkedExampleCard({ status }: { status: AllFiles['data']['combined'] })
   return (
     <div className="example-card">
       <div className="example-top">
-        <span className="example-title">Worked example</span>
+        <span className="example-title">Latest checked forecast</span>
         <Pill tone="accent">{fmtMonth(latest.month)}</Pill>
       </div>
       <p className="hero-figure">{fmtPct(latest.errorPct)}</p>
@@ -95,7 +91,7 @@ function WorkedExampleCard({ status }: { status: AllFiles['data']['combined'] })
   );
 }
 
-// ---- Scale band ----
+// ---- Scale strip (the foot of the hero) ----
 
 function tileValue(status: Status<unknown>, value: number | null): { value: ReactNode; pill?: ReactNode } {
   if (status.state === 'loading') return { value: DASH };
@@ -106,7 +102,7 @@ function tileValue(status: Status<unknown>, value: number | null): { value: Reac
 // price/experiments/sisalmoni/SOURCES.md: 2024-W32 to 2026-W44. The display file doesn't carry the whole history.
 const SISALMONI_WEEKS = 117;
 
-export function ScaleBand({ files }: { files: AllFiles }) {
+function ScaleStrip({ files }: { files: AllFiles }) {
   const { farms, farmWeeksIndex, priceSisalmoni } = files.data;
   const farmList = farms.state === 'ok' ? farms.data : null;
   const years = farmWeeksIndex.state === 'ok' ? [...farmWeeksIndex.data.years].sort((a, b) => a - b) : null;
@@ -130,25 +126,20 @@ export function ScaleBand({ files }: { files: AllFiles }) {
     {
       label: 'Weeks of SISALMONI prices',
       ...tileValue(priceSisalmoni, priceSisalmoni.state === 'ok' ? SISALMONI_WEEKS : null),
-      note: 'August 2024 to October 2026, euros per kilo',
+      note: 'Aug 2024 to Oct 2026, euros per kilo',
     },
   ];
 
   return (
-    <section className="band band-paper" aria-labelledby="scale-title">
-      <div className="container">
-        <Reveal className="section-head">
-          <div>
-            <h2 id="scale-title">Built on every farm, every week.</h2>
-            <p className="lede">The public record behind every forecast on this page.</p>
-          </div>
-        </Reveal>
-        <div className="tiles">
+    <section className="container scale-strip" aria-labelledby="scale-title">
+      <Reveal>
+        <h2 id="scale-title">Built on every farm, every week.</h2>
+        <div className="scale-tiles">
           {tiles.map((t) => (
-            <StatTile key={t.label} label={t.label} value={t.value} note={t.note} pill={t.pill} tone="salmon" />
+            <StatTile key={t.label} className="scale-tile" label={t.label} value={t.value} note={t.note} pill={t.pill} tone="salmon" />
           ))}
         </div>
-      </div>
+      </Reveal>
     </section>
   );
 }
@@ -158,7 +149,7 @@ export function ScaleBand({ files }: { files: AllFiles }) {
 // Plain names for the contract's driver and outcome codes (raw codes stay in the tables).
 /** The forecast nobody can check yet: the headline of the section. */
 function NextForecast({ files }: { files: AllFiles }) {
-  const { farmerActions, combined } = files.data;
+  const { farmerActions } = files.data;
   if (farmerActions.state !== 'ok') {
     return (
       <div className="forecast-card">
@@ -173,10 +164,6 @@ function NextForecast({ files }: { files: AllFiles }) {
     );
   }
   const f = farmerActions.data;
-  const change = combined.state === 'ok' ? vsSameMonthLastYear(combined.data, f.target_month, f.national.areas, f.national.kg) : null;
-  const fish = forecastFish(f);
-  const [year, month] = f.target_month.split('-');
-  const lastYear = `${Number(year) - 1}-${month}`;
   return (
     <div className="forecast-card">
       <p className="forecast-card-label">Our forecast for {fmtMonth(f.target_month)}</p>
@@ -184,23 +171,13 @@ function NextForecast({ files }: { files: AllFiles }) {
       <p className="forecast-card-unit">
         tonnes of salmon harvested, <span>{describeAreas(f.national.areas)}</span>
       </p>
-      {fish ? (
-        <p className="forecast-card-fish">
-          About {Math.round(fish.count / 1_000_000)} million fish, averaging {fish.avgKg.toFixed(1)} kg each
-        </p>
-      ) : null}
-      {change !== null ? (
-        <p className="forecast-card-change">
-          {Math.abs(change).toFixed(0)}% {change >= 0 ? 'more' : 'less'} than {fmtMonth(lastYear)}
-        </p>
-      ) : null}
-      <div className="forecast-card-foot">
+      <div className="forecast-card-foot forecast-card-dates">
+        <span>Forecast made on {fmtDate(f.made_on)}</span>
         <span>
-          {isUpcoming(f.publishes_around) ? 'Official figure due around' : 'The official figure was due around'} {fmtDate(f.publishes_around)}
+          {isUpcoming(f.publishes_around)
+            ? `Official figure due around ${fmtDate(f.publishes_around)}, so it can't be checked yet`
+            : `The official figure was due around ${fmtDate(f.publishes_around)}`}
         </span>
-        <a href="#current" onClick={(e) => goTo(e, 'current')}>
-          See it by area <IconArrow size={16} />
-        </a>
       </div>
     </div>
   );
@@ -216,7 +193,7 @@ function howClose(forecast: number, published: number): string {
 function RecentForecasts({ c, areasLabel }: { c: Combined; areasLabel: string }) {
   const rows = monthlyTotals(c)
     .filter((t) => t.window === 'holdout')
-    .slice(-6)
+    .slice(-5)
     .reverse();
   return (
     <div className="results-table-card">
@@ -267,7 +244,7 @@ export function ResultsBand({ files }: { files: AllFiles }) {
   const shown = (pct: number | undefined) => (pct === undefined ? DASH : `${Math.round(pct)}%`);
 
   return (
-    <section className="band band-cream" id="results" aria-labelledby="results-title">
+    <section className="band band-paper" id="results" aria-labelledby="results-title">
       <div className="container">
         <Reveal className="section-head">
           <div>
@@ -275,8 +252,7 @@ export function ResultsBand({ files }: { files: AllFiles }) {
             <p className="lede">Our forecast of Norway's salmon harvest, about 10 days before the official figures, and how close it has come.</p>
           </div>
         </Reveal>
-        <div className="results-lead">
-          <NextForecast files={files} />
+        <div className="results-lead results-lead-table">
           {c && headlines ? (
             <RecentForecasts c={c} areasLabel={headlines.areasLabel} />
           ) : (
@@ -285,26 +261,26 @@ export function ResultsBand({ files }: { files: AllFiles }) {
               {combined.state === 'loading' ? null : <LaterPill>Coming soon</LaterPill>}
             </div>
           )}
-        </div>
-        <div className="results-facts">
-          <p className="result-fact tone-salmon">
-            <strong>{shown(headlines?.totalAccuracyPct)}</strong>
-            <span>accurate on the total harvest{headlines ? `, ${headlines.areasLabel}` : ''}</span>
-          </p>
-          <p className="result-fact tone-butter">
-            <strong>{shown(tonnes?.accuracyPct)}</strong>
-            <span>accurate on each area's tonnes</span>
-          </p>
-          <p className="result-fact tone-sky">
-            <strong>{shown(size?.accuracyPct)}</strong>
-            <span>accurate on fish size</span>
-          </p>
+          <div className="results-facts">
+            <p className="result-fact tone-salmon">
+              <strong>{shown(headlines?.totalAccuracyPct)}</strong>
+              <span>accurate on the total harvest{headlines ? `, ${headlines.areasLabel}` : ''}</span>
+            </p>
+            <p className="result-fact tone-butter">
+              <strong>{shown(tonnes?.accuracyPct)}</strong>
+              <span>accurate on each area's tonnes</span>
+            </p>
+            <p className="result-fact tone-sky">
+              <strong>{shown(size?.accuracyPct)}</strong>
+              <span>accurate on fish size</span>
+            </p>
+          </div>
         </div>
         {c && headlines ? (
           <p className="results-caption">
             Tested on {fmtInt(headlines.forecasts)} forecasts from {fmtMonth(c.windows.holdout[0])} to {fmtMonth(c.windows.holdout[1])}, each using only
             data public at the time. Accuracy is 100% minus the average miss.{' '}
-            <a href="#prereg" onClick={(e) => goTo(e, 'prereg')}>
+            <a href="#nowcast" onClick={(e) => goTo(e, 'nowcast')}>
               How we tested it
             </a>
           </p>
@@ -314,87 +290,24 @@ export function ResultsBand({ files }: { files: AllFiles }) {
   );
 }
 
-// ---- Explore grid ----
+// ---- Next forecast ----
 
-type CardState = 'loading' | 'ready' | 'later';
-
-function cardState(parts: Status<unknown>[]): CardState {
-  if (parts.some((s) => s.state === 'loading')) return 'loading';
-  return parts.some((s) => s.state === 'ok') ? 'ready' : 'later';
-}
-
-export function ExploreGrid({ files }: { files: AllFiles }) {
-  const { data } = files;
-  const ch = data.channels;
-  const panelStatus: Status<unknown> =
-    ch.state === 'ok' ? (ch.data.panel ? ch : { state: 'missing', url: ch.url }) : ch;
-
-  const cards: { n: number; id: string; title: string; text: string; state: CardState }[] = [
-    { n: 1, id: 'farms', title: 'Every farm, every week', text: 'Lice, treatments, disease and sea temperature at each farm, week by week.', state: cardState([data.farms, data.farmWeeksIndex]) },
-    { n: 2, id: 'nowcast', title: 'The harvest forecast', text: "Each month's harvest by area, called on the 10th, before the official figure lands.", state: cardState([data.combined]) },
-    { n: 3, id: 'split', title: 'More fish, or bigger fish?', text: 'Splitting the harvest into fish count × average weight tells growth from forced early harvests.', state: cardState([ch]) },
-    { n: 4, id: 'trap', title: 'The seasonality trap', text: "Why raw correlations with price fool you, and what's left once season and trend are gone.", state: cardState([data.trap]) },
-    { n: 5, id: 'drivers', title: 'What drives it', text: 'How much worse the forecast gets without each group of factors.', state: cardState([data.drivers]) },
-    { n: 6, id: 'mechanisms', title: 'How the biology acts', text: 'Do lice bring harvests forward? Does warmer water grow heavier fish?', state: cardState([panelStatus]) },
-    { n: 7, id: 'price', title: 'The price forecast', text: 'The SISALMONI salmon price, weeks ahead, against assuming no change.', state: cardState([data.priceSisalmoni]) },
-    { n: 8, id: 'current', title: 'Right now', text: 'Our forecast for the latest month, before the official figure is out.', state: cardState([data.farmerActions]) },
-  ];
-
+export function NextForecastBand({ files }: { files: AllFiles }) {
+  const { farmerActions } = files.data;
   return (
-    <section className="band band-paper" id="explore" aria-labelledby="explore-title">
+    <section className="band band-cream" id="current" aria-labelledby="current-title">
       <div className="container">
         <Reveal className="section-head">
           <div>
-            <h2 id="explore-title">Explore the findings.</h2>
-            <p className="lede">Eight findings from Norway's public salmon data.</p>
+            <h2 id="current-title">Next forecast.</h2>
+            <p className="lede">Our forecast for the latest month, made before the official figure is published.</p>
           </div>
         </Reveal>
-        <div className="explore-grid">
-          {cards.map((c) => (
-            <a key={c.id} className="explore-card" href={`#${c.id}`} onClick={(e) => goTo(e, c.id)}>
-              <span className="eyebrow-number" aria-hidden="true">
-                {c.n}
-              </span>
-              <h3>{c.title}</h3>
-              <p>{c.text}</p>
-              <span className="explore-foot">
-                {c.state === 'later' ? <LaterPill>Coming soon</LaterPill> : <span />}
-                <span className="explore-arrow" aria-hidden="true">
-                  <IconArrow size={18} />
-                </span>
-              </span>
-            </a>
-          ))}
+        <div className="results-lead">
+          <NextForecast files={files} />
+          {farmerActions.state === 'ok' ? <LiveForecast f={farmerActions.data} /> : <div className="chart-card" />}
         </div>
       </div>
     </section>
   );
 }
-
-// ---- Pre-registration band ----
-
-export function PreregBand() {
-  return (
-    <section className="band band-coral prereg" id="prereg" aria-labelledby="prereg-title">
-      <div className="container">
-        <Reveal>
-          <h2 id="prereg-title">Rules first. Results second.</h2>
-          <p className="lede">
-            We committed every pass mark to GitHub before any model saw real outcomes, and we report the tests we failed
-            next to the ones we passed. We opened the held-back months a few hours ahead of plan, at 23:47 on 7 November,
-            and our harvest forecast was designed after our first model missed its mark, using only earlier data.
-          </p>
-          <div className="hero-actions">
-            <a className="btn btn-primary" href={`${REPO}/blob/main/prereg/PASS_MARKS.md`} target="_blank" rel="noopener noreferrer">
-              Read the pass marks <IconArrow size={18} />
-            </a>
-            <a className="btn btn-light" href={REPO} target="_blank" rel="noopener noreferrer">
-              See the code
-            </a>
-          </div>
-        </Reveal>
-      </div>
-    </section>
-  );
-}
-

@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
-import { IconCheck, IconClock, IconCross, IconPlus } from './Icons';
+import { IconClock, IconPlus } from './Icons';
 
 // ---- "Show the numbers": a disclosure with a table or stats inside ----
 
@@ -47,17 +47,6 @@ export function Pill({ tone = 'neutral', icon, children }: { tone?: Tone; icon?:
     </span>
   );
 }
-
-export const PassPill = ({ pass }: { pass: boolean }) =>
-  pass ? (
-    <Pill tone="good" icon={<IconCheck size={14} />}>
-      Pass
-    </Pill>
-  ) : (
-    <Pill tone="bad" icon={<IconCross size={14} />}>
-      Fail
-    </Pill>
-  );
 
 export const LaterPill = ({ children }: { children: ReactNode }) => (
   <Pill tone="later" icon={<IconClock size={14} />}>

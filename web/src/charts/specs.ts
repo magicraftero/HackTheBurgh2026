@@ -118,6 +118,54 @@ export function forecastSpec(c: Combined): ChartSpec {
   };
 }
 
+/** The actual SISALMONI price against our forecast, drawn from the price team's chart data. */
+export function priceForecastSpec(team: ChartSpec): ChartSpec {
+  const names: Record<string, string> = { Actual: 'Actual price', 'Ridge price level, alpha 10': 'Our forecast' };
+  const rows = (team.data as { values?: { date: string; model: string; price: number }[] } | undefined)?.values ?? [];
+  const values = rows.flatMap((r) => {
+    const series = names[r.model];
+    return series ? [{ date: `${r.date}T00:00:00`, series, price: r.price }] : [];
+  });
+  const x = { field: 'date', type: 'temporal' };
+  const y = { field: 'price', type: 'quantitative' };
+  const color = { field: 'series', type: 'nominal', scale: { domain: ['Actual price', 'Our forecast'], range: [BLUE, CORAL] } };
+  return {
+    $schema: SCHEMA,
+    ...FILL_WIDTH,
+    height: 320,
+    config: CONFIG,
+    data: { values },
+    layer: [
+      {
+        mark: { type: 'line', strokeWidth: 2.25 },
+        encoding: {
+          x: { ...x, title: null, axis: { format: '%b %Y', tickCount: 'month', grid: false } },
+          y: { ...y, title: 'Euros per kilo', scale: { zero: false }, axis: { format: '.1f', tickCount: 5 } },
+          color,
+        },
+      },
+      {
+        mark: { type: 'circle', size: 60 },
+        encoding: { x, y, color, opacity: { condition: { param: 'hover', empty: false, value: 1 }, value: 0 } },
+      },
+      {
+        transform: [{ pivot: 'series', value: 'price', groupby: ['date'] }],
+        mark: { type: 'rule', color: INK, strokeWidth: 1 },
+        encoding: {
+          x,
+          opacity: { condition: { param: 'hover', empty: false, value: 0.35 }, value: 0 },
+          tooltip: [
+            { field: 'date', type: 'temporal', format: '%e %b %Y', title: 'Delivery week of' },
+            { field: 'Actual price', type: 'quantitative', format: '.2f', title: 'Actual (€/kg)' },
+            { field: 'Our forecast', type: 'quantitative', format: '.2f', title: 'Our forecast (€/kg)' },
+          ],
+        },
+        params: [{ name: 'hover', select: { type: 'point', fields: ['date'], nearest: true, on: 'pointerover', clear: 'pointerout' } }],
+      },
+    ],
+  };
+}
+
 export const PRICE_MODELS: Record<string, string> = {
   ar: 'Past prices only',
   c0: 'Prices and market data',

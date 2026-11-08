@@ -1,4 +1,4 @@
-import type { Combined, FarmerActions } from './schemas';
+import type { Combined } from './schemas';
 
 // What the page says about our final harvest forecast, worked out from combined.json.
 
@@ -96,27 +96,3 @@ export function finalHeadlines(c: Combined): FinalHeadlines | null {
   };
 }
 
-/** A forecast total against the published total for the same month a year earlier, over the same areas. */
-export function vsSameMonthLastYear(c: Combined, month: string, areas: number[], kg: number | null): number | null {
-  if (kg === null) return null;
-  const [year, m] = month.split('-');
-  const lastYear = `${Number(year) - 1}-${m}`;
-  const rows = c.backtest.filter((r) => r.month === lastYear && areas.includes(r.area) && r.actual.kg != null);
-  if (rows.length !== areas.length) return null;
-  const total = rows.reduce((sum, r) => sum + r.actual.kg!, 0);
-  return total > 0 ? (kg / total - 1) * 100 : null;
-}
-
-/** How many fish a national forecast means, and their average size. Null unless every area has a count. */
-export function forecastFish(f: FarmerActions): { count: number; avgKg: number } | null {
-  const rows = f.areas.filter((a) => f.national.areas.includes(a.area));
-  if (!rows.length || rows.length !== f.national.areas.length) return null;
-  let count = 0;
-  let kg = 0;
-  for (const a of rows) {
-    if (a.forecast?.count == null || a.forecast.kg == null) return null;
-    count += a.forecast.count;
-    kg += a.forecast.kg;
-  }
-  return count > 0 ? { count, avgKg: kg / count } : null;
-}

@@ -3,7 +3,7 @@ import { showBuildNotes } from '../data/debug';
 import type { AllFiles, Source } from '../data/source';
 import { DataStatusDialog, Footer, Notice } from './Chrome';
 import { Findings } from './Findings';
-import { ExploreGrid, Hero, PreregBand, ResultsBand, ScaleBand } from './Overview';
+import { Hero, NextForecastBand, ResultsBand } from './Overview';
 
 type Props = {
   files: AllFiles;
@@ -23,11 +23,9 @@ export function SitePage({ files, source, generation, onCheckAgain }: Props) {
       <Notice files={files} source={source} />
       <main id="main">
         <Hero files={files} />
-        <ScaleBand files={files} />
         <ResultsBand files={files} />
-        <ExploreGrid files={files} />
+        <NextForecastBand files={files} />
         <Findings key={generation} files={files} source={source} />
-        <PreregBand />
       </main>
       <Footer files={files} onOpenStatus={openStatus} />
       {showBuildNotes() ? <DataStatusDialog dialogRef={dialogRef} files={files} onCheckAgain={onCheckAgain} /> : null}

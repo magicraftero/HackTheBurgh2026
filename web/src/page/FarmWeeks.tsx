@@ -377,7 +377,7 @@ export function FarmExplorer({ farms, years, year, onYear, data, source }: Explo
                 onClose={() => setSelected(null)}
               />
             ) : (
-              <p className="map-hint">Click a farm on the map, or find one by name, to see its year week by week.</p>
+              <AreaPanel summary={areas} layer={activeLayer} />
             )}
           </div>
         </div>
@@ -479,6 +479,46 @@ function areaSummary(data: FarmWeeksYear, at: number, byId: Map<number, Farms[nu
   };
   const areas = [...by.keys()].sort((a, b) => a - b).map((a) => summarise(a, by.get(a)!));
   return { areas, all: summarise(0, data.ids.map((_, c) => c)) };
+}
+
+/** Beside the map until a farm is picked: the week on screen, south to north. */
+function AreaPanel({ summary, layer }: { summary: AreaSummary; layer: LayerKey }) {
+  const on = (key: LayerKey) => (layer === key ? 'is-on' : undefined);
+  return (
+    <section className="area-panel" aria-label="This week by area">
+      <p className="week-stats-title">This week by area, south to north</p>
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Area</th>
+            <th scope="col" className={on('lice')}>
+              Lice per fish
+            </th>
+            <th scope="col" className={on('treated')}>
+              Treated
+            </th>
+            <th scope="col" className={on('temp')}>
+              Sea °C
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {summary.areas.map((r) => (
+            <tr key={r.area}>
+              <th scope="row">
+                <span className="area-panel-no">{r.area}</span>
+                {AREA_NAMES[r.area] ?? ''}
+              </th>
+              <td className={on('lice')}>{fmt(r.lice)}</td>
+              <td className={on('treated')}>{r.treated === null ? DASH : `${(r.treated * 100).toFixed(0)}%`}</td>
+              <td className={on('temp')}>{r.temp === null ? DASH : fmt(r.temp, 1)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <p className="map-hint">Click a farm on the map, or find one by name, to see its year week by week.</p>
+    </section>
+  );
 }
 
 /** The map's text alternative: this week, area by area. */
