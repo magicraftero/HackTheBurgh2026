@@ -1,0 +1,192 @@
+// Colours, bins and marks for the farm map's four layers.
+//
+// The map is drawn on a night-blue sea (MAP.sea). Every ramp was checked with
+// the dataviz palette validator against that surface (ordinal mode, dark):
+// - lice: one orange hue, five steps (OKLCH L .46 to .79, hue spread 8°): few
+//   lice are a dim brown close to the sea, many glow bright orange; darkest step
+//   2.25:1 against the sea. The steps sit between 0.25 and 1 lice per fish,
+//   because that's where the coast moves through the year (its weekly average
+//   runs from about 0.3 in May to about 1 in October), so the map visibly
+//   changes as it plays;
+// - temperature: diverging, a blue arm and a coral arm with matching lightness
+//   (L .60, .70, .83) around a neutral grey for the 8–10 °C band, which holds the
+//   9.2 °C average of every farm-week since 2019;
+// - treatments and disease, farm by farm: emphasis (one colour, everything else
+//   grey), and always a second channel: a ring for treated, a diamond for ISA
+//   or PD. Treated is teal so its ring never reads as a lice step (deutan ΔE
+//   12.7 or more from every one; 9:1 against the sea);
+// - treatments and disease as a share of farms (the heat and the year strip):
+//   one teal and one red hue, five steps each, OKLCH L .52 to .92, darkest
+//   steps 3.0:1 and 2.8:1 against the sea.
+// The heat (the whole-coast map) and the year strip under the map use each
+// layer's `ramp`; zoomed in, each farm is drawn with `markFor`.
+// Legend and label text never wears these colours.
+
+export const MAP = {
+  sea: '#142130',
+  norway: '#2b4157',
+  neighbours: '#1c2d3f',
+  coast: '#5d7891',
+  border: '#7d93a8',
+  label: '#c7d0d9',
+  labelSoft: '#8fa2b5',
+  ring: '#5cd5c7',
+} as const;
+
+export type LayerKey = 'lice' | 'temp' | 'treated' | 'disease';
+
+export type Values = {
+  mobile: number | null;
+  temp: number | null;
+  treated: number | null;
+  disease: number | null;
+};
+
+export type Shape = 'dot' | 'diamond' | 'empty';
+/** How one farm is drawn this week. `rank` sets the drawing order: higher on top. */
+export type Mark = { fill: string; shape: Shape; ring: boolean; rank: number };
+
+export const LICE_BREAKS = [0.25, 0.5, 0.75, 1];
+export const LICE_COLORS = ['#695248', '#965f48', '#c46a46', '#ee7942', '#fea069'];
+export const LICE_LABELS = ['Under 0.25', '0.25 to 0.5', '0.5 to 0.75', '0.75 to 1', '1 or more'];
+
+export const TEMP_BREAKS = [4, 6, 8, 10, 12, 14];
+export const TEMP_COLORS = ['#a4ccf3', '#64a4e0', '#3e85c4', '#595b5d', '#c06143', '#e28061', '#f6b6a2'];
+export const TEMP_LABELS = ['Under 4 °C', '4 to 6 °C', '6 to 8 °C', '8 to 10 °C', '10 to 12 °C', '12 to 14 °C', '14 °C or more'];
+export const TEMP_MIDDLE = 9;
+
+export const TREATED_SHARE_BREAKS = [0.05, 0.1, 0.2, 0.35];
+export const TREATED_SHARE_COLORS = ['#3d746e', '#3f978e', '#45baae', '#69dace', '#b8f2ea'];
+export const TREATED_SHARE_LABELS = ['Under 5%', '5 to 10%', '10 to 20%', '20 to 35%', '35% or more'];
+
+export const FLAGGED_SHARE_BREAKS = [0.02, 0.05, 0.15, 0.3];
+export const FLAGGED_SHARE_COLORS = ['#a34949', '#d15b5c', '#f37575', '#fba7a4', '#ffd6d4'];
+export const FLAGGED_SHARE_LABELS = ['Under 2%', '2 to 5%', '5 to 15%', '15 to 30%', '30% or more'];
+
+const percents = (breaks: number[]) => breaks.map((b) => `${Math.round(b * 100)}%`);
+
+export const PLAIN = '#5d646c';
+export const TREATED = MAP.ring;
+export const FLAGGED = '#ef6661';
+export const NO_REPORT = '#576574';
+
+/** Index of the bin `v` falls in: below the first break is 0. */
+export function binIndex(v: number, breaks: number[]): number {
+  let i = 0;
+  while (i < breaks.length && v >= breaks[i]!) i++;
+  return i;
+}
+
+const EMPTY: Mark = { fill: NO_REPORT, shape: 'empty', ring: false, rank: -1 };
+
+export function markFor(layer: LayerKey, v: Values): Mark {
+  switch (layer) {
+    case 'lice':
+      if (v.mobile === null) return EMPTY;
+      return { fill: LICE_COLORS[binIndex(v.mobile, LICE_BREAKS)]!, shape: 'dot', ring: v.treated === 1, rank: v.mobile };
+    case 'temp':
+      if (v.temp === null) return EMPTY;
+      return { fill: TEMP_COLORS[binIndex(v.temp, TEMP_BREAKS)]!, shape: 'dot', ring: false, rank: Math.abs(v.temp - TEMP_MIDDLE) };
+    case 'treated':
+      if (v.treated === null) return EMPTY;
+      return v.treated === 1
+        ? { fill: TREATED, shape: 'dot', ring: true, rank: 2 }
+        : { fill: PLAIN, shape: 'dot', ring: false, rank: 1 };
+    case 'disease':
+      if (v.disease === null) return EMPTY;
+      return v.disease === 1
+        ? { fill: FLAGGED, shape: 'diamond', ring: false, rank: 2 }
+        : { fill: PLAIN, shape: 'dot', ring: false, rank: 1 };
+  }
+}
+
+/**
+ * The number the heat and the year strip average for a layer: lice and
+ * temperature as they are; treated and flagged as 1 or 0, so their average is
+ * the share of farms.
+ */
+export function heatValue(layer: LayerKey, v: Values): number | null {
+  switch (layer) {
+    case 'lice':
+      return v.mobile;
+    case 'temp':
+      return v.temp;
+    case 'treated':
+      return v.treated;
+    case 'disease':
+      return v.disease;
+  }
+}
+
+export type LegendItem = { mark: Mark; label: string };
+/**
+ * A binned colour scale, shown in the key as one bar with the breaks under it
+ * (`ticks` if the breaks need formatting, such as percentages).
+ */
+export type Ramp = { colors: string[]; breaks: number[]; labels: string[]; ticks?: string[]; ends?: [string, string] };
+/** `title` and `ramp` describe the heat and the strip; `items` the farm marks seen zoomed in. */
+export type LayerInfo = { key: LayerKey; label: string; title: string; note?: string; ramp: Ramp; items: LegendItem[] };
+
+export const rampColor = (ramp: Ramp, v: number) => ramp.colors[binIndex(v, ramp.breaks)]!;
+
+const dot = (fill: string, ring = false): Mark => ({ fill, shape: 'dot', ring, rank: 0 });
+
+export const LAYERS: LayerInfo[] = [
+  {
+    key: 'temp',
+    label: 'Sea temperature',
+    title: 'Sea temperature, °C',
+    note: `Grey is about average: farm-weeks since 2019 average ${TEMP_MIDDLE}.2 °C.`,
+    ramp: { colors: TEMP_COLORS, breaks: TEMP_BREAKS, labels: TEMP_LABELS, ends: ['Colder', 'Warmer'] },
+    items: [{ mark: EMPTY, label: 'No reading' }],
+  },
+  {
+    key: 'lice',
+    label: 'Lice',
+    title: 'Mobile lice per fish',
+    note: 'Each farm counts the lice on a sample of its fish every week.',
+    ramp: { colors: LICE_COLORS, breaks: LICE_BREAKS, labels: LICE_LABELS, ends: ['Fewer', 'More'] },
+    items: [
+      { mark: dot(LICE_COLORS[2]!, true), label: 'Ring: treated' },
+      { mark: EMPTY, label: 'No count' },
+    ],
+  },
+  {
+    key: 'treated',
+    label: 'Treatments',
+    title: 'Share of farms treated for lice',
+    note: 'Any delousing that week, with medicines or without (for example warm or fresh water).',
+    ramp: {
+      colors: TREATED_SHARE_COLORS,
+      breaks: TREATED_SHARE_BREAKS,
+      labels: TREATED_SHARE_LABELS,
+      ticks: percents(TREATED_SHARE_BREAKS),
+      ends: ['Fewer', 'More'],
+    },
+    items: [
+      { mark: { fill: TREATED, shape: 'dot', ring: true, rank: 0 }, label: 'Treated' },
+      { mark: dot(PLAIN), label: 'Not treated' },
+      { mark: EMPTY, label: 'No report' },
+    ],
+  },
+  {
+    key: 'disease',
+    label: 'ISA and PD',
+    title: 'Share of farms flagged for ISA or PD',
+    note: 'Suspected or confirmed infectious salmon anaemia or pancreas disease.',
+    ramp: {
+      colors: FLAGGED_SHARE_COLORS,
+      breaks: FLAGGED_SHARE_BREAKS,
+      labels: FLAGGED_SHARE_LABELS,
+      ticks: percents(FLAGGED_SHARE_BREAKS),
+      ends: ['Fewer', 'More'],
+    },
+    items: [
+      { mark: { fill: FLAGGED, shape: 'diamond', ring: false, rank: 0 }, label: 'Flagged' },
+      { mark: dot(PLAIN), label: 'Not flagged' },
+      { mark: EMPTY, label: 'No status' },
+    ],
+  },
+];
+
+export const layerInfo = (key: LayerKey): LayerInfo => LAYERS.find((l) => l.key === key)!;
