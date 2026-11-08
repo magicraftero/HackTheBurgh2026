@@ -9,7 +9,7 @@ from ml.supply import feature_sets, forecast, target_months, window_of
 from ml.vintage import build_horizon_vintage, issue_date
 
 World = tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]
-MODELS = ["seasonal", "b0", "b1", "drivers", "ml", "blend"]
+MODELS = ["seasonal", "drivers", "ml", "blend"]  # the reference line, the model's two halves, the model
 
 
 def test_issue_dates_and_windows() -> None:
@@ -23,7 +23,7 @@ def test_issue_dates_and_windows() -> None:
     assert str(target_months(final=True)[-1]) == "2026-09"
 
 
-def test_h0_panel_and_linear_models_match_production(nowcast_world: World) -> None:
+def test_h0_panel_and_linear_half_match_production(nowcast_world: World) -> None:
     prepared = PreparedInputs(*nowcast_world)
     target = pd.Period("2023-06", "M")
     ours = build_horizon_vintage(prepared, target, 0)
@@ -34,8 +34,8 @@ def test_h0_panel_and_linear_models_match_production(nowcast_world: World) -> No
     features = model_features(prepared.include_disease)
     expected = nowcast_month(theirs, target, features, features["drivers"])
     result = forecast(prepared, target, 0)
-    for model in ("b0", "b1", "drivers"):
-        np.testing.assert_allclose(result[model], expected[model], atol=1e-9)
+    np.testing.assert_allclose(result["drivers"], expected["drivers"], atol=1e-9)
+    assert not {"b0", "b1"} & set(result.columns)
 
 
 @pytest.mark.parametrize("h", [0, 2])

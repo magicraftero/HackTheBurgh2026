@@ -1,9 +1,11 @@
-"""Walk-forward production forecasts at h = 0..3 months: linear models and the ML challenger.
+"""Walk-forward harvest forecasts at h = 0..3 months from the harvest model.
 
-Every target month T is forecast for each horizon h on its issue date
-D = the 10th of month T - h + 1, from the panel in ``ml.vintage``. All models
-are refitted on area-months whose actuals were published by D, and they train
-and score on the same rows. Rows before 2021 are a warm-up that only seeds the
+The model ("blend") is the mean of two halves: the linear Drivers model and
+gradient-boosted trees ("ml"). Every target month T is forecast for each
+horizon h on its issue date D = the 10th of month T - h + 1, from the panel in
+``ml.vintage``. Both halves are refitted on area-months whose actuals were
+published by D, on the same rows. "seasonal" (level + season, no drivers) is
+kept as the reference line. Rows before 2021 are a warm-up that only seeds the
 uncertainty bands.
 
     python -m ml.supply           warm-up + development window (default)
@@ -61,9 +63,10 @@ def window_of(month: str) -> str:
 
 
 def feature_sets(include_disease: bool) -> dict[str, list[str]]:
-    linear = model_features(include_disease)
-    ml = [*linear["drivers"], *ML_EXTRA_FEATURES, "area"]
-    return {**linear, "ml": ml}
+    """The model's two halves: Production's Drivers features, and those plus the ML extras."""
+
+    drivers = model_features(include_disease)["drivers"]
+    return {"drivers": drivers, "ml": [*drivers, *ML_EXTRA_FEATURES, "area"]}
 
 
 def driver_groups(columns: list[str]) -> dict[str, list[str]]:

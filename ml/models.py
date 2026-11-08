@@ -1,4 +1,4 @@
-"""Model factory and the group-neutralisation "why", shared by supply and price."""
+"""Model factory and the group-neutralisation "why" for the harvest model."""
 
 from __future__ import annotations
 

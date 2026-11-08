@@ -60,11 +60,6 @@ def month_number(months: pd.Series) -> pd.Series:
     return pd.Series(periods.year * 12 + periods.month - 1, index=months.index)
 
 
-def week_number(weeks: pd.Series) -> pd.Series:
-    starts = pd.to_datetime([pd.Timestamp.fromisocalendar(int(w[:4]), int(w[6:]), 1) for w in weeks])
-    return pd.Series(((starts - pd.Timestamp("2000-01-03")).days // 7).to_numpy(), index=weeks.index)
-
-
 def coverage(rows: pd.DataFrame, model: str, actual: str) -> float | None:
     inside = rows[[actual, f"lo_{model}", f"hi_{model}"]].dropna()
     if inside.empty:

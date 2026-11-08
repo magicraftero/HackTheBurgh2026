@@ -1,7 +1,8 @@
-"""Fixed ML challenger settings, as pre-registered in prereg/ML_PLAN.md.
+"""Fixed settings for the harvest model, as pre-registered in prereg/ML_PLAN.md.
 
-Windows and the freeze come from Production's and Price's own modules, so the
-challenger can never drift from the pre-registered evaluation windows.
+The model is the blend: the mean of the linear Drivers model and gradient-boosted
+trees, both refitted at every issue date. The evaluation windows and the freeze
+come from Production's module, so the model can never drift from them.
 """
 
 from __future__ import annotations
@@ -10,13 +11,8 @@ from typing import Final
 
 from analysis.config import DEVELOPMENT_WINDOW, HOLDOUT_WINDOW, PROCESSED_DATA_DIR, SITE_DATA_DIR
 from analysis.nowcast import FREEZE_AT, OUTCOMES
-from price.backtest import FREEZE as PRICE_FREEZE
-from price.backtest import WINDOWS as PRICE_WINDOWS
 
-__all__ = [
-    "DEVELOPMENT_WINDOW", "HOLDOUT_WINDOW", "PROCESSED_DATA_DIR", "SITE_DATA_DIR",
-    "FREEZE_AT", "OUTCOMES", "PRICE_FREEZE", "PRICE_WINDOWS",
-]
+__all__ = ["DEVELOPMENT_WINDOW", "HOLDOUT_WINDOW", "PROCESSED_DATA_DIR", "SITE_DATA_DIR", "FREEZE_AT", "OUTCOMES"]
 
 GBM_PARAMS: Final = {
     "loss": "absolute_error",
@@ -31,32 +27,17 @@ GBM_PARAMS: Final = {
 
 SUPPLY_HORIZONS: Final = (0, 1, 2, 3)
 SUPPLY_WARMUP_START: Final = "2019-07"
-SUPPLY_MODELS: Final = ("seasonal", "b0", "b1", "drivers", "ml", "blend")
-SUPPLY_LINEAR: Final = ("b0", "b1", "drivers")
-
-PRICE_HORIZONS: Final = tuple(range(1, 9))
-PRICE_SHOWN_HORIZONS: Final = (1, 2, 4, 8)
-PRICE_WARMUP_START: Final = "2019-W40"
-PRICE_MODELS: Final = ("rw", "ar", "c0", "c1", "ml", "blend")
+# The linear half of the model; the other half is the gradient-boosted trees ("ml").
+SUPPLY_LINEAR: Final = ("drivers",)
+MODEL: Final = "blend"
+# What the site shows: the model, and the seasonal normal (level + season, no drivers) as the reference line.
+SUPPLY_MODELS: Final = ("seasonal", MODEL)
 
 BAND_LEVELS: Final = (0.1, 0.9)
 SUPPLY_BAND_MONTHS: Final = 36
 SUPPLY_BAND_MIN_MONTHS: Final = 12
-PRICE_BAND_WEEKS: Final = 156
-PRICE_BAND_MIN_WEEKS: Final = 52
-
-WINNER_MARGIN: Final = 0.02
-LEAKAGE_RATIO: Final = 0.8
 
 MODEL_LABELS: Final = {
     "seasonal": "Seasonal normal",
-    "b0": "Stock (biomass, fish numbers)",
-    "b1": "Stock + export volume",
-    "drivers": "Linear, all drivers",
-    "ml": "Gradient-boosted trees",
-    "blend": "Blend (linear + trees)",
-    "rw": "No change",
-    "ar": "Price history + season",
-    "c0": "Market",
-    "c1": "Market + biology",
+    "blend": "Harvest model (linear + trees)",
 }
