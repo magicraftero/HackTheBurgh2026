@@ -1,0 +1,55 @@
+{
+  "generated_at": "2026-11-08T09:54:07.483452+00:00",
+  "sources": [
+    "https://salmonprice.com/fishpool/servlets/newt/public/json/fpiAverages?year=2024",
+    "https://salmonprice.com/fishpool/servlets/newt/public/json/fpiAverages?year=2025",
+    "https://salmonprice.com/fishpool/servlets/newt/public/json/fpiAverages?year=2026"
+  ],
+  "inputs": {
+    "data/raw/sisalmoni/2024.json": "bea73821809f0728b41a98c0c7b2dd12349b94bdf8d13de72e897100126f33d1",
+    "data/raw/sisalmoni/2025.json": "20f716b6f67664906436c339702863ab3d37cb3f918f2a78facb0d61bdbd7236",
+    "data/raw/sisalmoni/2026.json": "7867cee6165d20aeb656431b49195a376ab11332ef57d0556a3dd498281ed1d2",
+    "/Users/ryanlam/Desktop/Personal Projects/HackTheBurgh2026/price/final_run.json": "fcd87ecb05d6fd37c556a845fbeac2699a786cab9ae0291765b6e576d05df5b4",
+    "/Users/ryanlam/Desktop/Personal Projects/HackTheBurgh2026/data/processed/ssb_weekly.parquet": "f22ea7bd13ea8a5523bf705aebde2e80236ff830cad9457dd14c5bd609155304",
+    "/Users/ryanlam/Desktop/Personal Projects/HackTheBurgh2026/data/processed/fx_daily.parquet": "949e26de3712c592a45359efde338a593b3d2e7e2d08083b214990429b857d1d",
+    "/Users/ryanlam/Desktop/Personal Projects/HackTheBurgh2026/data/processed/directorate_area_month.parquet": "af653ae619518a1634bc0c0c4a863682b01264eb290d348873a664f58f72f3d9",
+    "/Users/ryanlam/Desktop/Personal Projects/HackTheBurgh2026/data/processed/weekly_national_index.parquet": "f4b98366f6da3521b21a19d3a5052bbf225bbddf26b8c9689901c6fa33366524",
+    "/Users/ryanlam/Desktop/Personal Projects/HackTheBurgh2026/data/processed/drivers_national_month.parquet": "1d2cde5a49457e002b72595f3c3befc231cf7d346657a492d9449ec87ea8466a"
+  },
+  "lag_selection_source": "/Users/ryanlam/Desktop/Personal Projects/HackTheBurgh2026/price/final_run.json",
+  "lags": {
+    "2": 2,
+    "3": 2,
+    "4": 2,
+    "5": 2,
+    "6": 2,
+    "7": 2,
+    "8": 2
+  },
+  "runtime": {
+    "python": "3.13.5",
+    "executable": "/private/tmp/htb-price-venv/bin/python",
+    "packages": {
+      "pandas": "2.3.3",
+      "numpy": "2.4.6",
+      "scipy": "1.18.1",
+      "statsmodels": "0.15.0",
+      "pyarrow": "26.0.1"
+    }
+  },
+  "code_sha256": "c002b6d1eaaa4c6afa65e0bf0bb52ce393344b841c5e9827266fcef204cf6af7",
+  "target": "SISALMONI 3–6 kg EUR/kg; public fpiEUR field only",
+  "protocol": {
+    "path": "price/experiments/sisalmoni/PLAN.md",
+    "sha256": "0e77d1cc2f7e740c6e0e904818b4b016888dd552e197283d6015eae4c97d7fa4",
+    "fixed_before_first_target_model_score": true
+  },
+  "source_verification": "price/experiments/sisalmoni/SOURCES.md",
+  "execution_note": "First model calculation completed but metrics JSON export failed on a NumPy boolean. Only scalar serialization was corrected; the identical fixed model was rerun, and all saved prediction columns were verified exactly equal to the first calculation.",
+  "validation": {
+    "price_tests_passed": 32,
+    "index_specific_tests_after_export_fix": 6,
+    "score_and_hash_audit": "passed",
+    "frozen_ssb_output_files_unchanged": 8
+  }
+}

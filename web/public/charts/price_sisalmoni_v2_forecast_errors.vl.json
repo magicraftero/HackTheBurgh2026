@@ -1,0 +1,763 @@
+{
+  "config": {
+    "view": {
+      "continuousWidth": 300,
+      "continuousHeight": 300
+    },
+    "axis": {
+      "labelFontSize": 12,
+      "titleFontSize": 13
+    },
+    "font": "Arial",
+    "legend": {
+      "labelFontSize": 11,
+      "orient": "bottom"
+    }
+  },
+  "layer": [
+    {
+      "data": {
+        "values": [
+          {
+            "date": "2026-05-18",
+            "week": "2026-W21",
+            "model": "Actual",
+            "price": 6.63
+          },
+          {
+            "date": "2026-05-25",
+            "week": "2026-W22",
+            "model": "Actual",
+            "price": 6.85
+          },
+          {
+            "date": "2026-06-01",
+            "week": "2026-W23",
+            "model": "Actual",
+            "price": 6.41
+          },
+          {
+            "date": "2026-06-08",
+            "week": "2026-W24",
+            "model": "Actual",
+            "price": 6.15
+          },
+          {
+            "date": "2026-06-15",
+            "week": "2026-W25",
+            "model": "Actual",
+            "price": 6.08
+          },
+          {
+            "date": "2026-06-22",
+            "week": "2026-W26",
+            "model": "Actual",
+            "price": 5.71
+          },
+          {
+            "date": "2026-06-29",
+            "week": "2026-W27",
+            "model": "Actual",
+            "price": 5.59
+          },
+          {
+            "date": "2026-07-06",
+            "week": "2026-W28",
+            "model": "Actual",
+            "price": 5.75
+          },
+          {
+            "date": "2026-07-13",
+            "week": "2026-W29",
+            "model": "Actual",
+            "price": 5.89
+          },
+          {
+            "date": "2026-07-20",
+            "week": "2026-W30",
+            "model": "Actual",
+            "price": 6.08
+          },
+          {
+            "date": "2026-07-27",
+            "week": "2026-W31",
+            "model": "Actual",
+            "price": 6.38
+          },
+          {
+            "date": "2026-08-03",
+            "week": "2026-W32",
+            "model": "Actual",
+            "price": 6.46
+          },
+          {
+            "date": "2026-08-10",
+            "week": "2026-W33",
+            "model": "Actual",
+            "price": 6.25
+          },
+          {
+            "date": "2026-08-17",
+            "week": "2026-W34",
+            "model": "Actual",
+            "price": 6.26
+          },
+          {
+            "date": "2026-08-24",
+            "week": "2026-W35",
+            "model": "Actual",
+            "price": 6.09
+          },
+          {
+            "date": "2026-08-31",
+            "week": "2026-W36",
+            "model": "Actual",
+            "price": 6.03
+          },
+          {
+            "date": "2026-09-07",
+            "week": "2026-W37",
+            "model": "Actual",
+            "price": 6.16
+          },
+          {
+            "date": "2026-09-14",
+            "week": "2026-W38",
+            "model": "Actual",
+            "price": 6.18
+          },
+          {
+            "date": "2026-09-21",
+            "week": "2026-W39",
+            "model": "Actual",
+            "price": 6.36
+          },
+          {
+            "date": "2026-09-28",
+            "week": "2026-W40",
+            "model": "Actual",
+            "price": 6.39
+          },
+          {
+            "date": "2026-10-05",
+            "week": "2026-W41",
+            "model": "Actual",
+            "price": 6.41
+          },
+          {
+            "date": "2026-10-12",
+            "week": "2026-W42",
+            "model": "Actual",
+            "price": 6.56
+          },
+          {
+            "date": "2026-10-19",
+            "week": "2026-W43",
+            "model": "Actual",
+            "price": 6.76
+          },
+          {
+            "date": "2026-10-26",
+            "week": "2026-W44",
+            "model": "Actual",
+            "price": 6.7
+          },
+          {
+            "date": "2026-05-18",
+            "week": "2026-W21",
+            "model": "No change",
+            "price": 6.71,
+            "error": 0.08000000000000007
+          },
+          {
+            "date": "2026-05-18",
+            "week": "2026-W21",
+            "model": "Ridge price level, alpha 10",
+            "price": 6.093878461231176,
+            "error": -0.5361215387688238
+          },
+          {
+            "date": "2026-05-18",
+            "week": "2026-W21",
+            "model": "Original biology model",
+            "price": 6.635795824179651,
+            "error": 0.005795824179650744
+          },
+          {
+            "date": "2026-05-25",
+            "week": "2026-W22",
+            "model": "No change",
+            "price": 7.450000000000001,
+            "error": 0.6000000000000014
+          },
+          {
+            "date": "2026-05-25",
+            "week": "2026-W22",
+            "model": "Ridge price level, alpha 10",
+            "price": 6.133117110885181,
+            "error": -0.7168828891148182
+          },
+          {
+            "date": "2026-05-25",
+            "week": "2026-W22",
+            "model": "Original biology model",
+            "price": 6.473525635559174,
+            "error": -0.37647436444082594
+          },
+          {
+            "date": "2026-06-01",
+            "week": "2026-W23",
+            "model": "No change",
+            "price": 7.25,
+            "error": 0.8399999999999999
+          },
+          {
+            "date": "2026-06-01",
+            "week": "2026-W23",
+            "model": "Ridge price level, alpha 10",
+            "price": 6.0561571770913964,
+            "error": -0.3538428229086037
+          },
+          {
+            "date": "2026-06-01",
+            "week": "2026-W23",
+            "model": "Original biology model",
+            "price": 5.939235149275065,
+            "error": -0.4707648507249349
+          },
+          {
+            "date": "2026-06-08",
+            "week": "2026-W24",
+            "model": "No change",
+            "price": 6.81,
+            "error": 0.6599999999999993
+          },
+          {
+            "date": "2026-06-08",
+            "week": "2026-W24",
+            "model": "Ridge price level, alpha 10",
+            "price": 6.0499541407535675,
+            "error": -0.10004585924643283
+          },
+          {
+            "date": "2026-06-08",
+            "week": "2026-W24",
+            "model": "Original biology model",
+            "price": 5.879291928646494,
+            "error": -0.27070807135350616
+          },
+          {
+            "date": "2026-06-15",
+            "week": "2026-W25",
+            "model": "No change",
+            "price": 6.63,
+            "error": 0.5499999999999998
+          },
+          {
+            "date": "2026-06-15",
+            "week": "2026-W25",
+            "model": "Ridge price level, alpha 10",
+            "price": 5.899589817861795,
+            "error": -0.18041018213820514
+          },
+          {
+            "date": "2026-06-15",
+            "week": "2026-W25",
+            "model": "Original biology model",
+            "price": 6.049374954880152,
+            "error": -0.030625045119847982
+          },
+          {
+            "date": "2026-06-22",
+            "week": "2026-W26",
+            "model": "No change",
+            "price": 6.849999999999999,
+            "error": 1.1399999999999988
+          },
+          {
+            "date": "2026-06-22",
+            "week": "2026-W26",
+            "model": "Ridge price level, alpha 10",
+            "price": 5.846610794652792,
+            "error": 0.1366107946527917
+          },
+          {
+            "date": "2026-06-22",
+            "week": "2026-W26",
+            "model": "Original biology model",
+            "price": 5.901394665229161,
+            "error": 0.19139466522916138
+          },
+          {
+            "date": "2026-06-29",
+            "week": "2026-W27",
+            "model": "No change",
+            "price": 6.41,
+            "error": 0.8200000000000003
+          },
+          {
+            "date": "2026-06-29",
+            "week": "2026-W27",
+            "model": "Ridge price level, alpha 10",
+            "price": 5.693145353013133,
+            "error": 0.10314535301313299
+          },
+          {
+            "date": "2026-06-29",
+            "week": "2026-W27",
+            "model": "Original biology model",
+            "price": 5.366180961785166,
+            "error": -0.22381903821483373
+          },
+          {
+            "date": "2026-07-06",
+            "week": "2026-W28",
+            "model": "No change",
+            "price": 6.150000000000001,
+            "error": 0.40000000000000124
+          },
+          {
+            "date": "2026-07-06",
+            "week": "2026-W28",
+            "model": "Ridge price level, alpha 10",
+            "price": 5.651042360032989,
+            "error": -0.09895763996701135
+          },
+          {
+            "date": "2026-07-06",
+            "week": "2026-W28",
+            "model": "Original biology model",
+            "price": 5.70318112234078,
+            "error": -0.04681887765921999
+          },
+          {
+            "date": "2026-07-13",
+            "week": "2026-W29",
+            "model": "No change",
+            "price": 6.08,
+            "error": 0.1900000000000004
+          },
+          {
+            "date": "2026-07-13",
+            "week": "2026-W29",
+            "model": "Ridge price level, alpha 10",
+            "price": 5.619951299469896,
+            "error": -0.2700487005301033
+          },
+          {
+            "date": "2026-07-13",
+            "week": "2026-W29",
+            "model": "Original biology model",
+            "price": 5.729091215559354,
+            "error": -0.16090878444064582
+          },
+          {
+            "date": "2026-07-20",
+            "week": "2026-W30",
+            "model": "No change",
+            "price": 5.710000000000001,
+            "error": -0.3699999999999992
+          },
+          {
+            "date": "2026-07-20",
+            "week": "2026-W30",
+            "model": "Ridge price level, alpha 10",
+            "price": 5.488968310976078,
+            "error": -0.5910316890239224
+          },
+          {
+            "date": "2026-07-20",
+            "week": "2026-W30",
+            "model": "Original biology model",
+            "price": 5.690979541838321,
+            "error": -0.38902045816167874
+          },
+          {
+            "date": "2026-07-27",
+            "week": "2026-W31",
+            "model": "No change",
+            "price": 5.59,
+            "error": -0.79
+          },
+          {
+            "date": "2026-07-27",
+            "week": "2026-W31",
+            "model": "Ridge price level, alpha 10",
+            "price": 5.514251710042322,
+            "error": -0.8657482899576783
+          },
+          {
+            "date": "2026-07-27",
+            "week": "2026-W31",
+            "model": "Original biology model",
+            "price": 5.80963837318435,
+            "error": -0.5703616268156502
+          },
+          {
+            "date": "2026-08-03",
+            "week": "2026-W32",
+            "model": "No change",
+            "price": 5.75,
+            "error": -0.71
+          },
+          {
+            "date": "2026-08-03",
+            "week": "2026-W32",
+            "model": "Ridge price level, alpha 10",
+            "price": 5.567702490866769,
+            "error": -0.8922975091332308
+          },
+          {
+            "date": "2026-08-03",
+            "week": "2026-W32",
+            "model": "Original biology model",
+            "price": 6.008417241384873,
+            "error": -0.4515827586151273
+          },
+          {
+            "date": "2026-08-10",
+            "week": "2026-W33",
+            "model": "No change",
+            "price": 5.889999999999999,
+            "error": -0.3600000000000012
+          },
+          {
+            "date": "2026-08-10",
+            "week": "2026-W33",
+            "model": "Ridge price level, alpha 10",
+            "price": 5.618301522300067,
+            "error": -0.631698477699933
+          },
+          {
+            "date": "2026-08-10",
+            "week": "2026-W33",
+            "model": "Original biology model",
+            "price": 6.288864828163456,
+            "error": 0.038864828163456266
+          },
+          {
+            "date": "2026-08-17",
+            "week": "2026-W34",
+            "model": "No change",
+            "price": 6.08,
+            "error": -0.17999999999999972
+          },
+          {
+            "date": "2026-08-17",
+            "week": "2026-W34",
+            "model": "Ridge price level, alpha 10",
+            "price": 5.81278838465227,
+            "error": -0.44721161534772946
+          },
+          {
+            "date": "2026-08-17",
+            "week": "2026-W34",
+            "model": "Original biology model",
+            "price": 6.531898905664869,
+            "error": 0.2718989056648695
+          },
+          {
+            "date": "2026-08-24",
+            "week": "2026-W35",
+            "model": "No change",
+            "price": 6.379999999999999,
+            "error": 0.28999999999999915
+          },
+          {
+            "date": "2026-08-24",
+            "week": "2026-W35",
+            "model": "Ridge price level, alpha 10",
+            "price": 6.004647454374538,
+            "error": -0.08535254562546157
+          },
+          {
+            "date": "2026-08-24",
+            "week": "2026-W35",
+            "model": "Original biology model",
+            "price": 6.523044683472399,
+            "error": 0.4330446834723993
+          },
+          {
+            "date": "2026-08-31",
+            "week": "2026-W36",
+            "model": "No change",
+            "price": 6.46,
+            "error": 0.4299999999999997
+          },
+          {
+            "date": "2026-08-31",
+            "week": "2026-W36",
+            "model": "Ridge price level, alpha 10",
+            "price": 6.062658442700663,
+            "error": 0.03265844270066243
+          },
+          {
+            "date": "2026-08-31",
+            "week": "2026-W36",
+            "model": "Original biology model",
+            "price": 6.455745592934582,
+            "error": 0.4257455929345815
+          },
+          {
+            "date": "2026-09-07",
+            "week": "2026-W37",
+            "model": "No change",
+            "price": 6.250000000000001,
+            "error": 0.09000000000000075
+          },
+          {
+            "date": "2026-09-07",
+            "week": "2026-W37",
+            "model": "Ridge price level, alpha 10",
+            "price": 6.019729761971189,
+            "error": -0.140270238028811
+          },
+          {
+            "date": "2026-09-07",
+            "week": "2026-W37",
+            "model": "Original biology model",
+            "price": 6.796562627181928,
+            "error": 0.6365626271819282
+          },
+          {
+            "date": "2026-09-14",
+            "week": "2026-W38",
+            "model": "No change",
+            "price": 6.260000000000001,
+            "error": 0.08000000000000096
+          },
+          {
+            "date": "2026-09-14",
+            "week": "2026-W38",
+            "model": "Ridge price level, alpha 10",
+            "price": 6.090851084523618,
+            "error": -0.0891489154763816
+          },
+          {
+            "date": "2026-09-14",
+            "week": "2026-W38",
+            "model": "Original biology model",
+            "price": 7.2033069862936445,
+            "error": 1.0233069862936448
+          },
+          {
+            "date": "2026-09-21",
+            "week": "2026-W39",
+            "model": "No change",
+            "price": 6.09,
+            "error": -0.27000000000000046
+          },
+          {
+            "date": "2026-09-21",
+            "week": "2026-W39",
+            "model": "Ridge price level, alpha 10",
+            "price": 6.12078193879585,
+            "error": -0.23921806120415035
+          },
+          {
+            "date": "2026-09-21",
+            "week": "2026-W39",
+            "model": "Original biology model",
+            "price": 6.996051485117311,
+            "error": 0.6360514851173109
+          },
+          {
+            "date": "2026-09-28",
+            "week": "2026-W40",
+            "model": "No change",
+            "price": 6.03,
+            "error": -0.35999999999999943
+          },
+          {
+            "date": "2026-09-28",
+            "week": "2026-W40",
+            "model": "Ridge price level, alpha 10",
+            "price": 6.210062711350143,
+            "error": -0.1799372886498567
+          },
+          {
+            "date": "2026-09-28",
+            "week": "2026-W40",
+            "model": "Original biology model",
+            "price": 6.610852150951191,
+            "error": 0.22085215095119093
+          },
+          {
+            "date": "2026-10-05",
+            "week": "2026-W41",
+            "model": "No change",
+            "price": 6.160000000000001,
+            "error": -0.2499999999999991
+          },
+          {
+            "date": "2026-10-05",
+            "week": "2026-W41",
+            "model": "Ridge price level, alpha 10",
+            "price": 6.374786786779683,
+            "error": -0.03521321322031756
+          },
+          {
+            "date": "2026-10-05",
+            "week": "2026-W41",
+            "model": "Original biology model",
+            "price": 6.674570581099348,
+            "error": 0.26457058109934817
+          },
+          {
+            "date": "2026-10-12",
+            "week": "2026-W42",
+            "model": "No change",
+            "price": 6.180000000000001,
+            "error": -0.379999999999999
+          },
+          {
+            "date": "2026-10-12",
+            "week": "2026-W42",
+            "model": "Ridge price level, alpha 10",
+            "price": 6.491590536494589,
+            "error": -0.06840946350541088
+          },
+          {
+            "date": "2026-10-12",
+            "week": "2026-W42",
+            "model": "Original biology model",
+            "price": 6.56810613205469,
+            "error": 0.008106132054690462
+          },
+          {
+            "date": "2026-10-19",
+            "week": "2026-W43",
+            "model": "No change",
+            "price": 6.359999999999999,
+            "error": -0.40000000000000036
+          },
+          {
+            "date": "2026-10-19",
+            "week": "2026-W43",
+            "model": "Ridge price level, alpha 10",
+            "price": 6.696854133999174,
+            "error": -0.06314586600082617
+          },
+          {
+            "date": "2026-10-19",
+            "week": "2026-W43",
+            "model": "Original biology model",
+            "price": 6.630942046260708,
+            "error": -0.12905795373929152
+          },
+          {
+            "date": "2026-10-26",
+            "week": "2026-W44",
+            "model": "No change",
+            "price": 6.39,
+            "error": -0.3100000000000005
+          },
+          {
+            "date": "2026-10-26",
+            "week": "2026-W44",
+            "model": "Ridge price level, alpha 10",
+            "price": 6.851343599763739,
+            "error": 0.1513435997637389
+          },
+          {
+            "date": "2026-10-26",
+            "week": "2026-W44",
+            "model": "Original biology model",
+            "price": 6.774483132743361,
+            "error": 0.07448313274336105
+          }
+        ]
+      },
+      "mark": {
+        "type": "line",
+        "point": true
+      },
+      "encoding": {
+        "color": {
+          "field": "model",
+          "scale": {
+            "domain": [
+              "No change",
+              "Ridge price level, alpha 10",
+              "Original biology model"
+            ],
+            "range": [
+              "#62717a",
+              "#24895d",
+              "#236bb4"
+            ]
+          },
+          "title": null,
+          "type": "nominal"
+        },
+        "tooltip": [
+          {
+            "field": "week",
+            "type": "nominal"
+          },
+          {
+            "field": "model",
+            "type": "nominal"
+          },
+          {
+            "field": "error",
+            "format": "+.3f",
+            "type": "quantitative"
+          }
+        ],
+        "x": {
+          "field": "date",
+          "title": "Target delivery week",
+          "type": "temporal"
+        },
+        "y": {
+          "field": "error",
+          "scale": {
+            "zero": true
+          },
+          "title": "Forecast minus actual, EUR/kg",
+          "type": "quantitative"
+        }
+      },
+      "transform": [
+        {
+          "filter": "(datum.model !== 'Actual')"
+        }
+      ]
+    },
+    {
+      "data": {
+        "values": [
+          {
+            "zero": 0
+          }
+        ]
+      },
+      "mark": {
+        "type": "rule",
+        "color": "#777",
+        "strokeDash": [
+          4,
+          4
+        ]
+      },
+      "encoding": {
+        "y": {
+          "field": "zero",
+          "type": "quantitative"
+        }
+      }
+    }
+  ],
+  "height": 320,
+  "title": "Four-week forecast errors: all test weeks retained",
+  "width": 760,
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.20.1.json",
+  "usermeta": {
+    "dataset_id": "sisalmoni_v2",
+    "currency": "EUR",
+    "unit": "EUR/kg",
+    "display_model_id": "ridge_level_a10",
+    "evaluation": "retrospective"
+  }
+}

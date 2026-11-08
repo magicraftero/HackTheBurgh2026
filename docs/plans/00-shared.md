@@ -2,6 +2,16 @@
 
 For: every coding agent on the team (Data, Production, Price, Front end). Your human also gives you one role plan from this folder. This file is the single source of truth for paths, schemas, driver definitions, the holdout rule and deadlines. If your role plan disagrees with it, this file wins; tell your human.
 
+## Pricing display addendum, 8 November 2026
+
+For the pricing result to present, use the **SISALMONI v2 EUR/kg** package defined
+in [PRICE_DISPLAY_HANDOFF.md](../PRICE_DISPLAY_HANDOFF.md). Read
+`web/public/data/price_display_manifest.json`, then the indicated
+`price_sisalmoni_v2.json` and versioned charts. This addendum takes precedence
+over the older price-display instructions below. It does not change the frozen
+SSB F2 definition, results or existing `price.json` schema. That file remains
+SSB/NOK and must not be relabelled as SISALMONI/EUR.
+
 ## The project
 
 HackTheBurgh XIII, Edinburgh: a 24-hour hackathon ending on Sunday 8 November 2026, with submissions assumed around 11:00 and judging on Sunday. The theme is "make something previously invisible visible, and predict something".

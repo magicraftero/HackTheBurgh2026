@@ -1,7 +1,21 @@
 # Presentation notes
 
-A shared scratchpad for the pitch. Add ideas anywhere; keep each line short. Numbers come from
-`analysis/RESULTS.md`, `ml/RESULTS.md` and `price/RESULTS.md`; check there before quoting.
+A shared scratchpad for the pitch. Add ideas anywhere; keep each line short. Production numbers
+come from `analysis/RESULTS.md` and `ml/RESULTS.md`. Pricing numbers to present come from
+`web/public/data/price_sisalmoni_v2.json`; see [the display handoff](PRICE_DISPLAY_HANDOFF.md).
+
+## Current price result to present: SISALMONI v2
+
+- Target: **SISALMONI 3–6 kg index, EUR/kg**. Display model: **price-only Ridge v2**.
+- Four-week result on **24 target weeks, 2026-W21 to 2026-W44**: **33.6% less MAE
+  than no change**, **4.7% less than the original biology model on those same dates**,
+  and **EUR 0.292/kg MAE**.
+- **79.2% correct direction** means 19 of 24 rise/fall calls, not overall price accuracy.
+- Say **"promising retrospective result"**. Paired uncertainty intervals include no benefit;
+  the full 10% objective against the strongest baseline was not met. No change remains
+  the recorded live recommendation.
+- The older SSB/NOK percentages, the first SISALMONI OLS error of EUR 5.392/kg, and the
+  unselected alpha-100 variant are different comparisons, not this headline result.
 
 ## The one-line pitch
 

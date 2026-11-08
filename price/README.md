@@ -1,11 +1,22 @@
 # Price track
 
+**Current pricing display: SISALMONI v2, EUR/kg.** Start with
+[the display handoff](../docs/PRICE_DISPLAY_HANDOFF.md). Its canonical public
+payload is `web/public/data/price_sisalmoni_v2.json`, located through
+`web/public/data/price_display_manifest.json`. Regenerate the package with
+`python -m price.export_display`; this packages frozen results without retraining.
+
+**The implementation and `price.json` contract below are the archived SSB/NOK
+track.** They remain valid for the registered F2 test, but are a different price
+target from the SISALMONI v2 results to present. The selected Ridge display model
+and the no-change live recommendation are deliberately separate fields.
+
 This implements `docs/plans/price.md` and the shared contract. It forecasts the
 weekly **fresh/chilled farmed salmon export price, NOK/kg** from Statistics Norway
 table 03024. The output is static findings and Vega-Lite v5 chart specifications
 for the separately owned front end. No server, credentials, or network access is
-needed to run Price. The current branch has no front-end application to mount a
-component into; the integration points are the shared files below.
+needed to run the SSB backtest. Its historical integration points are below;
+the current display integration is defined in the handoff above.
 
 ## Run
 
