@@ -25,11 +25,17 @@ export function Findings({ files, source }: { files: AllFiles; source: Source })
 
   return (
     <>
-      <Finding n={1} id="farms" band="paper" tag="The data" wide scrollTo="farm-map" title="Every farm, every week." lede="Every salmon farm on Norway's coast reports lice, treatments, disease and sea temperature each week. Press play to watch a year go by, read the whole year in the strip under the map, or pick a farm to see its own year.">
+      <Finding n={1} id="price" band="paper" tag="The price" title="The price, weeks ahead." lede="The SISALMONI 3–6 kg index is the reference price for Euronext salmon contracts, in euros per kilo. We forecast it 2 to 8 delivery weeks ahead and compare that with assuming the price stays the same.">
+        <StatusView status={data.priceSisalmoni} {...fileProps('priceSisalmoni')}>
+          {(p) => <SisalmoniDetails p={p} charts={charts} />}
+        </StatusView>
+      </Finding>
+
+      <Finding n={2} id="farms" band="cream" tag="The map" wide scrollTo="farm-map" title="Every farm, every week." lede="Every salmon farm on Norway's coast reports lice, treatments, disease and sea temperature each week. Press play to watch a year go by, read the whole year in the strip under the map, or pick a farm to see its own year.">
         <FarmSection farms={data.farms} index={data.farmWeeksIndex} source={source} />
       </Finding>
 
-      <Finding n={2} id="nowcast" band="cream" tag="The forecast" title="Called before it's published." lede="On the 10th of each month we forecast the month just ended, area by area, using only data public by then. The Directorate publishes around the 20th, so we're about 10 days ahead of the official figure.">
+      <Finding n={3} id="nowcast" band="paper" tag="Historic view" title="Called before it's published." lede="On the 10th of each month we forecast the month just ended, area by area, using only data public by then. The Directorate publishes around the 20th, so we're about 10 days ahead of the official figure.">
         <StatusView status={data.combined} {...fileProps('combined')}>
           {(c) => (
             <>
@@ -40,7 +46,7 @@ export function Findings({ files, source }: { files: AllFiles; source: Source })
         </StatusView>
       </Finding>
 
-      <Finding n={3} id="split" fit band="paper" tag="The harvest" title="More fish, or bigger fish?" lede="Harvest is fish count × average weight. Fast growth gives more and bigger fish; harvests forced early by lice or disease give more but smaller ones. Only the split tells them apart.">
+      <Finding n={4} id="split" fit band="cream" tag="The harvest" title="More fish, or bigger fish?" lede="Harvest is fish count × average weight. Fast growth gives more and bigger fish; harvests forced early by lice or disease give more but smaller ones. Only the split tells them apart.">
         <StatusView status={data.channels} {...fileProps('channels')}>
           {(c) => (
             <>
@@ -53,7 +59,7 @@ export function Findings({ files, source }: { files: AllFiles; source: Source })
         </StatusView>
       </Finding>
 
-      <Finding n={4} id="trap" band="cream" tag="A warning" title="The seasonality trap." lede="Lice, temperature and price all swing with the seasons, so raw correlations look strong. Remove season and trend, and see what's left.">
+      <Finding n={5} id="trap" band="paper" tag="A warning" title="The seasonality trap." lede="Lice, temperature and price all swing with the seasons, so raw correlations look strong. Remove season and trend, and see what's left.">
         <StatusView status={data.trap} {...fileProps('trap')}>
           {(t) => (
             <>
@@ -63,12 +69,6 @@ export function Findings({ files, source }: { files: AllFiles; source: Source })
               </Numbers>
             </>
           )}
-        </StatusView>
-      </Finding>
-
-      <Finding n={5} id="price" band="paper" tag="The price" title="The price, weeks ahead." lede="The SISALMONI 3–6 kg index is the reference price for Euronext salmon contracts, in euros per kilo. We forecast it 2 to 8 delivery weeks ahead and compare that with assuming the price stays the same.">
-        <StatusView status={data.priceSisalmoni} {...fileProps('priceSisalmoni')}>
-          {(p) => <SisalmoniDetails p={p} charts={charts} />}
         </StatusView>
       </Finding>
 
@@ -146,7 +146,7 @@ function MiniStats({ items }: { items: [string, ReactNode][] }) {
   );
 }
 
-// ---- Finding 4 ----
+// ---- Seasonality trap ----
 
 function TrapTable({ trap }: { trap: Trap }) {
   return (
@@ -167,7 +167,7 @@ function TrapTable({ trap }: { trap: Trap }) {
   );
 }
 
-// ---- Finding 3 ----
+// ---- Harvest split ----
 
 function BinsTable({ bins }: { bins: Channels['bins'] }) {
   return (
@@ -186,7 +186,7 @@ function BinsTable({ bins }: { bins: Channels['bins'] }) {
   );
 }
 
-// ---- Finding 2 ----
+// ---- Historic view ----
 
 const wholePct = (v: number | null | undefined) => (v == null ? DASH : `${Math.round(v)}%`);
 
@@ -235,7 +235,7 @@ function FinalModelDetails({ c }: { c: Combined }) {
   );
 }
 
-// ---- Finding 5 ----
+// ---- Price ----
 
 const PRICE_COMPARED: Record<string, string> = { rw: 'Assume no change', old_c1: 'Earlier model with farm data' };
 

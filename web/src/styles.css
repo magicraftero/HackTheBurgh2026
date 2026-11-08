@@ -874,8 +874,17 @@ section[id] {
   .finding-fit .container {
     display: grid;
     grid-template-columns: minmax(0, 19rem) minmax(0, 1fr);
-    gap: clamp(2rem, 3vw, 3rem);
+    gap: 1rem clamp(2rem, 3vw, 3rem);
     align-items: center;
+  }
+
+  /* The chart sits beside the heading; the numbers open below both, so nothing moves. */
+  .finding-fit .finding-body {
+    display: contents;
+  }
+
+  .finding-fit .numbers {
+    grid-column: 1 / -1;
   }
 
   .finding-fit .section-head {
@@ -905,10 +914,6 @@ section[id] {
 
 .finding-body .results-facts {
   margin-top: 0;
-}
-
-.band-paper .farm-panel {
-  box-shadow: 0 0 0 1px var(--hairline);
 }
 
 .forecast-card-dates {

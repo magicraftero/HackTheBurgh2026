@@ -36,7 +36,7 @@ export const rise = (v: number | null) => (v === null ? DASH : Math.abs(v) < 0.0
 
 const lowerFirst = (s: string) => (/^[A-Z][a-z]/.test(s) ? s[0]!.toLowerCase() + s.slice(1) : s);
 
-// ---- Finding 4: correlation with price, before and after ----
+// ---- correlation with price, before and after ----
 
 export function TrapFigure({ trap }: { trap: Trap }) {
   const rows = trap.drivers
@@ -104,7 +104,7 @@ export function TrapFigure({ trap }: { trap: Trap }) {
   );
 }
 
-// ---- Finding 3: fish count and weight after low, middle and high months ----
+// ---- fish count and weight after low, middle and high months ----
 
 export const FACTOR_NAMES: Record<string, string> = { lice: 'Lice', mortality: 'Deaths', temp: 'Sea temperature', feed: 'Feed' };
 const FACTOR_ORDER = ['lice', 'mortality', 'temp', 'feed'];
@@ -196,7 +196,7 @@ export function SplitFigure({ bins }: { bins: Channels['bins'] }) {
   );
 }
 
-// ---- Finding 2: forecast against the published harvest ----
+// ---- forecast against the published harvest ----
 
 export function ForecastFigure({ c }: { c: Combined }) {
   const spec = useMemo(() => forecastSpec(c), [c]);
@@ -209,14 +209,14 @@ export function ForecastFigure({ c }: { c: Combined }) {
   );
 }
 
-// ---- Finding 5: the price forecast against the actual price ----
+// ---- the price forecast against the actual price ----
 
 export function PriceForecastFigure({ team, note }: { team: ChartSpec; note: ReactNode }) {
   const spec = useMemo(() => priceForecastSpec(team), [team]);
   return <VegaFigure title="Our price forecast against the actual price, week by week" note={note} spec={spec} />;
 }
 
-// ---- Finding 7: the price forecasts ----
+// ---- the price forecasts ----
 
 export function ScorecardFigure({ p }: { p: Price }) {
   const spec = useMemo(() => scorecardSpec(p), [p]);

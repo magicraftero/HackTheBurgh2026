@@ -36,11 +36,11 @@ export function fileRows(files: AllFiles): FileRow[] {
 const NAV_LINKS: [string, string][] = [
   ['results', 'Results'],
   ['current', 'Next forecast'],
-  ['farms', 'Data'],
-  ['nowcast', 'Forecast'],
+  ['price', 'Price'],
+  ['farms', 'Map'],
+  ['nowcast', 'Historic view'],
   ['split', 'Harvest'],
   ['trap', 'Seasonality'],
-  ['price', 'Price'],
 ];
 
 export function FloatNav() {
