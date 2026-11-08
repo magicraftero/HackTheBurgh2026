@@ -31,8 +31,11 @@ SOURCES: Final = {"log_kg": "v2", "log_avg_kg": "ml", "log_count": "v2 kg / ml w
 
 
 def load_ml_backtest(path: Path | None, ref: str = ML_REF) -> pd.DataFrame:
-    """Nikita's backtest, from a file or straight from his branch without merging it."""
+    """Nikita's backtest: a given file, else the repo copy, else straight from his branch."""
 
+    local = REPO_ROOT / ML_PATH
+    if path is None and local.exists():
+        path = local
     if path is not None:
         return pd.read_parquet(path)
     blob = subprocess.run(

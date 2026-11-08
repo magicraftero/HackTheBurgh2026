@@ -94,7 +94,7 @@ def test_no_forecast_when_the_season_has_too_few_months(nowcast_world: World) ->
     months = pd.to_datetime(sparse["month"] + "-01")
     sparse.loc[(sparse["area"] == 4) & (months.dt.month % 3 != 0), ["harvest_count", "harvest_kg"]] = 0
     sparse.loc[(sparse["area"] == 4) & (months.dt.month % 3 != 0), "avg_kg"] = np.nan
-    result = forecast(PreparedInputs(sparse, weekly, ssb), pd.Period("2021-06", "M"), 0)
+    result = forecast(PreparedInputs(sparse, weekly, ssb), pd.Period("2023-06", "M"), 0)
     kg = result.loc[result["outcome"] == "log_kg"].set_index("area")
     assert kg.loc[4, MODELS].isna().all()
     assert kg.drop(index=4)["drivers"].notna().all()
