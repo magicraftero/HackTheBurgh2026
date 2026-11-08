@@ -1,0 +1,372 @@
+{
+  "selected_challenger": "ridge_level_a10",
+  "strongest_baseline": "rw",
+  "selected_policy": "ridge_level_a10",
+  "feature_group_eligible": {
+    "ridge_fx": false,
+    "ridge_exports": false,
+    "ridge_biology": false
+  },
+  "primary_development_scores": {
+    "ar1": {
+      "h": 4,
+      "model": "ar1",
+      "n": 45,
+      "planned": 45,
+      "n_failed": 0,
+      "coverage": 1.0,
+      "mae_eur_kg": 0.714138779044518,
+      "raw_finite_mae_eur_kg": 0.714138779044518,
+      "rmse_eur_kg": 0.8786130489607675,
+      "log_change_mae": 0.11134474415424278,
+      "directional_accuracy": 0.5777777777777777,
+      "direction_calls": 45,
+      "first_target": "2025-W21",
+      "last_target": "2026-W13",
+      "min_train": 30,
+      "max_train": 74
+    },
+    "blend": {
+      "h": 4,
+      "model": "blend",
+      "n": 45,
+      "planned": 45,
+      "n_failed": 0,
+      "coverage": 1.0,
+      "mae_eur_kg": 0.6651675035935516,
+      "raw_finite_mae_eur_kg": 0.6651675035935516,
+      "rmse_eur_kg": 0.8260230060308766,
+      "log_change_mae": 0.10293207452158569,
+      "directional_accuracy": 0.6666666666666666,
+      "direction_calls": 45,
+      "first_target": "2025-W21",
+      "last_target": "2026-W13",
+      "min_train": 30,
+      "max_train": 74
+    },
+    "old_ar": {
+      "h": 4,
+      "model": "old_ar",
+      "n": 45,
+      "planned": 45,
+      "n_failed": 0,
+      "coverage": 1.0,
+      "mae_eur_kg": 1.2264470836289174,
+      "raw_finite_mae_eur_kg": 1.2264470836289174,
+      "rmse_eur_kg": 1.5475251993652588,
+      "log_change_mae": 0.20569246754195847,
+      "directional_accuracy": 0.35555555555555557,
+      "direction_calls": 45,
+      "first_target": "2025-W21",
+      "last_target": "2026-W13",
+      "min_train": 32,
+      "max_train": 76
+    },
+    "old_c0": {
+      "h": 4,
+      "model": "old_c0",
+      "n": 45,
+      "planned": 45,
+      "n_failed": 0,
+      "coverage": 1.0,
+      "mae_eur_kg": 1.6010542559059882,
+      "raw_finite_mae_eur_kg": 1.6010542559059882,
+      "rmse_eur_kg": 2.1517425157018453,
+      "log_change_mae": 0.230425224352344,
+      "directional_accuracy": 0.4444444444444444,
+      "direction_calls": 45,
+      "first_target": "2025-W21",
+      "last_target": "2026-W13",
+      "min_train": 32,
+      "max_train": 76
+    },
+    "old_c1": {
+      "h": 4,
+      "model": "old_c1",
+      "n": 45,
+      "planned": 45,
+      "n_failed": 0,
+      "coverage": 1.0,
+      "mae_eur_kg": 5.479963199199822,
+      "raw_finite_mae_eur_kg": 5.479963199199822,
+      "rmse_eur_kg": 13.799077562593101,
+      "log_change_mae": 0.4322804515455024,
+      "directional_accuracy": 0.5555555555555556,
+      "direction_calls": 45,
+      "first_target": "2025-W21",
+      "last_target": "2026-W13",
+      "min_train": 32,
+      "max_train": 76
+    },
+    "ridge_biology": {
+      "h": 4,
+      "model": "ridge_biology",
+      "n": 45,
+      "planned": 45,
+      "n_failed": 0,
+      "coverage": 1.0,
+      "mae_eur_kg": 0.6717991536938388,
+      "raw_finite_mae_eur_kg": 0.6717991536938388,
+      "rmse_eur_kg": 0.8219882704033852,
+      "log_change_mae": 0.10370070404400854,
+      "directional_accuracy": 0.6444444444444445,
+      "direction_calls": 45,
+      "first_target": "2025-W21",
+      "last_target": "2026-W13",
+      "min_train": 30,
+      "max_train": 74
+    },
+    "ridge_exports": {
+      "h": 4,
+      "model": "ridge_exports",
+      "n": 45,
+      "planned": 45,
+      "n_failed": 0,
+      "coverage": 1.0,
+      "mae_eur_kg": 0.6768506410018621,
+      "raw_finite_mae_eur_kg": 0.6768506410018621,
+      "rmse_eur_kg": 0.8283669223582455,
+      "log_change_mae": 0.10468734184620773,
+      "directional_accuracy": 0.6666666666666666,
+      "direction_calls": 45,
+      "first_target": "2025-W21",
+      "last_target": "2026-W13",
+      "min_train": 30,
+      "max_train": 74
+    },
+    "ridge_fx": {
+      "h": 4,
+      "model": "ridge_fx",
+      "n": 45,
+      "planned": 45,
+      "n_failed": 0,
+      "coverage": 1.0,
+      "mae_eur_kg": 0.6499863730085091,
+      "raw_finite_mae_eur_kg": 0.6499863730085091,
+      "rmse_eur_kg": 0.8038393682889204,
+      "log_change_mae": 0.1006276084129706,
+      "directional_accuracy": 0.6666666666666666,
+      "direction_calls": 45,
+      "first_target": "2025-W21",
+      "last_target": "2026-W13",
+      "min_train": 30,
+      "max_train": 74
+    },
+    "ridge_level_a10": {
+      "h": 4,
+      "model": "ridge_level_a10",
+      "n": 45,
+      "planned": 45,
+      "n_failed": 0,
+      "coverage": 1.0,
+      "mae_eur_kg": 0.5398378955695223,
+      "raw_finite_mae_eur_kg": 0.5398378955695223,
+      "rmse_eur_kg": 0.6580734701013436,
+      "log_change_mae": 0.08291905445256237,
+      "directional_accuracy": 0.7555555555555555,
+      "direction_calls": 45,
+      "first_target": "2025-W21",
+      "last_target": "2026-W13",
+      "min_train": 30,
+      "max_train": 74
+    },
+    "ridge_level_a100": {
+      "h": 4,
+      "model": "ridge_level_a100",
+      "n": 45,
+      "planned": 45,
+      "n_failed": 0,
+      "coverage": 1.0,
+      "mae_eur_kg": 0.7578765004686276,
+      "raw_finite_mae_eur_kg": 0.7578765004686276,
+      "rmse_eur_kg": 0.933002254047294,
+      "log_change_mae": 0.11723972802030763,
+      "directional_accuracy": 0.6222222222222222,
+      "direction_calls": 45,
+      "first_target": "2025-W21",
+      "last_target": "2026-W13",
+      "min_train": 30,
+      "max_train": 74
+    },
+    "ridge_log_a10": {
+      "h": 4,
+      "model": "ridge_log_a10",
+      "n": 45,
+      "planned": 45,
+      "n_failed": 0,
+      "coverage": 1.0,
+      "mae_eur_kg": 0.6425456831531245,
+      "raw_finite_mae_eur_kg": 0.6425456831531245,
+      "rmse_eur_kg": 0.7696075151794526,
+      "log_change_mae": 0.10046261092684874,
+      "directional_accuracy": 0.7555555555555555,
+      "direction_calls": 45,
+      "first_target": "2025-W21",
+      "last_target": "2026-W13",
+      "min_train": 30,
+      "max_train": 74
+    },
+    "ridge_log_a100": {
+      "h": 4,
+      "model": "ridge_log_a100",
+      "n": 45,
+      "planned": 45,
+      "n_failed": 0,
+      "coverage": 1.0,
+      "mae_eur_kg": 0.6583396363708294,
+      "raw_finite_mae_eur_kg": 0.6583396363708294,
+      "rmse_eur_kg": 0.8090861238000301,
+      "log_change_mae": 0.10187278283185025,
+      "directional_accuracy": 0.6666666666666666,
+      "direction_calls": 45,
+      "first_target": "2025-W21",
+      "last_target": "2026-W13",
+      "min_train": 30,
+      "max_train": 74
+    },
+    "rw": {
+      "h": 4,
+      "model": "rw",
+      "n": 45,
+      "planned": 45,
+      "n_failed": 0,
+      "coverage": 1.0,
+      "mae_eur_kg": 0.6980000000000001,
+      "raw_finite_mae_eur_kg": 0.6980000000000001,
+      "rmse_eur_kg": 0.8574341568501533,
+      "log_change_mae": 0.10793867727478267,
+      "directional_accuracy": null,
+      "direction_calls": 0,
+      "first_target": "2025-W21",
+      "last_target": "2026-W13",
+      "min_train": 30,
+      "max_train": 74
+    }
+  },
+  "dates": {
+    "index_start": "2024-W32",
+    "index_end": "2026-W44",
+    "dev_end": "2026-W20",
+    "final_start": "2026-W21",
+    "final_end": "2026-W44",
+    "selection_cutoff": "2026-W13",
+    "selection_issue_date": "2026-04-02",
+    "development_target_count": 93,
+    "final_target_count": 24
+  },
+  "candidate_specs": [
+    {
+      "id": "rw",
+      "kind": "rw"
+    },
+    {
+      "id": "ar1",
+      "kind": "ar1"
+    },
+    {
+      "id": "ridge_log_a10",
+      "kind": "ridge",
+      "representation": "log_change",
+      "alpha": 10,
+      "groups": []
+    },
+    {
+      "id": "ridge_log_a100",
+      "kind": "ridge",
+      "representation": "log_change",
+      "alpha": 100,
+      "groups": []
+    },
+    {
+      "id": "ridge_level_a10",
+      "kind": "ridge",
+      "representation": "level",
+      "alpha": 10,
+      "groups": []
+    },
+    {
+      "id": "ridge_level_a100",
+      "kind": "ridge",
+      "representation": "level",
+      "alpha": 100,
+      "groups": []
+    },
+    {
+      "id": "ridge_fx",
+      "kind": "ridge",
+      "representation": "log_change",
+      "alpha": 100,
+      "groups": [
+        "fx"
+      ]
+    },
+    {
+      "id": "ridge_exports",
+      "kind": "ridge",
+      "representation": "log_change",
+      "alpha": 100,
+      "groups": [
+        "exports"
+      ]
+    },
+    {
+      "id": "ridge_biology",
+      "kind": "ridge",
+      "representation": "log_change",
+      "alpha": 100,
+      "groups": [
+        "biology"
+      ]
+    },
+    {
+      "id": "blend",
+      "kind": "blend"
+    }
+  ],
+  "baseline_ids": [
+    "rw",
+    "ar1",
+    "old_ar",
+    "old_c0",
+    "old_c1"
+  ],
+  "rules": {
+    "primary_horizon": 4,
+    "primary_metric": "MAE EUR/kg",
+    "minimum_training_rows": 30,
+    "feature_group_minimum_development_improvement_pct": 2.0,
+    "objective_final_improvement_pct": 10.0,
+    "adaptive_minimum_released_primary_forecasts": 8,
+    "ties": "ascending stable model ID",
+    "feature_group_reference": "ridge_log_a100",
+    "evaluation": "retrospective; latest 24 of 117 target weeks; global horizon-aware selection embargo"
+  },
+  "hashes": {
+    "inputs": {
+      "/Users/ryanlam/Desktop/Personal Projects/HackTheBurgh2026/data/processed/directorate_area_month.parquet": "af653ae619518a1634bc0c0c4a863682b01264eb290d348873a664f58f72f3d9",
+      "/Users/ryanlam/Desktop/Personal Projects/HackTheBurgh2026/data/processed/drivers_national_month.parquet": "1d2cde5a49457e002b72595f3c3befc231cf7d346657a492d9449ec87ea8466a",
+      "/Users/ryanlam/Desktop/Personal Projects/HackTheBurgh2026/data/processed/fx_daily.parquet": "949e26de3712c592a45359efde338a593b3d2e7e2d08083b214990429b857d1d",
+      "/Users/ryanlam/Desktop/Personal Projects/HackTheBurgh2026/data/processed/ssb_weekly.parquet": "f22ea7bd13ea8a5523bf705aebde2e80236ff830cad9457dd14c5bd609155304",
+      "/Users/ryanlam/Desktop/Personal Projects/HackTheBurgh2026/data/processed/weekly_national_index.parquet": "f4b98366f6da3521b21a19d3a5052bbf225bbddf26b8c9689901c6fa33366524",
+      "/Users/ryanlam/Desktop/Personal Projects/HackTheBurgh2026/price/experiments/sisalmoni/predictions.parquet": "07fa998f1dc3d6e8d1933fa00b745ab980dde881334d648f35492b536ba8ad22",
+      "/Users/ryanlam/Desktop/Personal Projects/HackTheBurgh2026/price/experiments/sisalmoni/provenance.json": "f4530a6ba20528582bfbf37a714ec7dbdbfd6ebbf8424e99368b457d728b8a87",
+      "/Users/ryanlam/Desktop/Personal Projects/HackTheBurgh2026/price/experiments/sisalmoni_v2/PLAN.md": "b3c01155c09b33e55e8339333a11bfc403828482fe15bc6f31dbaa61e7d8ee4d",
+      "/Users/ryanlam/Desktop/Personal Projects/HackTheBurgh2026/price/final_run.json": "fcd87ecb05d6fd37c556a845fbeac2699a786cab9ae0291765b6e576d05df5b4",
+      "/Users/ryanlam/Desktop/Personal Projects/HackTheBurgh2026/requirements.txt": "388acca7b4d742406268168ef95e6c91c1a0e8b26c02e196a50fe04287a38eb1",
+      "/Users/ryanlam/Desktop/Personal Projects/HackTheBurgh2026/data/raw/sisalmoni/2024.json": "bea73821809f0728b41a98c0c7b2dd12349b94bdf8d13de72e897100126f33d1",
+      "/Users/ryanlam/Desktop/Personal Projects/HackTheBurgh2026/data/raw/sisalmoni/2025.json": "20f716b6f67664906436c339702863ab3d37cb3f918f2a78facb0d61bdbd7236",
+      "/Users/ryanlam/Desktop/Personal Projects/HackTheBurgh2026/data/raw/sisalmoni/2026.json": "7867cee6165d20aeb656431b49195a376ab11332ef57d0556a3dd498281ed1d2"
+    },
+    "code": {
+      "/Users/ryanlam/Desktop/Personal Projects/HackTheBurgh2026/analysis/anomalies.py": "386c19e2b99e9710c4bbe32bd6745d05e53da54c70fed3690074e42ce05e96a8",
+      "/Users/ryanlam/Desktop/Personal Projects/HackTheBurgh2026/price/anomalies.py": "8b0ca00147193872d37d768477487e9dd833423112096f8687104132e0461494",
+      "/Users/ryanlam/Desktop/Personal Projects/HackTheBurgh2026/price/calendar.py": "eaeb3cc9029f15410397ab0c2e3fcbc97409438f0ac84d827760fcc848fc895b",
+      "/Users/ryanlam/Desktop/Personal Projects/HackTheBurgh2026/price/dataset.py": "fac070b1173e3f0b6e279ab336387c3531d821f1a1588c8142a99a038738e999",
+      "/Users/ryanlam/Desktop/Personal Projects/HackTheBurgh2026/price/sisalmoni.py": "c002b6d1eaaa4c6afa65e0bf0bb52ce393344b841c5e9827266fcef204cf6af7",
+      "/Users/ryanlam/Desktop/Personal Projects/HackTheBurgh2026/price/sisalmoni_v2.py": "94afef5b113f3c49b9b7cb8e4d0f0634b5b8427a7e9879e7eda48afd1ebb1f92",
+      "/Users/ryanlam/Desktop/Personal Projects/HackTheBurgh2026/price/sisalmoni_v2_core.py": "83e884cf23cf8c560bfcf18a8c2521c1a39ec5c8444af6a6239a4ad7fb3eb460"
+    }
+  },
+  "frozen_at": "2026-11-08T10:24:28.218491+00:00",
+  "interpretation": "retrospective evaluation; existing SISALMONI outcomes have been inspected"
+}

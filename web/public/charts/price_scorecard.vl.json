@@ -53,285 +53,573 @@
     }
   },
   "height": 300,
-  "layer": [
+  "vconcat": [
     {
-      "data": {
-        "values": [
-          {
-            "h": 2,
-            "hit_rate": 0.6782,
-            "mae": 0.05834,
-            "mae_ratio": 0.921,
-            "model": "ar",
-            "window": "dev"
-          },
-          {
-            "h": 2,
-            "hit_rate": 0.6733,
-            "mae": 0.05977,
-            "mae_ratio": 0.9435,
-            "model": "c0",
-            "window": "dev"
-          },
-          {
-            "h": 2,
-            "hit_rate": 0.6188,
-            "mae": 0.06752,
-            "mae_ratio": 1.066,
-            "model": "c1",
-            "window": "dev"
-          },
-          {
-            "h": 3,
-            "hit_rate": 0.6634,
-            "mae": 0.06911,
-            "mae_ratio": 0.8868,
-            "model": "ar",
-            "window": "dev"
-          },
-          {
-            "h": 3,
-            "hit_rate": 0.6683,
-            "mae": 0.0706,
-            "mae_ratio": 0.9059,
-            "model": "c0",
-            "window": "dev"
-          },
-          {
-            "h": 3,
-            "hit_rate": 0.6089,
-            "mae": 0.08322,
-            "mae_ratio": 1.068,
-            "model": "c1",
-            "window": "dev"
-          },
-          {
-            "h": 4,
-            "hit_rate": 0.7327,
-            "mae": 0.07555,
-            "mae_ratio": 0.8497,
-            "model": "ar",
-            "window": "dev"
-          },
-          {
-            "h": 4,
-            "hit_rate": 0.703,
-            "mae": 0.07701,
-            "mae_ratio": 0.8661,
-            "model": "c0",
-            "window": "dev"
-          },
-          {
-            "h": 4,
-            "hit_rate": 0.6782,
-            "mae": 0.09764,
-            "mae_ratio": 1.098,
-            "model": "c1",
-            "window": "dev"
-          },
-          {
-            "h": 5,
-            "hit_rate": 0.7376,
-            "mae": 0.08094,
-            "mae_ratio": 0.8039,
-            "model": "ar",
-            "window": "dev"
-          },
-          {
-            "h": 5,
-            "hit_rate": 0.7129,
-            "mae": 0.0816,
-            "mae_ratio": 0.8104,
-            "model": "c0",
-            "window": "dev"
-          },
-          {
-            "h": 5,
-            "hit_rate": 0.6782,
-            "mae": 0.1075,
-            "mae_ratio": 1.067,
-            "model": "c1",
-            "window": "dev"
-          },
-          {
-            "h": 6,
-            "hit_rate": 0.7822,
-            "mae": 0.08668,
-            "mae_ratio": 0.7632,
-            "model": "ar",
-            "window": "dev"
-          },
-          {
-            "h": 6,
-            "hit_rate": 0.7475,
-            "mae": 0.08904,
-            "mae_ratio": 0.784,
-            "model": "c0",
-            "window": "dev"
-          },
-          {
-            "h": 6,
-            "hit_rate": 0.7178,
-            "mae": 0.1166,
-            "mae_ratio": 1.027,
-            "model": "c1",
-            "window": "dev"
-          },
-          {
-            "h": 7,
-            "hit_rate": 0.7921,
-            "mae": 0.09291,
-            "mae_ratio": 0.7456,
-            "model": "ar",
-            "window": "dev"
-          },
-          {
-            "h": 7,
-            "hit_rate": 0.7723,
-            "mae": 0.09492,
-            "mae_ratio": 0.7618,
-            "model": "c0",
-            "window": "dev"
-          },
-          {
-            "h": 7,
-            "hit_rate": 0.7574,
-            "mae": 0.1325,
-            "mae_ratio": 1.063,
-            "model": "c1",
-            "window": "dev"
-          },
-          {
-            "h": 8,
-            "hit_rate": 0.802,
-            "mae": 0.1016,
-            "mae_ratio": 0.7382,
-            "model": "ar",
-            "window": "dev"
-          },
-          {
-            "h": 8,
-            "hit_rate": 0.7673,
-            "mae": 0.09932,
-            "mae_ratio": 0.7218,
-            "model": "c0",
-            "window": "dev"
-          },
-          {
-            "h": 8,
-            "hit_rate": 0.7723,
-            "mae": 0.1483,
-            "mae_ratio": 1.078,
-            "model": "c1",
-            "window": "dev"
-          }
-        ]
-      },
-      "encoding": {
-        "color": {
-          "field": "model",
-          "scale": {
-            "domain": [
-              "ar",
-              "c0",
-              "c1"
-            ],
-            "range": [
-              "#8a6bb8",
-              "#2673ac",
-              "#d05a3c"
-            ]
-          },
-          "title": "Model",
-          "type": "nominal"
-        },
-        "tooltip": [
-          {
-            "field": "model",
-            "type": "nominal"
-          },
-          {
-            "field": "h",
-            "type": "quantitative"
-          },
-          {
-            "field": "mae",
-            "format": ".4f",
-            "title": "MAE (log points)",
-            "type": "quantitative"
-          },
-          {
-            "field": "mae_ratio",
-            "format": ".3f",
-            "type": "quantitative"
-          },
-          {
-            "field": "hit_rate",
-            "format": ".1%",
-            "type": "quantitative"
-          }
-        ],
-        "x": {
-          "axis": {
-            "format": "d",
+      "layer": [
+        {
+          "data": {
             "values": [
-              2,
-              3,
-              4,
-              5,
-              6,
-              7,
-              8
+              {
+                "h": 2,
+                "hit_rate": 0.6782,
+                "mae": 0.05834,
+                "mae_ratio": 0.921,
+                "model": "ar",
+                "window": "dev"
+              },
+              {
+                "h": 2,
+                "hit_rate": 0.6733,
+                "mae": 0.05977,
+                "mae_ratio": 0.9435,
+                "model": "c0",
+                "window": "dev"
+              },
+              {
+                "h": 2,
+                "hit_rate": 0.6188,
+                "mae": 0.06752,
+                "mae_ratio": 1.066,
+                "model": "c1",
+                "window": "dev"
+              },
+              {
+                "h": 3,
+                "hit_rate": 0.6634,
+                "mae": 0.06911,
+                "mae_ratio": 0.8868,
+                "model": "ar",
+                "window": "dev"
+              },
+              {
+                "h": 3,
+                "hit_rate": 0.6683,
+                "mae": 0.0706,
+                "mae_ratio": 0.9059,
+                "model": "c0",
+                "window": "dev"
+              },
+              {
+                "h": 3,
+                "hit_rate": 0.6089,
+                "mae": 0.08322,
+                "mae_ratio": 1.068,
+                "model": "c1",
+                "window": "dev"
+              },
+              {
+                "h": 4,
+                "hit_rate": 0.7327,
+                "mae": 0.07555,
+                "mae_ratio": 0.8497,
+                "model": "ar",
+                "window": "dev"
+              },
+              {
+                "h": 4,
+                "hit_rate": 0.703,
+                "mae": 0.07701,
+                "mae_ratio": 0.8661,
+                "model": "c0",
+                "window": "dev"
+              },
+              {
+                "h": 4,
+                "hit_rate": 0.6782,
+                "mae": 0.09763,
+                "mae_ratio": 1.098,
+                "model": "c1",
+                "window": "dev"
+              },
+              {
+                "h": 5,
+                "hit_rate": 0.7376,
+                "mae": 0.08094,
+                "mae_ratio": 0.8039,
+                "model": "ar",
+                "window": "dev"
+              },
+              {
+                "h": 5,
+                "hit_rate": 0.7129,
+                "mae": 0.0816,
+                "mae_ratio": 0.8104,
+                "model": "c0",
+                "window": "dev"
+              },
+              {
+                "h": 5,
+                "hit_rate": 0.6782,
+                "mae": 0.1075,
+                "mae_ratio": 1.067,
+                "model": "c1",
+                "window": "dev"
+              },
+              {
+                "h": 6,
+                "hit_rate": 0.7822,
+                "mae": 0.08668,
+                "mae_ratio": 0.7632,
+                "model": "ar",
+                "window": "dev"
+              },
+              {
+                "h": 6,
+                "hit_rate": 0.7475,
+                "mae": 0.08904,
+                "mae_ratio": 0.784,
+                "model": "c0",
+                "window": "dev"
+              },
+              {
+                "h": 6,
+                "hit_rate": 0.7178,
+                "mae": 0.1166,
+                "mae_ratio": 1.027,
+                "model": "c1",
+                "window": "dev"
+              },
+              {
+                "h": 7,
+                "hit_rate": 0.7921,
+                "mae": 0.09291,
+                "mae_ratio": 0.7456,
+                "model": "ar",
+                "window": "dev"
+              },
+              {
+                "h": 7,
+                "hit_rate": 0.7723,
+                "mae": 0.09492,
+                "mae_ratio": 0.7618,
+                "model": "c0",
+                "window": "dev"
+              },
+              {
+                "h": 7,
+                "hit_rate": 0.7574,
+                "mae": 0.1325,
+                "mae_ratio": 1.063,
+                "model": "c1",
+                "window": "dev"
+              },
+              {
+                "h": 8,
+                "hit_rate": 0.802,
+                "mae": 0.1016,
+                "mae_ratio": 0.7382,
+                "model": "ar",
+                "window": "dev"
+              },
+              {
+                "h": 8,
+                "hit_rate": 0.7673,
+                "mae": 0.09932,
+                "mae_ratio": 0.7218,
+                "model": "c0",
+                "window": "dev"
+              },
+              {
+                "h": 8,
+                "hit_rate": 0.7723,
+                "mae": 0.1482,
+                "mae_ratio": 1.077,
+                "model": "c1",
+                "window": "dev"
+              }
             ]
           },
-          "field": "h",
-          "title": "Forecast horizon (ISO weeks)",
-          "type": "quantitative"
-        },
-        "y": {
-          "field": "mae_ratio",
-          "scale": {
-            "zero": false
+          "encoding": {
+            "color": {
+              "field": "model",
+              "scale": {
+                "domain": [
+                  "ar",
+                  "c0",
+                  "c1"
+                ],
+                "range": [
+                  "#8a6bb8",
+                  "#2673ac",
+                  "#d05a3c"
+                ]
+              },
+              "title": "Model",
+              "type": "nominal"
+            },
+            "tooltip": [
+              {
+                "field": "model",
+                "type": "nominal"
+              },
+              {
+                "field": "h",
+                "type": "quantitative"
+              },
+              {
+                "field": "mae",
+                "format": ".4f",
+                "title": "MAE (log points)",
+                "type": "quantitative"
+              },
+              {
+                "field": "mae_ratio",
+                "format": ".3f",
+                "type": "quantitative"
+              },
+              {
+                "field": "hit_rate",
+                "format": ".1%",
+                "type": "quantitative"
+              }
+            ],
+            "x": {
+              "axis": {
+                "format": "d",
+                "values": [
+                  2,
+                  3,
+                  4,
+                  5,
+                  6,
+                  7,
+                  8
+                ]
+              },
+              "field": "h",
+              "title": "Forecast horizon (ISO weeks)",
+              "type": "quantitative"
+            },
+            "y": {
+              "field": "mae_ratio",
+              "scale": {
+                "zero": false
+              },
+              "title": "MAE / random-walk MAE (lower is better)",
+              "type": "quantitative"
+            }
           },
-          "title": "MAE / random-walk MAE (lower is better)",
-          "type": "quantitative"
+          "mark": {
+            "point": true,
+            "type": "line"
+          }
+        },
+        {
+          "data": {
+            "values": [
+              {
+                "baseline": 1
+              }
+            ]
+          },
+          "encoding": {
+            "y": {
+              "field": "baseline",
+              "type": "quantitative"
+            }
+          },
+          "mark": {
+            "strokeDash": [
+              5,
+              4
+            ],
+            "type": "rule"
+          }
         }
+      ],
+      "title": {
+        "subtitle": [
+          "Source: Statistics Norway 03024; latest revised data.",
+          "Drivers: Directorate of Fisheries, Norges Bank, BarentsWatch.",
+          "MAE measured on log price changes; matched origins."
+        ],
+        "text": "Price forecast errors \u2014 dev: 2021-W01 to 2024-W52"
       },
-      "mark": {
-        "point": true,
-        "type": "line"
-      }
+      "width": 680
     },
     {
-      "data": {
-        "values": [
-          {
-            "baseline": 1
+      "layer": [
+        {
+          "data": {
+            "values": [
+              {
+                "h": 2,
+                "hit_rate": 0.5938,
+                "mae": 0.06877,
+                "mae_ratio": 0.9572,
+                "model": "ar",
+                "window": "holdout"
+              },
+              {
+                "h": 2,
+                "hit_rate": 0.5729,
+                "mae": 0.06494,
+                "mae_ratio": 0.9039,
+                "model": "c0",
+                "window": "holdout"
+              },
+              {
+                "h": 2,
+                "hit_rate": 0.6146,
+                "mae": 0.06488,
+                "mae_ratio": 0.9031,
+                "model": "c1",
+                "window": "holdout"
+              },
+              {
+                "h": 3,
+                "hit_rate": 0.6354,
+                "mae": 0.07806,
+                "mae_ratio": 0.9471,
+                "model": "ar",
+                "window": "holdout"
+              },
+              {
+                "h": 3,
+                "hit_rate": 0.5833,
+                "mae": 0.07786,
+                "mae_ratio": 0.9448,
+                "model": "c0",
+                "window": "holdout"
+              },
+              {
+                "h": 3,
+                "hit_rate": 0.6354,
+                "mae": 0.07537,
+                "mae_ratio": 0.9146,
+                "model": "c1",
+                "window": "holdout"
+              },
+              {
+                "h": 4,
+                "hit_rate": 0.5625,
+                "mae": 0.08694,
+                "mae_ratio": 1.018,
+                "model": "ar",
+                "window": "holdout"
+              },
+              {
+                "h": 4,
+                "hit_rate": 0.5625,
+                "mae": 0.08384,
+                "mae_ratio": 0.9821,
+                "model": "c0",
+                "window": "holdout"
+              },
+              {
+                "h": 4,
+                "hit_rate": 0.5729,
+                "mae": 0.08115,
+                "mae_ratio": 0.9505,
+                "model": "c1",
+                "window": "holdout"
+              },
+              {
+                "h": 5,
+                "hit_rate": 0.5729,
+                "mae": 0.09556,
+                "mae_ratio": 1.017,
+                "model": "ar",
+                "window": "holdout"
+              },
+              {
+                "h": 5,
+                "hit_rate": 0.5938,
+                "mae": 0.0916,
+                "mae_ratio": 0.9751,
+                "model": "c0",
+                "window": "holdout"
+              },
+              {
+                "h": 5,
+                "hit_rate": 0.6458,
+                "mae": 0.08687,
+                "mae_ratio": 0.9248,
+                "model": "c1",
+                "window": "holdout"
+              },
+              {
+                "h": 6,
+                "hit_rate": 0.5208,
+                "mae": 0.1062,
+                "mae_ratio": 1.001,
+                "model": "ar",
+                "window": "holdout"
+              },
+              {
+                "h": 6,
+                "hit_rate": 0.5833,
+                "mae": 0.1019,
+                "mae_ratio": 0.961,
+                "model": "c0",
+                "window": "holdout"
+              },
+              {
+                "h": 6,
+                "hit_rate": 0.6458,
+                "mae": 0.09763,
+                "mae_ratio": 0.9205,
+                "model": "c1",
+                "window": "holdout"
+              },
+              {
+                "h": 7,
+                "hit_rate": 0.5833,
+                "mae": 0.1171,
+                "mae_ratio": 1.056,
+                "model": "ar",
+                "window": "holdout"
+              },
+              {
+                "h": 7,
+                "hit_rate": 0.5833,
+                "mae": 0.1113,
+                "mae_ratio": 1.004,
+                "model": "c0",
+                "window": "holdout"
+              },
+              {
+                "h": 7,
+                "hit_rate": 0.6354,
+                "mae": 0.1092,
+                "mae_ratio": 0.9849,
+                "model": "c1",
+                "window": "holdout"
+              },
+              {
+                "h": 8,
+                "hit_rate": 0.5312,
+                "mae": 0.126,
+                "mae_ratio": 1.066,
+                "model": "ar",
+                "window": "holdout"
+              },
+              {
+                "h": 8,
+                "hit_rate": 0.5104,
+                "mae": 0.1196,
+                "mae_ratio": 1.012,
+                "model": "c0",
+                "window": "holdout"
+              },
+              {
+                "h": 8,
+                "hit_rate": 0.5833,
+                "mae": 0.1205,
+                "mae_ratio": 1.02,
+                "model": "c1",
+                "window": "holdout"
+              }
+            ]
+          },
+          "encoding": {
+            "color": {
+              "field": "model",
+              "scale": {
+                "domain": [
+                  "ar",
+                  "c0",
+                  "c1"
+                ],
+                "range": [
+                  "#8a6bb8",
+                  "#2673ac",
+                  "#d05a3c"
+                ]
+              },
+              "title": "Model",
+              "type": "nominal"
+            },
+            "tooltip": [
+              {
+                "field": "model",
+                "type": "nominal"
+              },
+              {
+                "field": "h",
+                "type": "quantitative"
+              },
+              {
+                "field": "mae",
+                "format": ".4f",
+                "title": "MAE (log points)",
+                "type": "quantitative"
+              },
+              {
+                "field": "mae_ratio",
+                "format": ".3f",
+                "type": "quantitative"
+              },
+              {
+                "field": "hit_rate",
+                "format": ".1%",
+                "type": "quantitative"
+              }
+            ],
+            "x": {
+              "axis": {
+                "format": "d",
+                "values": [
+                  2,
+                  3,
+                  4,
+                  5,
+                  6,
+                  7,
+                  8
+                ]
+              },
+              "field": "h",
+              "title": "Forecast horizon (ISO weeks)",
+              "type": "quantitative"
+            },
+            "y": {
+              "field": "mae_ratio",
+              "scale": {
+                "zero": false
+              },
+              "title": "MAE / random-walk MAE (lower is better)",
+              "type": "quantitative"
+            }
+          },
+          "mark": {
+            "point": true,
+            "type": "line"
           }
-        ]
-      },
-      "encoding": {
-        "y": {
-          "field": "baseline",
-          "type": "quantitative"
+        },
+        {
+          "data": {
+            "values": [
+              {
+                "baseline": 1
+              }
+            ]
+          },
+          "encoding": {
+            "y": {
+              "field": "baseline",
+              "type": "quantitative"
+            }
+          },
+          "mark": {
+            "strokeDash": [
+              5,
+              4
+            ],
+            "type": "rule"
+          }
         }
-      },
-      "mark": {
-        "strokeDash": [
-          5,
-          4
+      ],
+      "title": {
+        "subtitle": [
+          "Source: Statistics Norway 03024; latest revised data.",
+          "Drivers: Directorate of Fisheries, Norges Bank, BarentsWatch.",
+          "MAE measured on log price changes; matched origins."
         ],
-        "type": "rule"
-      }
+        "text": "Price forecast errors \u2014 holdout: 2025-W01 to 2026-W44"
+      },
+      "width": 680
     }
   ],
-  "title": {
-    "subtitle": [
-      "Source: Statistics Norway 03024; latest revised data.",
-      "Drivers: Directorate of Fisheries, Norges Bank, BarentsWatch.",
-      "MAE measured on log price changes; matched origins."
-    ],
-    "text": "Price forecast errors \u2014 dev: 2021-W01 to 2024-W52"
-  },
-  "width": 680
+  "width": "container"
 }

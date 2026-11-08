@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "primary_pricing_dataset": "sisalmoni_v2",
+  "use_for_price_results": "data/price_sisalmoni_v2.json",
+  "currency": "EUR",
+  "unit": "EUR/kg",
+  "display_model_id": "ridge_level_a10",
+  "recommended_live_model_id": "rw",
+  "charts": {
+    "actual_vs_predicted": "charts/price_sisalmoni_v2_actual_vs_predicted.vl.json",
+    "forecast_errors": "charts/price_sisalmoni_v2_forecast_errors.vl.json"
+  },
+  "handoff_document": "docs/PRICE_DISPLAY_HANDOFF.md",
+  "older_different_results": [
+    {
+      "path": "data/price.json",
+      "target": "SSB export price, NOK/kg",
+      "role": "registered SSB F2 archive"
+    },
+    {
+      "path": "data/outlook_price.json",
+      "target": "SSB export price, NOK/kg",
+      "role": "earlier ML/SSB outlook"
+    },
+    {
+      "path": "price/experiments/sisalmoni/",
+      "target": "SISALMONI EUR/kg",
+      "role": "original unstable OLS experiment; different evaluation dates"
+    }
+  ],
+  "must_display": "Retrospective evaluation on 24 weeks. Improvement remains unconfirmed: 95% paired block-bootstrap intervals include no benefit. The Ridge result is experimental; no change remains the recommended live default."
+}

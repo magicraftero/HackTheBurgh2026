@@ -1,0 +1,12 @@
+{
+  "selected_challenger": "ridge_level_a10",
+  "strongest_development_baseline": "rw",
+  "frozen_policy": "ridge_level_a10",
+  "strongest_observed_final_baseline": "old_c1",
+  "improvement_vs_strongest_final_baseline_pct": 4.653473428540722,
+  "practical_ten_percent_objective": false,
+  "paired_intervals_exclude_no_benefit_at_both_block_lengths": false,
+  "objective_supported": false,
+  "recommended_model": "rw",
+  "evaluation": "retrospective; 24 primary target weeks; not independent confirmation"
+}
