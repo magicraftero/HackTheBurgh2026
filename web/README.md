@@ -63,9 +63,13 @@ A file shows up on the site once it's pushed to `main` and the host redeploys. T
 
 ## Hosting (Vercel)
 
-In Vercel: Add New → Project → import the GitHub repo, set **Root Directory** to `web`, and keep the detected Vite settings (build `npm run build`, output `dist`). Every push to `main` then redeploys. If Vercel can't see the repo, the repo owner has to allow Vercel's GitHub app.
+One project serves both pages. The site is at `/`. The build copies `cockpit/` into the output, so the farm cockpit is at `/cockpit/`.
 
-The build uses relative paths, so the same `dist/` also works under a sub-path such as GitHub Pages' `/HackTheBurgh2026/`.
+In Vercel: Add New → Project → import the GitHub repo, set **Root Directory** to `web`, and keep the detected Vite settings (build `npm run build`, output `dist`). Leave **Include source files outside of the Root Directory** on, so the build can see `cockpit/`. Set the production branch to the branch you actually push (this repo's work is on `integration` as well as `main`). Every push to that branch redeploys. If Vercel can't see the repo, the repo owner has to allow Vercel's GitHub app.
+
+Nothing else runs in the cloud. The Python analysis is already baked into the JSON under `web/public/` and `cockpit/data/`.
+
+The build uses relative paths, so the same `dist/` also works under a sub-path such as GitHub Pages' `/HackTheBurgh2026/`. On GitHub Pages the cockpit would be at `/HackTheBurgh2026/cockpit/`.
 
 ## Code map
 

@@ -417,7 +417,9 @@
     renderLive();
   }
 
-  fetch("data/cockpit.json")
+  // Resolved from this script, so /cockpit and /cockpit/ both find the file.
+  var dataUrl = new URL("data/cockpit.json", document.currentScript.src).href;
+  fetch(dataUrl)
     .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
     .then(function (json) {
       data = json;
