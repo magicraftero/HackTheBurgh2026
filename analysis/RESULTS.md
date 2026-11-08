@@ -86,21 +86,17 @@ Made on 8 November 2026. Official figures are due around 20 November.
 
 - **National (areas 2-12): about 198,300 tonnes.**
 - Areas 1 and 13 have no forecast: their harvest is too irregular (many zero months).
-- Each area's forecast, range and warning signs are on the farmer page
-  (`web/public/farmer/`), built from `web/public/data/farmer_actions.json`.
+- Each area's forecast, range and current signals are in `web/public/data/farmer_actions.json`
+  and in the cockpit.
 
-## 5. Farmer page
+## 5. My farm cockpit (prototype)
 
-A separate page for farmers. For each area it shows:
+`cockpit/` is a standalone page, separate from the main site and styled to match it. You set up
+your own farm (area, fish, average weight, month) and the conditions (lice, deaths, sea
+temperature). It shows next month's harvest from your farm, its value at last week's export
+price, an animated pen, and a step-by-step waterfall from a typical month to yours. Each step is
+one of the measured patterns above. The page carries a disclaimer: these are patterns, not
+guarantees or advice.
 
-- next month's forecast (tonnes, fish, weight per fish, likely range, change against last year);
-- what we see now (lice, deaths, sea temperature, delousing and feeding, each against the same
-  month in past years);
-- what those signals have meant before, using the measured patterns above;
-- what to consider.
-
-Where the data shows no clear effect (delousing), the card says so instead of inventing one. The
-page carries a disclaimer: these are patterns, not guarantees or advice.
-
-Build it with `python -m analysis.farmer` after `analysis.decision_lab`, `analysis.channels`,
-`analysis.topdown` and the ML challenger's `outlook_supply.json`.
+Build its data with `python -m analysis.farmer`, then `python -m analysis.cockpit`. Serve it with
+`python -m http.server --directory cockpit` and open the printed address.
