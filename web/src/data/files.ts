@@ -9,6 +9,7 @@ import {
   FarmWeeksIndexSchema,
   NowcastSchema,
   PriceSchema,
+  PriceSisalmoniSchema,
   TrapSchema,
 } from './schemas';
 
@@ -51,6 +52,8 @@ export const DATA_FILES = {
     owner: 'Price',
     due: '03:00 (dev window), 04:00 (holdout)',
   },
+  // The price result the site presents. price.json above is the older export-price test.
+  priceSisalmoni: { path: 'data/price_sisalmoni_v2.json', schema: PriceSisalmoniSchema, owner: 'Price', due: 'merged' },
 } as const;
 
 export type DataKey = keyof typeof DATA_FILES;
@@ -59,7 +62,8 @@ export type DataOf<K extends DataKey> = z.infer<(typeof DATA_FILES)[K]['schema']
 // The site draws its charts from the data files (src/charts/), in one style.
 // These two need things only a chart file has, and appear once they're real.
 export const CHARTS = {
-  price_backtest: { owner: 'Price', due: '04:00' },
+  price_sisalmoni_v2_actual_vs_predicted: { owner: 'Price', due: 'merged' },
+  price_sisalmoni_v2_forecast_errors: { owner: 'Price', due: 'merged' },
   price_fan: { owner: 'Price', due: 'optional' },
 } as const;
 

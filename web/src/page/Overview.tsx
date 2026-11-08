@@ -1,11 +1,13 @@
 import type { ReactNode } from 'react';
-import { CountUp, LaterPill, PassPill, Pill, Reveal, StatTile } from '../components/Bits';
-import { DASH, fmtCompact, fmtDate, fmtMonth, fmtPct, fmtTonnes } from '../components/format';
+import { monthlyTotals } from '../charts/specs';
+import { CountUp, LaterPill, Pill, Reveal, StatTile } from '../components/Bits';
+import { DASH, fmtCompact, fmtDate, fmtInt, fmtMonth, fmtMonthShort, fmtPct, fmtTonnes } from '../components/format';
 import { IconArrow } from '../components/Icons';
-import { finalLatest, finalScore } from '../data/finalModel';
+import { describeAreas, finalHeadlines, finalLatest, finalScore, forecastFish, vsSameMonthLastYear } from '../data/finalModel';
 import type { Status } from '../data/load';
+import type { Combined } from '../data/schemas';
 import type { AllFiles } from '../data/source';
-import { REPO, goTo } from './Chrome';
+import { REPO, goTo, isUpcoming } from './Chrome';
 
 // ---- Hero ----
 
@@ -22,7 +24,7 @@ export function Hero({ files }: { files: AllFiles }) {
           </h2>
           <p className="lede">
             Norway publishes what happens in its salmon farms every week. Salmon Signal turns that into an early
-            call on each month's harvest and on the export price weeks ahead, then proves it on months the models
+            call on each month's harvest and on the salmon price weeks ahead, then proves it on months the models
             never saw.
           </p>
           <div className="hero-actions">
@@ -101,11 +103,13 @@ function tileValue(status: Status<unknown>, value: number | null): { value: Reac
   return { value: <CountUp value={value} format={fmtCompact} /> };
 }
 
+// price/experiments/sisalmoni/SOURCES.md: 2024-W32 to 2026-W44. The display file doesn't carry the whole history.
+const SISALMONI_WEEKS = 117;
+
 export function ScaleBand({ files }: { files: AllFiles }) {
-  const { farms, farmWeeksIndex, price } = files.data;
+  const { farms, farmWeeksIndex, priceSisalmoni } = files.data;
   const farmList = farms.state === 'ok' ? farms.data : null;
   const years = farmWeeksIndex.state === 'ok' ? [...farmWeeksIndex.data.years].sort((a, b) => a - b) : null;
-  const history = price.state === 'ok' ? price.data.history : null;
 
   const tiles = [
     {
@@ -124,9 +128,9 @@ export function ScaleBand({ files }: { files: AllFiles }) {
       note: years?.length ? `${years[0]} to ${years[years.length - 1]}` : 'Lice, treatments, temperature',
     },
     {
-      label: 'Weeks of export prices',
-      ...tileValue(price, history ? history.length : null),
-      note: history?.length ? `${history[0]!.week.slice(0, 4)} to ${history[history.length - 1]!.week.slice(0, 4)}` : 'Fresh salmon, NOK per kg',
+      label: 'Weeks of SISALMONI prices',
+      ...tileValue(priceSisalmoni, priceSisalmoni.state === 'ok' ? SISALMONI_WEEKS : null),
+      note: 'August 2024 to October 2026, euros per kilo',
     },
   ];
 
@@ -152,34 +156,115 @@ export function ScaleBand({ files }: { files: AllFiles }) {
 // ---- Results band ----
 
 // Plain names for the contract's driver and outcome codes (raw codes stay in the tables).
-const DRIVER_NAMES: Record<string, string> = {
-  mobile_lice: 'Mobile lice',
-  mobile_anom: 'Mobile lice',
-  treat_rate: 'Treatments',
-  treat_anom: 'Treatments',
-  dd_below14: 'Degree-days under 14 °C',
-  dd_below8: 'Degree-days under 8 °C',
-  dd_8to14: 'Degree-days 8–14 °C',
-  dd_above14: 'Degree-days over 14 °C',
-};
-const OUTCOME_NAMES: Record<string, string> = { log_count: 'fish count', log_avg_kg: 'average weight', log_kg: 'volume' };
-const driverName = (d: string) => DRIVER_NAMES[d] ?? d.replace(/_/g, ' ');
-const outcomeName = (o: string) => OUTCOME_NAMES[o] ?? o.replace(/^log_/, '').replace(/_/g, ' ');
+/** The forecast nobody can check yet: the headline of the section. */
+function NextForecast({ files }: { files: AllFiles }) {
+  const { farmerActions, combined } = files.data;
+  if (farmerActions.state !== 'ok') {
+    return (
+      <div className="forecast-card">
+        <p className="forecast-card-label">Our next forecast</p>
+        <p className="forecast-card-number">{DASH}</p>
+        {farmerActions.state === 'loading' ? null : (
+          <div className="forecast-card-foot">
+            <LaterPill>Coming soon</LaterPill>
+          </div>
+        )}
+      </div>
+    );
+  }
+  const f = farmerActions.data;
+  const change = combined.state === 'ok' ? vsSameMonthLastYear(combined.data, f.target_month, f.national.areas, f.national.kg) : null;
+  const fish = forecastFish(f);
+  const [year, month] = f.target_month.split('-');
+  const lastYear = `${Number(year) - 1}-${month}`;
+  return (
+    <div className="forecast-card">
+      <p className="forecast-card-label">Our forecast for {fmtMonth(f.target_month)}</p>
+      <p className="forecast-card-number">{f.national.kg === null ? DASH : fmtInt(f.national.kg / 1000)}</p>
+      <p className="forecast-card-unit">
+        tonnes of salmon harvested, <span>{describeAreas(f.national.areas)}</span>
+      </p>
+      {fish ? (
+        <p className="forecast-card-fish">
+          About {Math.round(fish.count / 1_000_000)} million fish, averaging {fish.avgKg.toFixed(1)} kg each
+        </p>
+      ) : null}
+      {change !== null ? (
+        <p className="forecast-card-change">
+          {Math.abs(change).toFixed(0)}% {change >= 0 ? 'more' : 'less'} than {fmtMonth(lastYear)}
+        </p>
+      ) : null}
+      <div className="forecast-card-foot">
+        <span>
+          {isUpcoming(f.publishes_around) ? 'Official figure due around' : 'The official figure was due around'} {fmtDate(f.publishes_around)}
+        </span>
+        <a href="#current" onClick={(e) => goTo(e, 'current')}>
+          See it by area <IconArrow size={16} />
+        </a>
+      </div>
+    </div>
+  );
+}
 
-const ratioLabel = (pct: number, baseline: string) =>
-  pct >= 0 ? `lower error than ${baseline}` : `higher error than ${baseline}`;
+/** "0.7% high" or "3.3% low": how far a forecast was from the official figure. */
+function howClose(forecast: number, published: number): string {
+  const pct = (forecast / published - 1) * 100;
+  return `${Math.abs(pct).toFixed(1)}% ${pct >= 0 ? 'high' : 'low'}`;
+}
+
+/** The newest months with an official figure, newest first. */
+function RecentForecasts({ c, areasLabel }: { c: Combined; areasLabel: string }) {
+  const rows = monthlyTotals(c)
+    .filter((t) => t.window === 'holdout')
+    .slice(-6)
+    .reverse();
+  return (
+    <div className="results-table-card">
+      <h3>How close we've been</h3>
+      <table className="results-table">
+        <caption className="sr-only">Our forecast of the total harvest, {areasLabel}, against the official figure, for the latest months</caption>
+        <thead>
+          <tr>
+            <th scope="col">Month</th>
+            <th scope="col">We forecast</th>
+            <th scope="col">Official figure</th>
+            <th scope="col">We were</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((t) => (
+            <tr key={t.month}>
+              <th scope="row">{fmtMonthShort(t.month)}</th>
+              <td>
+                {fmtInt(t.forecast / 1000)}
+                <span className="results-unit"> t</span>
+              </td>
+              <td>
+                {fmtInt(t.published / 1000)}
+                <span className="results-unit"> t</span>
+              </td>
+              <td className="results-close">{howClose(t.forecast, t.published)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <p className="results-table-foot">
+        <span>Total harvest in tonnes, {areasLabel}</span>
+        <a href="#nowcast" onClick={(e) => goTo(e, 'nowcast')}>
+          See every month <IconArrow size={16} />
+        </a>
+      </p>
+    </div>
+  );
+}
 
 export function ResultsBand({ files }: { files: AllFiles }) {
-  const { combined, price, channels, nowcast } = files.data;
-  const f1 = nowcast.state === 'ok' ? nowcast.data.f1 : null;
-  const final = combined.state === 'ok' ? finalScore(combined.data, 'log_kg') : null;
-  const finalMonths = combined.state === 'ok' ? combined.data.windows.holdout : null;
-  const f2 = price.state === 'ok' ? price.data.f2 : null;
-  const panel = channels.state === 'ok' ? channels.data.panel : null;
-  const priceHoldout = price.state === 'ok' ? price.data.windows.holdout : null;
-  const f2Pct =
-    f2 && f2.mae_c0 !== null && f2.mae_c1 !== null && f2.mae_c0 !== 0 ? (1 - f2.mae_c1 / f2.mae_c0) * 100 : null;
-  const scoredPanel = (panel ?? []).filter((r) => r.pass !== null);
+  const { combined } = files.data;
+  const c = combined.state === 'ok' ? combined.data : null;
+  const tonnes = c ? finalScore(c, 'log_kg') : null;
+  const size = c ? finalScore(c, 'log_avg_kg') : null;
+  const headlines = c ? finalHeadlines(c) : null;
+  const shown = (pct: number | undefined) => (pct === undefined ? DASH : `${Math.round(pct)}%`);
 
   return (
     <section className="band band-cream" id="results" aria-labelledby="results-title">
@@ -187,67 +272,43 @@ export function ResultsBand({ files }: { files: AllFiles }) {
         <Reveal className="section-head">
           <div>
             <h2 id="results-title">The results.</h2>
-            <p className="lede">
-              Our harvest forecast on months it never trained on, and the tests we set ourselves in advance, including the
-              ones we failed.
-            </p>
+            <p className="lede">Our forecast of Norway's salmon harvest, about 10 days before the official figures, and how close it has come.</p>
           </div>
         </Reveal>
-        <div className="results-grid">
-          <StatTile
-            className="result-tile"
-            tone="salmon"
-            label="Harvest forecast"
-            value={final ? `${Math.round(final.accuracyPct)}%` : 'Pending'}
-            note={
-              final && finalMonths
-                ? `accurate on tonnes per area, ${fmtMonth(finalMonths[0])} to ${fmtMonth(finalMonths[1])}. That's ${Math.round(final.lessErrorPct)}% less error than our baseline model.`
-                : 'Tested on months it never trained on.'
-            }
-            pill={final ? undefined : <LaterPill>Coming soon</LaterPill>}
-          />
-          <StatTile
-            className="result-tile"
-            tone="butter"
-            label="Price forecast · test F2"
-            value={f2Pct !== null ? `${Math.abs(f2Pct).toFixed(1)}%` : 'Pending'}
-            note={
-              f2Pct !== null
-                ? `${ratioLabel(f2Pct, 'model c0')} at 4 weeks ahead${priceHoldout ? `, ${priceHoldout[0]} to ${priceHoldout[1]}` : ''}`
-                : 'Whether farm data improves the four-week price forecast.'
-            }
-            pill={f2 ? <PassPill pass={f2.pass} /> : <LaterPill>Coming soon</LaterPill>}
-          />
-          <div className="result-tile tone-sky">
-            <p className="stat-label">The tests we set in advance</p>
-            {f1 || scoredPanel.length ? (
-              <ul className="result-list">
-                {f1 ? (
-                  <li>
-                    <span>F1 · Farm data cuts forecast error by 5%</span>
-                    <PassPill pass={f1.pass === true} />
-                  </li>
-                ) : null}
-                {scoredPanel.map((r, i) => (
-                  <li key={`${r.test}-${r.outcome}-${r.driver}-${i}`}>
-                    <span>
-                      {r.test} · {driverName(r.driver)} → {outcomeName(r.outcome)}
-                    </span>
-                    <PassPill pass={r.pass === true} />
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <>
-                <p className="stat-value">Pending</p>
-                <p className="stat-note">How lice and warmth change the harvest.</p>
-                <div className="stat-pill">
-                  <LaterPill>Coming soon</LaterPill>
-                </div>
-              </>
-            )}
-          </div>
+        <div className="results-lead">
+          <NextForecast files={files} />
+          {c && headlines ? (
+            <RecentForecasts c={c} areasLabel={headlines.areasLabel} />
+          ) : (
+            <div className="results-table-card">
+              <h3>How close we've been</h3>
+              {combined.state === 'loading' ? null : <LaterPill>Coming soon</LaterPill>}
+            </div>
+          )}
         </div>
+        <div className="results-facts">
+          <p className="result-fact tone-salmon">
+            <strong>{shown(headlines?.totalAccuracyPct)}</strong>
+            <span>accurate on the total harvest{headlines ? `, ${headlines.areasLabel}` : ''}</span>
+          </p>
+          <p className="result-fact tone-butter">
+            <strong>{shown(tonnes?.accuracyPct)}</strong>
+            <span>accurate on each area's tonnes</span>
+          </p>
+          <p className="result-fact tone-sky">
+            <strong>{shown(size?.accuracyPct)}</strong>
+            <span>accurate on fish size</span>
+          </p>
+        </div>
+        {c && headlines ? (
+          <p className="results-caption">
+            Tested on {fmtInt(headlines.forecasts)} forecasts from {fmtMonth(c.windows.holdout[0])} to {fmtMonth(c.windows.holdout[1])}, each using only
+            data public at the time. Accuracy is 100% minus the average miss.{' '}
+            <a href="#prereg" onClick={(e) => goTo(e, 'prereg')}>
+              How we tested it
+            </a>
+          </p>
+        ) : null}
       </div>
     </section>
   );
@@ -270,12 +331,12 @@ export function ExploreGrid({ files }: { files: AllFiles }) {
 
   const cards: { n: number; id: string; title: string; text: string; state: CardState }[] = [
     { n: 1, id: 'farms', title: 'Every farm, every week', text: 'Lice, treatments, disease and sea temperature at each farm, week by week.', state: cardState([data.farms, data.farmWeeksIndex]) },
-    { n: 2, id: 'trap', title: 'The seasonality trap', text: "Why raw correlations with price fool you, and what's left once season and trend are gone.", state: cardState([data.trap]) },
+    { n: 2, id: 'nowcast', title: 'The harvest forecast', text: "Each month's harvest by area, called on the 10th, before the official figure lands.", state: cardState([data.combined]) },
     { n: 3, id: 'split', title: 'More fish, or bigger fish?', text: 'Splitting the harvest into fish count × average weight tells growth from forced early harvests.', state: cardState([ch]) },
-    { n: 4, id: 'nowcast', title: 'The harvest forecast', text: "Each month's harvest by area, called on the 10th, before the official figure lands.", state: cardState([data.combined]) },
+    { n: 4, id: 'trap', title: 'The seasonality trap', text: "Why raw correlations with price fool you, and what's left once season and trend are gone.", state: cardState([data.trap]) },
     { n: 5, id: 'drivers', title: 'What drives it', text: 'How much worse the forecast gets without each group of factors.', state: cardState([data.drivers]) },
     { n: 6, id: 'mechanisms', title: 'How the biology acts', text: 'Do lice bring harvests forward? Does warmer water grow heavier fish?', state: cardState([panelStatus]) },
-    { n: 7, id: 'price', title: 'The price forecast', text: 'The weekly export price, weeks ahead, against a random walk.', state: cardState([data.price]) },
+    { n: 7, id: 'price', title: 'The price forecast', text: 'The SISALMONI salmon price, weeks ahead, against assuming no change.', state: cardState([data.priceSisalmoni]) },
     { n: 8, id: 'current', title: 'Right now', text: 'Our forecast for the latest month, before the official figure is out.', state: cardState([data.farmerActions]) },
   ];
 

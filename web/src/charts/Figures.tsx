@@ -2,7 +2,7 @@
 // are plain HTML (they scale with the page and stay crisp); time series use
 // Vega-Lite (./specs.ts). Each has a table under "Show the numbers".
 
-import { useMemo, type ReactNode } from 'react';
+import { Fragment, useMemo, type CSSProperties, type ReactNode } from 'react';
 import { PassPill } from '../components/Bits';
 import { DASH, fmtDate, fmtMonth, fmtPct, fmtR, fmtTonnes } from '../components/format';
 import { IconAlert } from '../components/Icons';
@@ -38,7 +38,7 @@ export const rise = (v: number | null) => (v === null ? DASH : Math.abs(v) < 0.0
 
 const lowerFirst = (s: string) => (/^[A-Z][a-z]/.test(s) ? s[0]!.toLowerCase() + s.slice(1) : s);
 
-// ---- Finding 2: correlation with price, before and after ----
+// ---- Finding 4: correlation with price, before and after ----
 
 export function TrapFigure({ trap }: { trap: Trap }) {
   const rows = trap.drivers
@@ -115,50 +115,81 @@ export const THIRDS: Record<number, string> = { 1: 'Low', 2: 'Middle', 3: 'High'
 /** A difference in logs from normal, as a percentage: 0.079 is +8.2%. */
 export const logToPct = (v: number | null) => (v === null ? null : (Math.exp(v) - 1) * 100);
 
-function SplitBar({ value, max, kind }: { value: number | null; max: number; kind: 'count' | 'weight' }) {
-  const width = value === null ? 0 : (Math.abs(value) / max) * 50;
+type SplitKind = 'count' | 'weight';
+type SplitRange = { lo: number; hi: number };
+
+/** The range a column has to show. It always includes zero, which is "normal". */
+export function splitRange(values: (number | null)[]): SplitRange {
+  const known = values.filter((v): v is number => v !== null);
+  return { lo: Math.min(0, ...known), hi: Math.max(0, ...known) };
+}
+
+const rangeSpan = ({ lo, hi }: SplitRange) => Math.max(hi - lo, 0.1);
+const rangePct = (range: SplitRange, v: number) => ((v - range.lo) / rangeSpan(range)) * 100;
+
+function SplitAxis({ kind, title, less, more, range }: { kind: SplitKind; title: string; less: string; more: string; range: SplitRange }) {
   return (
-    <span className="split-cell">
-      <span className="split-track">
-        <i className={`split-bar is-${kind}`} style={value !== null && value < 0 ? { right: '50%', width: `${width}%` } : { left: '50%', width: `${width}%` }} />
-      </span>
-      <span className="split-value">{rise(value)}</span>
-    </span>
+    <div className={`split-axis is-${kind}`} style={{ '--zero': `${rangePct(range, 0)}%` } as CSSProperties}>
+      <strong>{title}</strong>
+      <span className="split-less">← {less}</span>
+      <span className="split-more">{more} →</span>
+    </div>
+  );
+}
+
+function SplitBar({ kind, value, range, middle, label }: { kind: SplitKind; value: number | null; range: SplitRange; middle: boolean; label: string }) {
+  const zero = rangePct(range, 0);
+  const tip = value === null ? zero : rangePct(range, value);
+  // Anything that rounds to 0.0% keeps its number on the right, like a rise.
+  const down = value !== null && value <= -0.05;
+  return (
+    <div className={`split-track is-${kind}${middle ? ' is-middle' : ''}`} style={{ '--zero': `${zero}%`, '--tip': `${tip}%` } as CSSProperties} title={label}>
+      {value === null ? null : (
+        <i className={`split-bar${value < 0 ? ' is-down' : ''}`} style={{ left: `${Math.min(zero, tip)}%`, width: `${Math.abs(tip - zero)}%` }} />
+      )}
+      <span className={`split-value${down ? ' is-down' : ''}`}>{rise(value)}</span>
+    </div>
   );
 }
 
 export function SplitFigure({ bins }: { bins: Channels['bins'] }) {
   const rows = bins.map((b) => ({ ...b, count: logToPct(b.count_anom), weight: logToPct(b.weight_anom) }));
-  const maxOf = (key: 'count' | 'weight') => Math.max(0.1, ...rows.map((r) => Math.abs(r[key] ?? 0)));
-  const maxCount = maxOf('count');
-  const maxWeight = maxOf('weight');
+  const count = splitRange(rows.map((r) => r.count));
+  const weight = splitRange(rows.map((r) => r.weight));
   const drivers = [...new Set(rows.map((r) => r.driver))].sort((a, b) => FACTOR_ORDER.indexOf(a) - FACTOR_ORDER.indexOf(b));
+  // Each column is as wide as the range it shows, so one percentage point is
+  // the same length in both.
+  const widths = { '--count-fr': `${rangeSpan(count)}fr`, '--weight-fr': `${rangeSpan(weight)}fr` } as CSSProperties;
   return (
     <Figure
       title="What happens to the harvest after a low, middle or high month"
-      note="Each factor's months are split into thirds. Bars show the difference from normal for the time of year. Each column has its own scale."
+      note="Each factor's months are split into thirds. Bars show how far the harvest was from normal for the time of year. Both columns use the same scale."
     >
-      <div className="split-grid" aria-hidden="true">
+      <div className="split-chart" style={widths} aria-hidden="true">
+        <div className="split-head">
+          <SplitAxis kind="count" title="Fish harvested" less="Fewer" more="More" range={count} />
+          <SplitAxis kind="weight" title="Average weight" less="Smaller" more="Bigger" range={weight} />
+        </div>
         {drivers.map((driver) => {
           const part = rows.filter((r) => r.driver === driver).sort((a, b) => a.tercile - b.tercile);
+          const name = FACTOR_NAMES[driver] ?? driver;
           return (
-            <div className="split-card" key={driver}>
-              <p className="split-name">
-                {FACTOR_NAMES[driver] ?? driver}
+            <div className="split-block" key={driver}>
+              <p className="split-factor">
+                <strong>{name}</strong>
                 <span>{part[0]?.window.replace('-', ' to ')} months later</span>
               </p>
-              <div className="split-row split-columns">
-                <span />
-                <span>Fish harvested</span>
-                <span>Average weight</span>
-              </div>
-              {part.map((r) => (
-                <div className="split-row" key={r.tercile}>
-                  <span className="split-third">{THIRDS[r.tercile] ?? r.tercile}</span>
-                  <SplitBar value={r.count} max={maxCount} kind="count" />
-                  <SplitBar value={r.weight} max={maxWeight} kind="weight" />
-                </div>
-              ))}
+              {part.map((r) => {
+                const level = String(THIRDS[r.tercile] ?? r.tercile);
+                const say = (what: string, v: number | null) => `${name}, ${level.toLowerCase()} months: ${what} ${rise(v)} against normal`;
+                return (
+                  <Fragment key={r.tercile}>
+                    <span className="split-level">{level}</span>
+                    <SplitBar kind="count" value={r.count} range={count} middle={r.tercile === 2} label={say('fish harvested', r.count)} />
+                    <SplitBar kind="weight" value={r.weight} range={weight} middle={r.tercile === 2} label={say('average weight', r.weight)} />
+                  </Fragment>
+                );
+              })}
             </div>
           );
         })}
@@ -167,7 +198,7 @@ export function SplitFigure({ bins }: { bins: Channels['bins'] }) {
   );
 }
 
-// ---- Finding 4: forecast against the published harvest ----
+// ---- Finding 2: forecast against the published harvest ----
 
 export function ForecastFigure({ c }: { c: Combined }) {
   const spec = useMemo(() => forecastSpec(c), [c]);

@@ -1,5 +1,5 @@
 import { useMemo, type ReactNode } from 'react';
-import { AreaHeatFigure, ByYearFigure, DRIVER_LABELS, FACTOR_NAMES, ForecastFigure, LiveForecast, MechanismFigure, OUTCOME_LABELS, RankingFigure, ScorecardFigure, SplitFigure, THIRDS, TrapFigure, logToPct, rise } from '../charts/Figures';
+import { AreaHeatFigure, DRIVER_LABELS, FACTOR_NAMES, ForecastFigure, LiveForecast, MechanismFigure, OUTCOME_LABELS, RankingFigure, SplitFigure, THIRDS, TrapFigure, logToPct, rise } from '../charts/Figures';
 import { PRICE_MODELS } from '../charts/specs';
 import { LaterPill, Numbers, PassPill, Pill, Reveal, Table } from '../components/Bits';
 import { Boundary } from '../components/Boundary';
@@ -9,7 +9,7 @@ import { Later, StatusView } from '../components/States';
 import { VegaChart } from '../components/VegaChart';
 import { DATA_FILES, type DataKey } from '../data/files';
 import { finalLatest, finalScore } from '../data/finalModel';
-import type { AreaMonth, ChartSpec, Channels, Combined, Drivers, Nowcast, Price, Trap } from '../data/schemas';
+import type { AreaMonth, ChartSpec, Channels, Combined, Drivers, Nowcast, Price, PriceSisalmoni, Trap } from '../data/schemas';
 import type { AllFiles, Source } from '../data/source';
 import { FarmSection } from './FarmWeeks';
 
@@ -46,16 +46,17 @@ export function Findings({ files, source }: { files: AllFiles; source: Source })
         <FarmSection farms={data.farms} index={data.farmWeeksIndex} source={source} />
       </Finding>
 
-      <Finding n={2} id="trap" band="paper" tag="A warning" title="The seasonality trap." lede="Lice, temperature and price all swing with the seasons, so raw correlations look strong. Remove season and trend, and see what's left.">
-        <StatusView status={data.trap} {...fileProps('trap')}>
-          {(t) => (
+      <Finding n={2} id="nowcast" band="paper" tag="The forecast" title="Called before it's published." lede="On the 10th of each month we forecast the month just ended, area by area, using only data public by then. The Directorate publishes around the 20th, so we're about 10 days ahead of the official figure.">
+        <StatusView status={data.combined} {...fileProps('combined')}>
+          {(c) => (
             <>
-              <TrapFigure trap={t} />
-              <Numbers>
-                <TrapTable trap={t} />
-              </Numbers>
+              <ForecastFigure c={c} />
+              <FinalModelDetails c={c} />
             </>
           )}
+        </StatusView>
+        <StatusView status={data.nowcast} {...fileProps('nowcast')}>
+          {(nc) => <FirstModelDetails nc={nc} />}
         </StatusView>
       </Finding>
 
@@ -72,17 +73,16 @@ export function Findings({ files, source }: { files: AllFiles; source: Source })
         </StatusView>
       </Finding>
 
-      <Finding n={4} id="nowcast" band="paper" tag="The forecast" title="Called before it's published." lede="On the 10th of each month we forecast the month just ended, area by area, using only data public by then. The Directorate publishes around the 20th, so we're about 10 days ahead of the official figure.">
-        <StatusView status={data.combined} {...fileProps('combined')}>
-          {(c) => (
+      <Finding n={4} id="trap" band="paper" tag="A warning" title="The seasonality trap." lede="Lice, temperature and price all swing with the seasons, so raw correlations look strong. Remove season and trend, and see what's left.">
+        <StatusView status={data.trap} {...fileProps('trap')}>
+          {(t) => (
             <>
-              <ForecastFigure c={c} />
-              <FinalModelDetails c={c} />
+              <TrapFigure trap={t} />
+              <Numbers>
+                <TrapTable trap={t} />
+              </Numbers>
             </>
           )}
-        </StatusView>
-        <StatusView status={data.nowcast} {...fileProps('nowcast')}>
-          {(nc) => <FirstModelDetails nc={nc} />}
         </StatusView>
       </Finding>
 
@@ -116,20 +116,12 @@ export function Findings({ files, source }: { files: AllFiles; source: Source })
         </StatusView>
       </Finding>
 
-      <Finding n={7} id="price" band="cream" tag="The price · test F2" title="The price, weeks ahead." lede="The weekly export price of fresh salmon, forecast 2 to 8 weeks ahead and scored against a random walk. F2 asks whether the farm data makes the 4-week forecast better.">
+      <Finding n={7} id="price" band="cream" tag="The price" title="The price, weeks ahead." lede="The SISALMONI 3–6 kg index is the reference price for Euronext salmon contracts, in euros per kilo. We forecast it 2 to 8 delivery weeks ahead and compare that with assuming the price stays the same.">
+        <StatusView status={data.priceSisalmoni} {...fileProps('priceSisalmoni')}>
+          {(p) => <SisalmoniDetails p={p} charts={charts} />}
+        </StatusView>
         <StatusView status={data.price} {...fileProps('price')}>
-          {(p) => (
-            <>
-              <div className="split-2">
-                <ScorecardFigure p={p} />
-                <ByYearFigure p={p} />
-              </div>
-              {p.backtest_h4 && charts.price_backtest.state === 'ok' ? (
-                <TeamChart spec={charts.price_backtest.data} label="Actual price against the forecasts, with a band" />
-              ) : null}
-              <PriceDetails p={p} />
-            </>
-          )}
+          {(p) => <PriceDetails p={p} />}
         </StatusView>
       </Finding>
 
@@ -229,7 +221,7 @@ function MiniStats({ items }: { items: [string, ReactNode][] }) {
   );
 }
 
-// ---- Finding 2 ----
+// ---- Finding 4 ----
 
 function TrapTable({ trap }: { trap: Trap }) {
   return (
@@ -269,7 +261,7 @@ function BinsTable({ bins }: { bins: Channels['bins'] }) {
   );
 }
 
-// ---- Finding 4 ----
+// ---- Finding 2 ----
 
 const FINAL_MODELS = [
   ['b1', 'Baseline (B1)'],
@@ -512,12 +504,69 @@ const PRICE_DRIVERS: Record<string, string> = {
 /** The notes in price.json that are for readers, not the team's build log. */
 const publicNotes = (notes: string[]) => notes.filter((n) => !/branch|freeze|engine|locked|BIC|Rebuild|integration|MAE/i.test(n));
 
+const PRICE_COMPARED: Record<string, string> = { rw: 'Assume no change', old_c1: 'Earlier model with farm data' };
+const pct1 = (v: number | null) => (v === null ? DASH : `${v.toFixed(1)}%`);
+
+function SisalmoniDetails({ p, charts }: { p: PriceSisalmoni; charts: AllFiles['charts'] }) {
+  const { headline, evaluation, display_model: model } = p;
+  const actual = charts.price_sisalmoni_v2_actual_vs_predicted;
+  const errors = charts.price_sisalmoni_v2_forecast_errors;
+  const name = (id: string) => (id === model.id ? model.label : PRICE_COMPARED[id] ?? id);
+  return (
+    <>
+      <div className="chart-card">
+        <div className="verdict-row" style={{ justifyContent: 'space-between', marginBottom: '1rem' }}>
+          <h3>{evaluation.horizon_delivery_weeks} delivery weeks ahead</h3>
+          <Pill tone="partial">{p.status_label}</Pill>
+        </div>
+        <MiniStats
+          items={[
+            ['Average miss, per kilo', `€${fmt(headline.mae_eur_per_kg, 2)}`],
+            ['Less error than assuming no change', pct1(headline.improvement_vs_no_change_pct)],
+            ['Less error than our earlier model with farm data', pct1(headline.improvement_vs_original_biology_pct)],
+            ['Rise or fall called correctly', `${pct1(headline.direction_accuracy_pct)} (${headline.direction_correct} of ${headline.direction_calls})`],
+          ]}
+        />
+        <p className="note">{p.uncertainty.must_display}</p>
+      </div>
+      {actual.state === 'ok' ? <TeamChart spec={actual.data} label="The actual SISALMONI price against the forecasts" /> : null}
+      {errors.state === 'ok' ? <TeamChart spec={errors.data} label="Forecast error each week" /> : null}
+      <Numbers>
+        <p>
+          {fmtInt(evaluation.forecasts)} forecasts, for delivery from {fmtDate(evaluation.target_dates[0])} to {fmtDate(evaluation.target_dates[1])}.{' '}
+          {evaluation.horizon_note} The model uses: {model.features.join(', ')}.
+          {p.recommendation.recommended_live_model_id === 'rw' ? ' Assuming no change is still our recommended default for live use.' : ''}
+        </p>
+        <Table caption={`Average miss ${evaluation.horizon_delivery_weeks} delivery weeks ahead, euros per kilo`} head={['Model', 'Average miss', 'Forecasts']}>
+          {p.comparisons.map((c) => (
+            <tr key={c.model}>
+              <th scope="row">{name(c.model)}</th>
+              <td>{fmt(c.mae_eur_kg, 3)}</td>
+              <td>{fmtInt(c.n)}</td>
+            </tr>
+          ))}
+        </Table>
+        <Table caption="Average miss by delivery weeks ahead, euros per kilo" head={['Delivery weeks ahead', model.label, PRICE_COMPARED.rw!, PRICE_COMPARED.old_c1!]}>
+          {p.secondary_horizons.map((h) => (
+            <tr key={h.horizon_delivery_weeks}>
+              <th scope="row">{h.horizon_delivery_weeks}</th>
+              <td>{fmt(h.selected_ridge_mae_eur_kg, 3)}</td>
+              <td>{fmt(h.no_change_mae_eur_kg, 3)}</td>
+              <td>{fmt(h.original_biology_mae_eur_kg, 3)}</td>
+            </tr>
+          ))}
+        </Table>
+      </Numbers>
+    </>
+  );
+}
+
 function PriceDetails({ p }: { p: Price }) {
   const primaryH = p.cw.find((c) => c.primary)?.h ?? null;
   const rows = primaryH === null ? [] : p.scorecard.filter((r) => r.h === primaryH);
   const last = p.history[p.history.length - 1];
   return (
-    <>
+    <Numbers title="Our earlier test on the export price (F2)">
       <div className="chart-card">
         <div className="verdict-row" style={{ justifyContent: 'space-between', marginBottom: '1rem' }}>
           <h3>Test F2: farm data improves the four-week forecast</h3>
@@ -536,39 +585,38 @@ function PriceDetails({ p }: { p: Price }) {
           <p className="note">This test hasn't been scored yet.</p>
         )}
       </div>
-      <Numbers>
+      <p>
+        This older test used Norway's export price in kroner per kilo, a different price from the SISALMONI index above.
+        Built on {fmtWeek(p.windows.dev[0])} to {fmtWeek(p.windows.dev[1])}. Price history: {fmtInt(p.history.length)} weeks
+        {last ? `, latest ${fmtWeek(last.week)} at ${fmt(last.price_nok_kg)} NOK per kg` : ''}.
+      </p>
+      {rows.length ? (
+        <Table caption={`Scorecard, ${primaryH} weeks ahead`} head={['Period', 'Model', 'Error', 'vs random walk', 'Direction right']}>
+          {rows.map((r) => (
+            <tr key={`${r.window}-${r.model}`}>
+              <th scope="row">{r.window === 'dev' ? 'Built on' : 'Never seen'}</th>
+              <td>{modelLabel(r.model)}</td>
+              <td>{fmt(r.mae, 3)}</td>
+              <td>{fmt(r.mae_ratio, 3)}</td>
+              <td>{r.hit_rate === null ? DASH : `${(r.hit_rate * 100).toFixed(0)}%`}</td>
+            </tr>
+          ))}
+        </Table>
+      ) : null}
+      {p.backtest_h4 ? (
         <p>
-          Built on {fmtWeek(p.windows.dev[0])} to {fmtWeek(p.windows.dev[1])}. Price history: {fmtInt(p.history.length)} weeks
-          {last ? `, latest ${fmtWeek(last.week)} at ${fmt(last.price_nok_kg)} NOK per kg` : ''}.
+          {fmtInt(p.backtest_h4.length)} test weeks of forecasts against actual prices.
         </p>
-        {rows.length ? (
-          <Table caption={`Scorecard, ${primaryH} weeks ahead`} head={['Period', 'Model', 'Error', 'vs random walk', 'Direction right']}>
-            {rows.map((r) => (
-              <tr key={`${r.window}-${r.model}`}>
-                <th scope="row">{r.window === 'dev' ? 'Built on' : 'Never seen'}</th>
-                <td>{modelLabel(r.model)}</td>
-                <td>{fmt(r.mae, 3)}</td>
-                <td>{fmt(r.mae_ratio, 3)}</td>
-                <td>{r.hit_rate === null ? DASH : `${(r.hit_rate * 100).toFixed(0)}%`}</td>
-              </tr>
-            ))}
-          </Table>
-        ) : null}
-        {p.backtest_h4 ? (
-          <p>
-            {fmtInt(p.backtest_h4.length)} test weeks of forecasts against actual prices.
-          </p>
-        ) : null}
-        {p.c1_drivers.length ? <p>The farm data added: {p.c1_drivers.map((d) => PRICE_DRIVERS[d] ?? d.replace(/_/g, ' ')).join(', ')}.</p> : null}
-        {publicNotes(p.notes).length ? (
-          <ul className="problems">
-            {publicNotes(p.notes).map((n) => (
-              <li key={n}>{n}</li>
-            ))}
-          </ul>
-        ) : null}
-      </Numbers>
-    </>
+      ) : null}
+      {p.c1_drivers.length ? <p>The farm data added: {p.c1_drivers.map((d) => PRICE_DRIVERS[d] ?? d.replace(/_/g, ' ')).join(', ')}.</p> : null}
+      {publicNotes(p.notes).length ? (
+        <ul className="problems">
+          {publicNotes(p.notes).map((n) => (
+            <li key={n}>{n}</li>
+          ))}
+        </ul>
+      ) : null}
+    </Numbers>
   );
 }
 

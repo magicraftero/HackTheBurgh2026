@@ -15,6 +15,7 @@ import type {
   FarmWeeksYear,
   Nowcast,
   Price,
+  PriceSisalmoni,
   Trap,
 } from '../src/data/schemas';
 
@@ -782,6 +783,33 @@ function makeCombined(nowcast: Nowcast): Combined {
   };
 }
 
+// ---- The SISALMONI price result: only exists after the freeze ----
+
+function makePriceSisalmoni(): PriceSisalmoni {
+  return {
+    status_label: 'Experimental · retrospective evaluation',
+    target: { index: 'SISALMONI', size_class: '3–6 kg', unit: 'EUR/kg' },
+    display_model: { id: 'ridge', label: 'Price-only Ridge', features: ['current price', 'annual sine'] },
+    evaluation: { horizon_delivery_weeks: 4, target_dates: ['2026-05-18', '2026-10-26'], forecasts: 24, horizon_note: 'Made up for the mock site.' },
+    headline: {
+      mae_eur_per_kg: 0.3,
+      improvement_vs_no_change_pct: 30,
+      improvement_vs_original_biology_pct: 5,
+      direction_accuracy_pct: 75,
+      direction_correct: 18,
+      direction_calls: 24,
+    },
+    comparisons: [
+      { model: 'ridge', mae_eur_kg: 0.3, n: 24 },
+      { model: 'rw', mae_eur_kg: 0.43, n: 24 },
+      { model: 'old_c1', mae_eur_kg: 0.32, n: 24 },
+    ],
+    uncertainty: { must_display: 'Mock numbers for building the site.' },
+    recommendation: { recommended_live_model_id: 'rw' },
+    secondary_horizons: [{ horizon_delivery_weeks: 2, selected_ridge_mae_eur_kg: 0.2, no_change_mae_eur_kg: 0.26, original_biology_mae_eur_kg: 0.4 }],
+  };
+}
+
 // ---- Putting a scenario together ----
 
 /** Every mock file for one scenario, keyed by its path inside _mock/<scenario>/. */
@@ -816,6 +844,7 @@ export function buildScenario(scenario: MockScenario): Record<string, unknown> {
     Object.assign(files, {
       'combined.json': combined,
       'farmer_actions.json': makeFarmerActions(combined),
+      'price_sisalmoni_v2.json': makePriceSisalmoni(),
       'drivers.json': drivers,
       'charts/drivers_importance.vl.json': driversSpec(drivers),
       'charts/channels_panel.vl.json': panelSpec(channels),

@@ -377,10 +377,7 @@ export function FarmExplorer({ farms, years, year, onYear, data, source }: Explo
                 onClose={() => setSelected(null)}
               />
             ) : (
-              <>
-                <p className="map-hint">Click a farm on the map, or find one by name, to see its year week by week.</p>
-                <AreaBars rows={areas.areas} layer={activeLayer} />
-              </>
+              <p className="map-hint">Click a farm on the map, or find one by name, to see its year week by week.</p>
             )}
           </div>
         </div>
@@ -482,73 +479,6 @@ function areaSummary(data: FarmWeeksYear, at: number, byId: Map<number, Farms[nu
   };
   const areas = [...by.keys()].sort((a, b) => a - b).map((a) => summarise(a, by.get(a)!));
   return { areas, all: summarise(0, data.ids.map((_, c) => c)) };
-}
-
-type AreaMeasure = {
-  title: string;
-  value: (r: AreaRow) => number | null;
-  format: (v: number) => string;
-  /**
-   * Bars start at zero, on a scale that stays put from week to week (it only
-   * grows if a value outgrows it), so playing shows real change. Temperature
-   * has no true zero, so it's a dot on a fixed 0 to 18 °C line instead.
-   */
-  kind: 'bar' | 'dot';
-  scale: (values: number[]) => number;
-  ends?: [string, string];
-};
-
-const AREA_MEASURES: Record<LayerKey, AreaMeasure> = {
-  lice: { title: 'Mobile lice per fish', value: (r) => r.lice, format: (v) => fmt(v), kind: 'bar', scale: (vs) => Math.max(2, ...vs) },
-  temp: { title: 'Sea temperature', value: (r) => r.temp, format: (v) => `${fmt(v, 1)} °C`, kind: 'dot', scale: () => 18, ends: ['0 °C', '18 °C'] },
-  treated: { title: 'Reporting farms treated', value: (r) => (r.treated === null ? null : r.treated * 100), format: (v) => `${v.toFixed(0)}%`, kind: 'bar', scale: () => 100 },
-  disease: { title: 'Farms flagged for ISA or PD', value: (r) => r.flagged, format: (v) => fmtInt(v), kind: 'bar', scale: (vs) => Math.max(10, ...vs) },
-};
-
-/**
- * This week by area for the map's current layer: one row per area, south to
- * north, with its value in text. One neutral colour: length (or position) is
- * the value, so the map's colours keep their one meaning.
- */
-function AreaBars({ rows, layer }: { rows: AreaRow[]; layer: LayerKey }) {
-  const m = AREA_MEASURES[layer];
-  const values = rows.map(m.value);
-  const max = m.scale(values.filter((v): v is number => v !== null));
-  const pct = (v: number) => Math.min(100, (Math.max(v, 0) / max) * 100);
-  return (
-    <figure className="area-bars">
-      <figcaption>
-        <span>{m.title}, by area</span>
-        <span className="area-bars-sub">South to north</span>
-      </figcaption>
-      <ol>
-        {rows.map((r, i) => {
-          const v = values[i] ?? null;
-          const name = AREA_NAMES[r.area] ?? '';
-          return (
-            <li key={r.area} title={`Area ${r.area}, ${name}: ${v === null ? 'no reports' : m.format(v)}`}>
-              <span className="ab-area">{r.area}</span>
-              <span className="ab-name">{name}</span>
-              <span className={`ab-track ab-track-${m.kind}`} aria-hidden="true">
-                {v === null ? null : m.kind === 'dot' ? (
-                  <span className="ab-dot" style={{ left: `${pct(v)}%` }} />
-                ) : (
-                  <span className="ab-bar" style={{ width: `${Math.max(2, pct(v))}%` }} />
-                )}
-              </span>
-              <span className="ab-val">{v === null ? DASH : m.format(v)}</span>
-            </li>
-          );
-        })}
-      </ol>
-      {m.ends ? (
-        <div className="ab-axis" aria-hidden="true">
-          <span>{m.ends[0]}</span>
-          <span>{m.ends[1]}</span>
-        </div>
-      ) : null}
-    </figure>
-  );
 }
 
 /** The map's text alternative: this week, area by area. */

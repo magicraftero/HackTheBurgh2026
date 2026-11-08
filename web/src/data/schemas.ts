@@ -258,6 +258,41 @@ export const PriceSchema = z.object({
   current: z.unknown(),
 });
 
+// ---- Finding 7: the price forecast we present, SISALMONI v2 (Price) ----
+// Written by price/export_display.py; see docs/PRICE_DISPLAY_HANDOFF.md. Prices are EUR per kg.
+// Only the parts the site shows are checked.
+
+export const PriceSisalmoniSchema = z.object({
+  status_label: z.string(),
+  target: z.object({ index: z.string(), size_class: z.string(), unit: z.string() }),
+  display_model: z.object({ id: z.string(), label: z.string(), features: z.array(z.string()) }),
+  evaluation: z.object({
+    horizon_delivery_weeks: int,
+    target_dates: z.tuple([day, day]),
+    forecasts: int,
+    horizon_note: z.string(),
+  }),
+  headline: z.object({
+    mae_eur_per_kg: num,
+    improvement_vs_no_change_pct: num,
+    improvement_vs_original_biology_pct: num,
+    direction_accuracy_pct: num,
+    direction_correct: int,
+    direction_calls: int,
+  }),
+  comparisons: z.array(z.object({ model: z.string(), mae_eur_kg: num, n: int })),
+  uncertainty: z.object({ must_display: z.string() }),
+  recommendation: z.object({ recommended_live_model_id: z.string() }),
+  secondary_horizons: z.array(
+    z.object({
+      horizon_delivery_weeks: int,
+      selected_ridge_mae_eur_kg: num,
+      no_change_mae_eur_kg: num,
+      original_biology_mae_eur_kg: num,
+    }),
+  ),
+});
+
 // ---- Chart specs (web/public/charts/*.vl.json) ----
 
 export const ChartSpecSchema = z
@@ -288,7 +323,7 @@ export const FarmerActionsSchema = z.object({
     z.object({
       area,
       name: z.string(),
-      forecast: z.object({ kg: num, kg_range: z.tuple([num, num]) }).nullable(),
+      forecast: z.object({ kg: num, kg_range: z.tuple([num, num]), count: num.nullish() }).nullable(),
       vs_last_year_pct: num,
     }),
   ),
@@ -297,4 +332,5 @@ export const FarmerActionsSchema = z.object({
 export type FarmerActions = z.infer<typeof FarmerActionsSchema>;
 export type Drivers = z.infer<typeof DriversSchema>;
 export type Price = z.infer<typeof PriceSchema>;
+export type PriceSisalmoni = z.infer<typeof PriceSisalmoniSchema>;
 export type ChartSpec = z.infer<typeof ChartSpecSchema>;

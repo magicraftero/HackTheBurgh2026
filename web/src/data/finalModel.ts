@@ -1,4 +1,4 @@
-import type { Combined } from './schemas';
+import type { Combined, FarmerActions } from './schemas';
 
 // What the page says about our final harvest forecast, worked out from combined.json.
 
@@ -34,7 +34,7 @@ function tenthOfNextMonth(month: string): string {
   return m === 12 ? `${year + 1}-01-10` : `${year}-${String(m + 1).padStart(2, '0')}-10`;
 }
 
-function describeAreas(areas: number[]): string {
+export function describeAreas(areas: number[]): string {
   const first = areas[0]!;
   const last = areas[areas.length - 1]!;
   return last - first + 1 === areas.length ? `areas ${first}–${last}` : `${areas.length} areas`;
@@ -62,4 +62,61 @@ export function finalLatest(c: Combined): FinalLatest | null {
     errorPct: errorPct(predKg, actualKg),
     areas: rows.map((r) => ({ ...r, errorPct: errorPct(r.predKg, r.actualKg) })),
   };
+}
+
+export type FinalHeadlines = {
+  forecasts: number;
+  areasLabel: string;
+  /** How close each month's total over the areas came, as an accuracy. */
+  totalAccuracyPct: number;
+};
+
+const average = (xs: number[]) => xs.reduce((sum, x) => sum + x, 0) / xs.length;
+
+/** The held-back forecasts, for the front page. */
+export function finalHeadlines(c: Combined): FinalHeadlines | null {
+  const rows = c.backtest.flatMap((r) =>
+    r.window === 'holdout' && r.pred.kg != null && r.actual.kg != null && r.actual.kg > 0
+      ? [{ area: r.area, month: r.month, pred: r.pred.kg, actual: r.actual.kg }]
+      : [],
+  );
+  if (!rows.length) return null;
+
+  const totals = new Map<string, { pred: number; actual: number }>();
+  for (const r of rows) {
+    const total = totals.get(r.month) ?? { pred: 0, actual: 0 };
+    total.pred += r.pred;
+    total.actual += r.actual;
+    totals.set(r.month, total);
+  }
+  return {
+    forecasts: rows.length,
+    areasLabel: describeAreas([...new Set(rows.map((r) => r.area))].sort((a, b) => a - b)),
+    totalAccuracyPct: 100 * (1 - average([...totals.values()].map((t) => Math.abs(Math.log(t.pred / t.actual))))),
+  };
+}
+
+/** A forecast total against the published total for the same month a year earlier, over the same areas. */
+export function vsSameMonthLastYear(c: Combined, month: string, areas: number[], kg: number | null): number | null {
+  if (kg === null) return null;
+  const [year, m] = month.split('-');
+  const lastYear = `${Number(year) - 1}-${m}`;
+  const rows = c.backtest.filter((r) => r.month === lastYear && areas.includes(r.area) && r.actual.kg != null);
+  if (rows.length !== areas.length) return null;
+  const total = rows.reduce((sum, r) => sum + r.actual.kg!, 0);
+  return total > 0 ? (kg / total - 1) * 100 : null;
+}
+
+/** How many fish a national forecast means, and their average size. Null unless every area has a count. */
+export function forecastFish(f: FarmerActions): { count: number; avgKg: number } | null {
+  const rows = f.areas.filter((a) => f.national.areas.includes(a.area));
+  if (!rows.length || rows.length !== f.national.areas.length) return null;
+  let count = 0;
+  let kg = 0;
+  for (const a of rows) {
+    if (a.forecast?.count == null || a.forecast.kg == null) return null;
+    count += a.forecast.count;
+    kg += a.forecast.kg;
+  }
+  return count > 0 ? { count, avgKg: kg / count } : null;
 }

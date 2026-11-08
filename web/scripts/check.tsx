@@ -44,7 +44,8 @@ import {
 } from '../src/map/scales';
 import { displayName, searchKey, weekDates } from '../src/map/text';
 import { AREAS_NORTH_FIRST, areaWeeks } from '../src/map/YearStrip';
-import { logToPct } from '../src/charts/Figures';
+import { logToPct, splitRange } from '../src/charts/Figures';
+import { finalHeadlines, forecastFish, vsSameMonthLastYear } from '../src/data/finalModel';
 import { areaHeatSpec, forecastSpec, monthlyTotals, priceByYearSpec, scorecardSpec } from '../src/charts/specs';
 import { FarmExplorer, indexOfWeek } from '../src/page/FarmWeeks';
 import { SitePage } from '../src/page/SitePage';
@@ -144,7 +145,7 @@ export default async function main(io: IO): Promise<number> {
     const files = filesIn(io, `${MOCK}/${scenario}`);
     for (const k of DATA_KEYS) {
       const s = files.data[k];
-      if ((k === 'drivers' || k === 'combined' || k === 'farmerActions') && scenario === 'pre') {
+      if ((k === 'drivers' || k === 'combined' || k === 'farmerActions' || k === 'priceSisalmoni') && scenario === 'pre') {
         expect(s.state === 'missing', `${DATA_FILES[k].path} is absent before the freeze`, s.state);
         continue;
       }
@@ -267,7 +268,10 @@ export default async function main(io: IO): Promise<number> {
         'Pass',
         'Fail',
         'No pass mark',
-        'less error than our baseline model',
+        'tonnes of salmon harvested',
+        "How close we've been",
+        'accurate on the total harvest',
+        'How we tested it',
         'How accurate it was',
         'Our first model, and the test it missed',
         'September 2026 by production area',
@@ -326,8 +330,6 @@ export default async function main(io: IO): Promise<number> {
         'Mobile lice per fish',
         'Find a farm',
         'This week by area',
-        'Sea temperature, by area',
-        'South to north',
         'Farms reporting lice',
         scenario === 'pre' ? 'No disease flags in the data' : 'Farms flagged ISA or PD',
         'Averaged over the farms within about 10 km.',
@@ -490,6 +492,54 @@ export default async function main(io: IO): Promise<number> {
     'monthly totals add up the areas and skip a month that is missing one',
   );
   expect(Math.abs(logToPct(0.07917)! - 8.24) < 0.01 && logToPct(null) === null, 'differences in logs turn into percentages');
+  const fc = (area: number, month: string, window: 'dev' | 'holdout', pred: number | null, actual: number | null, fish = 5) => ({
+    area,
+    month,
+    window,
+    actual: { kg: actual, count: 1, avg_kg: fish },
+    pred: { kg: pred, count: 1, avg_kg: fish + 1 },
+  });
+  const heads = finalHeadlines({
+    windows: { dev: ['2021-01', '2021-01'], holdout: ['2025-01', '2025-02'] },
+    scores: { dev: { log_kg: null, log_count: null, log_avg_kg: null }, holdout: { log_kg: null, log_count: null, log_avg_kg: null } },
+    backtest: [
+      fc(2, '2021-01', 'dev', 999, 1),
+      fc(2, '2025-01', 'holdout', 120, 100),
+      fc(3, '2025-01', 'holdout', 80, 100),
+      fc(2, '2025-02', 'holdout', 110, 100),
+      fc(3, '2025-02', 'holdout', 110, 100),
+      fc(3, '2025-03', 'holdout', null, 100),
+    ],
+  } as never);
+  expect(
+    heads !== null && heads.forecasts === 4 && heads.areasLabel === 'areas 2–3',
+    'the front page counts only held-back forecasts that have both figures',
+  );
+  // January's misses cancel out exactly; February's total is 10% high.
+  expect(heads !== null && Math.abs(heads.totalAccuracyPct - 100 * (1 - Math.log(1.1) / 2)) < 1e-9, "the total's accuracy is scored month by month, after adding up the areas");
+  const yearAgo = {
+    backtest: [fc(2, '2025-10', 'holdout', 1, 100), fc(3, '2025-10', 'holdout', 1, 100), fc(2, '2024-10', 'dev', 1, 50)],
+  } as never;
+  expect(
+    vsSameMonthLastYear(yearAgo, '2026-10', [2, 3], 220) !== null &&
+      Math.abs(vsSameMonthLastYear(yearAgo, '2026-10', [2, 3], 220)! - 10) < 1e-9 &&
+      vsSameMonthLastYear(yearAgo, '2026-10', [2, 3, 4], 220) === null,
+    'the forecast is compared with the same month a year earlier, only if every area has a figure',
+  );
+  const live = (counts: (number | null)[]) =>
+    ({
+      national: { areas: [2, 3], kg: 300 },
+      areas: [
+        { area: 1, forecast: null },
+        { area: 2, forecast: { kg: 100, count: counts[0] } },
+        { area: 3, forecast: { kg: 200, count: counts[1] } },
+      ],
+    }) as never;
+  const counted = forecastFish(live([20, 40]));
+  expect(counted !== null && counted.count === 60 && counted.avgKg === 5 && forecastFish(live([20, null])) === null, 'a national forecast adds up its fish, only if every area has a count');
+  const span = splitRange([-2, null, 5]);
+  const allUp = splitRange([1, 2]);
+  expect(span.lo === -2 && span.hi === 5 && allUp.lo === 0 && allUp.hi === 2, 'a column of the low, middle, high chart always includes zero');
 
   console.log(failures ? `\n${failures} check(s) failed.` : '\nAll checks passed.');
   return failures ? 1 : 0;

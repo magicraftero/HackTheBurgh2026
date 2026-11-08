@@ -39,6 +39,9 @@ export function fmtMonth(month: string): string {
 }
 
 /** "2026-10-10" → "10 Oct 2026". */
+/** "September 2026" as "Sep 2026". */
+export const fmtMonthShort = (month: string) => fmtMonth(month).replace(/^([A-Za-z]{3})[a-z]*/, '$1');
+
 export function fmtDate(day: string): string {
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(day);
   if (!m) return day;
