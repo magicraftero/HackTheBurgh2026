@@ -1,0 +1,585 @@
+{
+  "generated_at": "2026-11-08T01:36:50.411486+00:00",
+  "origin": "2024-12",
+  "method": "Refit every saved estimator configuration on the publication-filtered development vintage; compare all area predictions and unavailable flags without reading evaluation outcomes.",
+  "groups": 42,
+  "rows": 546,
+  "rtol": 1e-10,
+  "atol": 1e-10,
+  "all_matched": true,
+  "max_absolute_log_difference": 0.0,
+  "max_relative_level_difference": 0.0,
+  "prediction_file_sha256": "eea4014b72e1d77477216de89cf84b20f5cbd4b07fb1f189e34af8ee01b5493d",
+  "details": [
+    {
+      "track": "available",
+      "family": "catboost",
+      "model": "b1",
+      "outcome": "log_avg_kg",
+      "rows": 13,
+      "n_predicted": 12,
+      "config": {
+        "depth": 4,
+        "early_stopping_rounds": 20,
+        "iterations": 1,
+        "l2_leaf_reg": 20.0,
+        "learning_rate": 0.04,
+        "seed": 2026
+      },
+      "max_absolute_log_difference": 0.0,
+      "max_relative_level_difference": 0.0
+    },
+    {
+      "track": "available",
+      "family": "catboost",
+      "model": "b1",
+      "outcome": "log_count",
+      "rows": 13,
+      "n_predicted": 12,
+      "config": {
+        "depth": 4,
+        "early_stopping_rounds": 20,
+        "iterations": 1,
+        "l2_leaf_reg": 20.0,
+        "learning_rate": 0.04,
+        "seed": 2026
+      },
+      "max_absolute_log_difference": 0.0,
+      "max_relative_level_difference": 0.0
+    },
+    {
+      "track": "available",
+      "family": "catboost",
+      "model": "b1",
+      "outcome": "log_kg",
+      "rows": 13,
+      "n_predicted": 12,
+      "config": {
+        "depth": 4,
+        "early_stopping_rounds": 20,
+        "iterations": 1,
+        "l2_leaf_reg": 20.0,
+        "learning_rate": 0.04,
+        "seed": 2026
+      },
+      "max_absolute_log_difference": 0.0,
+      "max_relative_level_difference": 0.0
+    },
+    {
+      "track": "available",
+      "family": "catboost",
+      "model": "drivers",
+      "outcome": "log_avg_kg",
+      "rows": 13,
+      "n_predicted": 12,
+      "config": {
+        "depth": 4,
+        "early_stopping_rounds": 20,
+        "iterations": 3,
+        "l2_leaf_reg": 20.0,
+        "learning_rate": 0.04,
+        "seed": 2026
+      },
+      "max_absolute_log_difference": 0.0,
+      "max_relative_level_difference": 0.0
+    },
+    {
+      "track": "available",
+      "family": "catboost",
+      "model": "drivers",
+      "outcome": "log_count",
+      "rows": 13,
+      "n_predicted": 12,
+      "config": {
+        "depth": 4,
+        "early_stopping_rounds": 20,
+        "iterations": 10,
+        "l2_leaf_reg": 20.0,
+        "learning_rate": 0.04,
+        "seed": 2026
+      },
+      "max_absolute_log_difference": 0.0,
+      "max_relative_level_difference": 0.0
+    },
+    {
+      "track": "available",
+      "family": "catboost",
+      "model": "drivers",
+      "outcome": "log_kg",
+      "rows": 13,
+      "n_predicted": 12,
+      "config": {
+        "depth": 4,
+        "early_stopping_rounds": 20,
+        "iterations": 1,
+        "l2_leaf_reg": 20.0,
+        "learning_rate": 0.04,
+        "seed": 2026
+      },
+      "max_absolute_log_difference": 0.0,
+      "max_relative_level_difference": 0.0
+    },
+    {
+      "track": "available",
+      "family": "ols",
+      "model": "b0",
+      "outcome": "log_avg_kg",
+      "rows": 13,
+      "n_predicted": 12,
+      "config": {},
+      "max_absolute_log_difference": 0.0,
+      "max_relative_level_difference": 0.0
+    },
+    {
+      "track": "available",
+      "family": "ols",
+      "model": "b0",
+      "outcome": "log_count",
+      "rows": 13,
+      "n_predicted": 12,
+      "config": {},
+      "max_absolute_log_difference": 0.0,
+      "max_relative_level_difference": 0.0
+    },
+    {
+      "track": "available",
+      "family": "ols",
+      "model": "b0",
+      "outcome": "log_kg",
+      "rows": 13,
+      "n_predicted": 12,
+      "config": {},
+      "max_absolute_log_difference": 0.0,
+      "max_relative_level_difference": 0.0
+    },
+    {
+      "track": "available",
+      "family": "ols",
+      "model": "b1",
+      "outcome": "log_avg_kg",
+      "rows": 13,
+      "n_predicted": 12,
+      "config": {},
+      "max_absolute_log_difference": 0.0,
+      "max_relative_level_difference": 0.0
+    },
+    {
+      "track": "available",
+      "family": "ols",
+      "model": "b1",
+      "outcome": "log_count",
+      "rows": 13,
+      "n_predicted": 12,
+      "config": {},
+      "max_absolute_log_difference": 0.0,
+      "max_relative_level_difference": 0.0
+    },
+    {
+      "track": "available",
+      "family": "ols",
+      "model": "b1",
+      "outcome": "log_kg",
+      "rows": 13,
+      "n_predicted": 12,
+      "config": {},
+      "max_absolute_log_difference": 0.0,
+      "max_relative_level_difference": 0.0
+    },
+    {
+      "track": "available",
+      "family": "ols",
+      "model": "drivers",
+      "outcome": "log_avg_kg",
+      "rows": 13,
+      "n_predicted": 12,
+      "config": {},
+      "max_absolute_log_difference": 0.0,
+      "max_relative_level_difference": 0.0
+    },
+    {
+      "track": "available",
+      "family": "ols",
+      "model": "drivers",
+      "outcome": "log_count",
+      "rows": 13,
+      "n_predicted": 12,
+      "config": {},
+      "max_absolute_log_difference": 0.0,
+      "max_relative_level_difference": 0.0
+    },
+    {
+      "track": "available",
+      "family": "ols",
+      "model": "drivers",
+      "outcome": "log_kg",
+      "rows": 13,
+      "n_predicted": 12,
+      "config": {},
+      "max_absolute_log_difference": 0.0,
+      "max_relative_level_difference": 0.0
+    },
+    {
+      "track": "available",
+      "family": "ridge",
+      "model": "b1",
+      "outcome": "log_avg_kg",
+      "rows": 13,
+      "n_predicted": 12,
+      "config": {
+        "alpha": 0.1
+      },
+      "max_absolute_log_difference": 0.0,
+      "max_relative_level_difference": 0.0
+    },
+    {
+      "track": "available",
+      "family": "ridge",
+      "model": "b1",
+      "outcome": "log_count",
+      "rows": 13,
+      "n_predicted": 12,
+      "config": {
+        "alpha": 0.1
+      },
+      "max_absolute_log_difference": 0.0,
+      "max_relative_level_difference": 0.0
+    },
+    {
+      "track": "available",
+      "family": "ridge",
+      "model": "b1",
+      "outcome": "log_kg",
+      "rows": 13,
+      "n_predicted": 12,
+      "config": {
+        "alpha": 0.1
+      },
+      "max_absolute_log_difference": 0.0,
+      "max_relative_level_difference": 0.0
+    },
+    {
+      "track": "available",
+      "family": "ridge",
+      "model": "drivers",
+      "outcome": "log_avg_kg",
+      "rows": 13,
+      "n_predicted": 12,
+      "config": {
+        "alpha": 0.1
+      },
+      "max_absolute_log_difference": 0.0,
+      "max_relative_level_difference": 0.0
+    },
+    {
+      "track": "available",
+      "family": "ridge",
+      "model": "drivers",
+      "outcome": "log_count",
+      "rows": 13,
+      "n_predicted": 12,
+      "config": {
+        "alpha": 100.0
+      },
+      "max_absolute_log_difference": 0.0,
+      "max_relative_level_difference": 0.0
+    },
+    {
+      "track": "available",
+      "family": "ridge",
+      "model": "drivers",
+      "outcome": "log_kg",
+      "rows": 13,
+      "n_predicted": 12,
+      "config": {
+        "alpha": 100.0
+      },
+      "max_absolute_log_difference": 0.0,
+      "max_relative_level_difference": 0.0
+    },
+    {
+      "track": "common_training",
+      "family": "catboost",
+      "model": "b1",
+      "outcome": "log_avg_kg",
+      "rows": 13,
+      "n_predicted": 12,
+      "config": {
+        "depth": 4,
+        "early_stopping_rounds": 20,
+        "iterations": 1,
+        "l2_leaf_reg": 20.0,
+        "learning_rate": 0.04,
+        "seed": 2026
+      },
+      "max_absolute_log_difference": 0.0,
+      "max_relative_level_difference": 0.0
+    },
+    {
+      "track": "common_training",
+      "family": "catboost",
+      "model": "b1",
+      "outcome": "log_count",
+      "rows": 13,
+      "n_predicted": 12,
+      "config": {
+        "depth": 4,
+        "early_stopping_rounds": 20,
+        "iterations": 2,
+        "l2_leaf_reg": 20.0,
+        "learning_rate": 0.04,
+        "seed": 2026
+      },
+      "max_absolute_log_difference": 0.0,
+      "max_relative_level_difference": 0.0
+    },
+    {
+      "track": "common_training",
+      "family": "catboost",
+      "model": "b1",
+      "outcome": "log_kg",
+      "rows": 13,
+      "n_predicted": 12,
+      "config": {
+        "depth": 4,
+        "early_stopping_rounds": 20,
+        "iterations": 1,
+        "l2_leaf_reg": 20.0,
+        "learning_rate": 0.04,
+        "seed": 2026
+      },
+      "max_absolute_log_difference": 0.0,
+      "max_relative_level_difference": 0.0
+    },
+    {
+      "track": "common_training",
+      "family": "catboost",
+      "model": "drivers",
+      "outcome": "log_avg_kg",
+      "rows": 13,
+      "n_predicted": 12,
+      "config": {
+        "depth": 3,
+        "early_stopping_rounds": 20,
+        "iterations": 2,
+        "l2_leaf_reg": 10.0,
+        "learning_rate": 0.04,
+        "seed": 2026
+      },
+      "max_absolute_log_difference": 0.0,
+      "max_relative_level_difference": 0.0
+    },
+    {
+      "track": "common_training",
+      "family": "catboost",
+      "model": "drivers",
+      "outcome": "log_count",
+      "rows": 13,
+      "n_predicted": 12,
+      "config": {
+        "depth": 4,
+        "early_stopping_rounds": 20,
+        "iterations": 33,
+        "l2_leaf_reg": 20.0,
+        "learning_rate": 0.04,
+        "seed": 2026
+      },
+      "max_absolute_log_difference": 0.0,
+      "max_relative_level_difference": 0.0
+    },
+    {
+      "track": "common_training",
+      "family": "catboost",
+      "model": "drivers",
+      "outcome": "log_kg",
+      "rows": 13,
+      "n_predicted": 12,
+      "config": {
+        "depth": 4,
+        "early_stopping_rounds": 20,
+        "iterations": 1,
+        "l2_leaf_reg": 20.0,
+        "learning_rate": 0.04,
+        "seed": 2026
+      },
+      "max_absolute_log_difference": 0.0,
+      "max_relative_level_difference": 0.0
+    },
+    {
+      "track": "common_training",
+      "family": "ols",
+      "model": "b0",
+      "outcome": "log_avg_kg",
+      "rows": 13,
+      "n_predicted": 12,
+      "config": {},
+      "max_absolute_log_difference": 0.0,
+      "max_relative_level_difference": 0.0
+    },
+    {
+      "track": "common_training",
+      "family": "ols",
+      "model": "b0",
+      "outcome": "log_count",
+      "rows": 13,
+      "n_predicted": 12,
+      "config": {},
+      "max_absolute_log_difference": 0.0,
+      "max_relative_level_difference": 0.0
+    },
+    {
+      "track": "common_training",
+      "family": "ols",
+      "model": "b0",
+      "outcome": "log_kg",
+      "rows": 13,
+      "n_predicted": 12,
+      "config": {},
+      "max_absolute_log_difference": 0.0,
+      "max_relative_level_difference": 0.0
+    },
+    {
+      "track": "common_training",
+      "family": "ols",
+      "model": "b1",
+      "outcome": "log_avg_kg",
+      "rows": 13,
+      "n_predicted": 12,
+      "config": {},
+      "max_absolute_log_difference": 0.0,
+      "max_relative_level_difference": 0.0
+    },
+    {
+      "track": "common_training",
+      "family": "ols",
+      "model": "b1",
+      "outcome": "log_count",
+      "rows": 13,
+      "n_predicted": 12,
+      "config": {},
+      "max_absolute_log_difference": 0.0,
+      "max_relative_level_difference": 0.0
+    },
+    {
+      "track": "common_training",
+      "family": "ols",
+      "model": "b1",
+      "outcome": "log_kg",
+      "rows": 13,
+      "n_predicted": 12,
+      "config": {},
+      "max_absolute_log_difference": 0.0,
+      "max_relative_level_difference": 0.0
+    },
+    {
+      "track": "common_training",
+      "family": "ols",
+      "model": "drivers",
+      "outcome": "log_avg_kg",
+      "rows": 13,
+      "n_predicted": 12,
+      "config": {},
+      "max_absolute_log_difference": 0.0,
+      "max_relative_level_difference": 0.0
+    },
+    {
+      "track": "common_training",
+      "family": "ols",
+      "model": "drivers",
+      "outcome": "log_count",
+      "rows": 13,
+      "n_predicted": 12,
+      "config": {},
+      "max_absolute_log_difference": 0.0,
+      "max_relative_level_difference": 0.0
+    },
+    {
+      "track": "common_training",
+      "family": "ols",
+      "model": "drivers",
+      "outcome": "log_kg",
+      "rows": 13,
+      "n_predicted": 12,
+      "config": {},
+      "max_absolute_log_difference": 0.0,
+      "max_relative_level_difference": 0.0
+    },
+    {
+      "track": "common_training",
+      "family": "ridge",
+      "model": "b1",
+      "outcome": "log_avg_kg",
+      "rows": 13,
+      "n_predicted": 12,
+      "config": {
+        "alpha": 0.1
+      },
+      "max_absolute_log_difference": 0.0,
+      "max_relative_level_difference": 0.0
+    },
+    {
+      "track": "common_training",
+      "family": "ridge",
+      "model": "b1",
+      "outcome": "log_count",
+      "rows": 13,
+      "n_predicted": 12,
+      "config": {
+        "alpha": 0.1
+      },
+      "max_absolute_log_difference": 0.0,
+      "max_relative_level_difference": 0.0
+    },
+    {
+      "track": "common_training",
+      "family": "ridge",
+      "model": "b1",
+      "outcome": "log_kg",
+      "rows": 13,
+      "n_predicted": 12,
+      "config": {
+        "alpha": 0.1
+      },
+      "max_absolute_log_difference": 0.0,
+      "max_relative_level_difference": 0.0
+    },
+    {
+      "track": "common_training",
+      "family": "ridge",
+      "model": "drivers",
+      "outcome": "log_avg_kg",
+      "rows": 13,
+      "n_predicted": 12,
+      "config": {
+        "alpha": 0.1
+      },
+      "max_absolute_log_difference": 0.0,
+      "max_relative_level_difference": 0.0
+    },
+    {
+      "track": "common_training",
+      "family": "ridge",
+      "model": "drivers",
+      "outcome": "log_count",
+      "rows": 13,
+      "n_predicted": 12,
+      "config": {
+        "alpha": 100.0
+      },
+      "max_absolute_log_difference": 0.0,
+      "max_relative_level_difference": 0.0
+    },
+    {
+      "track": "common_training",
+      "family": "ridge",
+      "model": "drivers",
+      "outcome": "log_kg",
+      "rows": 13,
+      "n_predicted": 12,
+      "config": {
+        "alpha": 100.0
+      },
+      "max_absolute_log_difference": 0.0,
+      "max_relative_level_difference": 0.0
+    }
+  ]
+}

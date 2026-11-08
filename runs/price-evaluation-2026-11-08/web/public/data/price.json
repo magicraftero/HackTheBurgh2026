@@ -1,0 +1,2274 @@
+{
+  "history": [
+    {
+      "week": "2017-W01",
+      "price_nok_kg": 75.25
+    },
+    {
+      "week": "2017-W02",
+      "price_nok_kg": 72.42
+    },
+    {
+      "week": "2017-W03",
+      "price_nok_kg": 72.5
+    },
+    {
+      "week": "2017-W04",
+      "price_nok_kg": 70.35
+    },
+    {
+      "week": "2017-W05",
+      "price_nok_kg": 66.01
+    },
+    {
+      "week": "2017-W06",
+      "price_nok_kg": 64.96
+    },
+    {
+      "week": "2017-W07",
+      "price_nok_kg": 64.08
+    },
+    {
+      "week": "2017-W08",
+      "price_nok_kg": 63.2
+    },
+    {
+      "week": "2017-W09",
+      "price_nok_kg": 59.55
+    },
+    {
+      "week": "2017-W10",
+      "price_nok_kg": 58.36
+    },
+    {
+      "week": "2017-W11",
+      "price_nok_kg": 61.98
+    },
+    {
+      "week": "2017-W12",
+      "price_nok_kg": 63.76
+    },
+    {
+      "week": "2017-W13",
+      "price_nok_kg": 62.7
+    },
+    {
+      "week": "2017-W14",
+      "price_nok_kg": 62.82
+    },
+    {
+      "week": "2017-W15",
+      "price_nok_kg": 65.13
+    },
+    {
+      "week": "2017-W16",
+      "price_nok_kg": 64.85
+    },
+    {
+      "week": "2017-W17",
+      "price_nok_kg": 62.17
+    },
+    {
+      "week": "2017-W18",
+      "price_nok_kg": 65.79
+    },
+    {
+      "week": "2017-W19",
+      "price_nok_kg": 70.18
+    },
+    {
+      "week": "2017-W20",
+      "price_nok_kg": 72.47
+    },
+    {
+      "week": "2017-W21",
+      "price_nok_kg": 72.17
+    },
+    {
+      "week": "2017-W22",
+      "price_nok_kg": 66.02
+    },
+    {
+      "week": "2017-W23",
+      "price_nok_kg": 69.91
+    },
+    {
+      "week": "2017-W24",
+      "price_nok_kg": 67.87
+    },
+    {
+      "week": "2017-W25",
+      "price_nok_kg": 68.96
+    },
+    {
+      "week": "2017-W26",
+      "price_nok_kg": 69.36
+    },
+    {
+      "week": "2017-W27",
+      "price_nok_kg": 65.71
+    },
+    {
+      "week": "2017-W28",
+      "price_nok_kg": 63.22
+    },
+    {
+      "week": "2017-W29",
+      "price_nok_kg": 65.12
+    },
+    {
+      "week": "2017-W30",
+      "price_nok_kg": 62.11
+    },
+    {
+      "week": "2017-W31",
+      "price_nok_kg": 60.55
+    },
+    {
+      "week": "2017-W32",
+      "price_nok_kg": 59.53
+    },
+    {
+      "week": "2017-W33",
+      "price_nok_kg": 55.63
+    },
+    {
+      "week": "2017-W34",
+      "price_nok_kg": 56.8
+    },
+    {
+      "week": "2017-W35",
+      "price_nok_kg": 54.89
+    },
+    {
+      "week": "2017-W36",
+      "price_nok_kg": 55.56
+    },
+    {
+      "week": "2017-W37",
+      "price_nok_kg": 53.85
+    },
+    {
+      "week": "2017-W38",
+      "price_nok_kg": 55.3
+    },
+    {
+      "week": "2017-W39",
+      "price_nok_kg": 57.21
+    },
+    {
+      "week": "2017-W40",
+      "price_nok_kg": 56.61
+    },
+    {
+      "week": "2017-W41",
+      "price_nok_kg": 54.52
+    },
+    {
+      "week": "2017-W42",
+      "price_nok_kg": 55.32
+    },
+    {
+      "week": "2017-W43",
+      "price_nok_kg": 53.17
+    },
+    {
+      "week": "2017-W44",
+      "price_nok_kg": 49.05
+    },
+    {
+      "week": "2017-W45",
+      "price_nok_kg": 51.25
+    },
+    {
+      "week": "2017-W46",
+      "price_nok_kg": 53.89
+    },
+    {
+      "week": "2017-W47",
+      "price_nok_kg": 49.02
+    },
+    {
+      "week": "2017-W48",
+      "price_nok_kg": 48.65
+    },
+    {
+      "week": "2017-W49",
+      "price_nok_kg": 53.36
+    },
+    {
+      "week": "2017-W50",
+      "price_nok_kg": 53.76
+    },
+    {
+      "week": "2017-W51",
+      "price_nok_kg": 54.73
+    },
+    {
+      "week": "2017-W52",
+      "price_nok_kg": 56.23
+    },
+    {
+      "week": "2018-W01",
+      "price_nok_kg": 58.52
+    },
+    {
+      "week": "2018-W02",
+      "price_nok_kg": 57.28
+    },
+    {
+      "week": "2018-W03",
+      "price_nok_kg": 55.46
+    },
+    {
+      "week": "2018-W04",
+      "price_nok_kg": 56.96
+    },
+    {
+      "week": "2018-W05",
+      "price_nok_kg": 56.86
+    },
+    {
+      "week": "2018-W06",
+      "price_nok_kg": 54.69
+    },
+    {
+      "week": "2018-W07",
+      "price_nok_kg": 56.52
+    },
+    {
+      "week": "2018-W08",
+      "price_nok_kg": 62.2
+    },
+    {
+      "week": "2018-W09",
+      "price_nok_kg": 65.16
+    },
+    {
+      "week": "2018-W10",
+      "price_nok_kg": 67.57
+    },
+    {
+      "week": "2018-W11",
+      "price_nok_kg": 67.94
+    },
+    {
+      "week": "2018-W12",
+      "price_nok_kg": 65.12
+    },
+    {
+      "week": "2018-W13",
+      "price_nok_kg": 71.75
+    },
+    {
+      "week": "2018-W14",
+      "price_nok_kg": 71.5
+    },
+    {
+      "week": "2018-W15",
+      "price_nok_kg": 68.21
+    },
+    {
+      "week": "2018-W16",
+      "price_nok_kg": 67.32
+    },
+    {
+      "week": "2018-W17",
+      "price_nok_kg": 66.79
+    },
+    {
+      "week": "2018-W18",
+      "price_nok_kg": 71.16
+    },
+    {
+      "week": "2018-W19",
+      "price_nok_kg": 75.4
+    },
+    {
+      "week": "2018-W20",
+      "price_nok_kg": 76.09
+    },
+    {
+      "week": "2018-W21",
+      "price_nok_kg": 73.71
+    },
+    {
+      "week": "2018-W22",
+      "price_nok_kg": 66.17
+    },
+    {
+      "week": "2018-W23",
+      "price_nok_kg": 61.34
+    },
+    {
+      "week": "2018-W24",
+      "price_nok_kg": 65.0
+    },
+    {
+      "week": "2018-W25",
+      "price_nok_kg": 61.7
+    },
+    {
+      "week": "2018-W26",
+      "price_nok_kg": 58.25
+    },
+    {
+      "week": "2018-W27",
+      "price_nok_kg": 58.55
+    },
+    {
+      "week": "2018-W28",
+      "price_nok_kg": 55.4
+    },
+    {
+      "week": "2018-W29",
+      "price_nok_kg": 55.14
+    },
+    {
+      "week": "2018-W30",
+      "price_nok_kg": 56.07
+    },
+    {
+      "week": "2018-W31",
+      "price_nok_kg": 57.44
+    },
+    {
+      "week": "2018-W32",
+      "price_nok_kg": 57.33
+    },
+    {
+      "week": "2018-W33",
+      "price_nok_kg": 53.62
+    },
+    {
+      "week": "2018-W34",
+      "price_nok_kg": 52.99
+    },
+    {
+      "week": "2018-W35",
+      "price_nok_kg": 57.43
+    },
+    {
+      "week": "2018-W36",
+      "price_nok_kg": 62.6
+    },
+    {
+      "week": "2018-W37",
+      "price_nok_kg": 62.1
+    },
+    {
+      "week": "2018-W38",
+      "price_nok_kg": 60.28
+    },
+    {
+      "week": "2018-W39",
+      "price_nok_kg": 59.15
+    },
+    {
+      "week": "2018-W40",
+      "price_nok_kg": 57.93
+    },
+    {
+      "week": "2018-W41",
+      "price_nok_kg": 58.49
+    },
+    {
+      "week": "2018-W42",
+      "price_nok_kg": 58.95
+    },
+    {
+      "week": "2018-W43",
+      "price_nok_kg": 57.77
+    },
+    {
+      "week": "2018-W44",
+      "price_nok_kg": 59.07
+    },
+    {
+      "week": "2018-W45",
+      "price_nok_kg": 57.37
+    },
+    {
+      "week": "2018-W46",
+      "price_nok_kg": 55.9
+    },
+    {
+      "week": "2018-W47",
+      "price_nok_kg": 53.84
+    },
+    {
+      "week": "2018-W48",
+      "price_nok_kg": 55.76
+    },
+    {
+      "week": "2018-W49",
+      "price_nok_kg": 59.5
+    },
+    {
+      "week": "2018-W50",
+      "price_nok_kg": 58.87
+    },
+    {
+      "week": "2018-W51",
+      "price_nok_kg": 58.2
+    },
+    {
+      "week": "2018-W52",
+      "price_nok_kg": 65.15
+    },
+    {
+      "week": "2019-W01",
+      "price_nok_kg": 66.66
+    },
+    {
+      "week": "2019-W02",
+      "price_nok_kg": 63.9
+    },
+    {
+      "week": "2019-W03",
+      "price_nok_kg": 62.88
+    },
+    {
+      "week": "2019-W04",
+      "price_nok_kg": 60.83
+    },
+    {
+      "week": "2019-W05",
+      "price_nok_kg": 57.41
+    },
+    {
+      "week": "2019-W06",
+      "price_nok_kg": 56.73
+    },
+    {
+      "week": "2019-W07",
+      "price_nok_kg": 56.82
+    },
+    {
+      "week": "2019-W08",
+      "price_nok_kg": 60.0
+    },
+    {
+      "week": "2019-W09",
+      "price_nok_kg": 65.65
+    },
+    {
+      "week": "2019-W10",
+      "price_nok_kg": 72.45
+    },
+    {
+      "week": "2019-W11",
+      "price_nok_kg": 71.55
+    },
+    {
+      "week": "2019-W12",
+      "price_nok_kg": 67.78
+    },
+    {
+      "week": "2019-W13",
+      "price_nok_kg": 65.13
+    },
+    {
+      "week": "2019-W14",
+      "price_nok_kg": 68.21
+    },
+    {
+      "week": "2019-W15",
+      "price_nok_kg": 67.33
+    },
+    {
+      "week": "2019-W16",
+      "price_nok_kg": 71.45
+    },
+    {
+      "week": "2019-W17",
+      "price_nok_kg": 69.53
+    },
+    {
+      "week": "2019-W18",
+      "price_nok_kg": 62.85
+    },
+    {
+      "week": "2019-W19",
+      "price_nok_kg": 61.94
+    },
+    {
+      "week": "2019-W20",
+      "price_nok_kg": 65.48
+    },
+    {
+      "week": "2019-W21",
+      "price_nok_kg": 61.33
+    },
+    {
+      "week": "2019-W22",
+      "price_nok_kg": 58.52
+    },
+    {
+      "week": "2019-W23",
+      "price_nok_kg": 61.85
+    },
+    {
+      "week": "2019-W24",
+      "price_nok_kg": 69.9
+    },
+    {
+      "week": "2019-W25",
+      "price_nok_kg": 64.09
+    },
+    {
+      "week": "2019-W26",
+      "price_nok_kg": 60.12
+    },
+    {
+      "week": "2019-W27",
+      "price_nok_kg": 61.06
+    },
+    {
+      "week": "2019-W28",
+      "price_nok_kg": 64.64
+    },
+    {
+      "week": "2019-W29",
+      "price_nok_kg": 60.18
+    },
+    {
+      "week": "2019-W30",
+      "price_nok_kg": 56.16
+    },
+    {
+      "week": "2019-W31",
+      "price_nok_kg": 54.13
+    },
+    {
+      "week": "2019-W32",
+      "price_nok_kg": 54.45
+    },
+    {
+      "week": "2019-W33",
+      "price_nok_kg": 55.05
+    },
+    {
+      "week": "2019-W34",
+      "price_nok_kg": 51.82
+    },
+    {
+      "week": "2019-W35",
+      "price_nok_kg": 55.1
+    },
+    {
+      "week": "2019-W36",
+      "price_nok_kg": 53.07
+    },
+    {
+      "week": "2019-W37",
+      "price_nok_kg": 50.8
+    },
+    {
+      "week": "2019-W38",
+      "price_nok_kg": 48.62
+    },
+    {
+      "week": "2019-W39",
+      "price_nok_kg": 47.73
+    },
+    {
+      "week": "2019-W40",
+      "price_nok_kg": 46.83
+    },
+    {
+      "week": "2019-W41",
+      "price_nok_kg": 50.7
+    },
+    {
+      "week": "2019-W42",
+      "price_nok_kg": 54.66
+    },
+    {
+      "week": "2019-W43",
+      "price_nok_kg": 53.87
+    },
+    {
+      "week": "2019-W44",
+      "price_nok_kg": 52.99
+    },
+    {
+      "week": "2019-W45",
+      "price_nok_kg": 54.48
+    },
+    {
+      "week": "2019-W46",
+      "price_nok_kg": 58.63
+    },
+    {
+      "week": "2019-W47",
+      "price_nok_kg": 61.56
+    },
+    {
+      "week": "2019-W48",
+      "price_nok_kg": 63.25
+    },
+    {
+      "week": "2019-W49",
+      "price_nok_kg": 63.72
+    },
+    {
+      "week": "2019-W50",
+      "price_nok_kg": 68.76
+    },
+    {
+      "week": "2019-W51",
+      "price_nok_kg": 75.05
+    },
+    {
+      "week": "2019-W52",
+      "price_nok_kg": 77.04
+    },
+    {
+      "week": "2020-W01",
+      "price_nok_kg": 78.2
+    },
+    {
+      "week": "2020-W02",
+      "price_nok_kg": 77.63
+    },
+    {
+      "week": "2020-W03",
+      "price_nok_kg": 76.38
+    },
+    {
+      "week": "2020-W04",
+      "price_nok_kg": 75.53
+    },
+    {
+      "week": "2020-W05",
+      "price_nok_kg": 70.25
+    },
+    {
+      "week": "2020-W06",
+      "price_nok_kg": 65.56
+    },
+    {
+      "week": "2020-W07",
+      "price_nok_kg": 64.49
+    },
+    {
+      "week": "2020-W08",
+      "price_nok_kg": 68.42
+    },
+    {
+      "week": "2020-W09",
+      "price_nok_kg": 72.8
+    },
+    {
+      "week": "2020-W10",
+      "price_nok_kg": 67.74
+    },
+    {
+      "week": "2020-W11",
+      "price_nok_kg": 66.17
+    },
+    {
+      "week": "2020-W12",
+      "price_nok_kg": 61.29
+    },
+    {
+      "week": "2020-W13",
+      "price_nok_kg": 58.95
+    },
+    {
+      "week": "2020-W14",
+      "price_nok_kg": 60.04
+    },
+    {
+      "week": "2020-W15",
+      "price_nok_kg": 59.34
+    },
+    {
+      "week": "2020-W16",
+      "price_nok_kg": 56.11
+    },
+    {
+      "week": "2020-W17",
+      "price_nok_kg": 56.46
+    },
+    {
+      "week": "2020-W18",
+      "price_nok_kg": 55.85
+    },
+    {
+      "week": "2020-W19",
+      "price_nok_kg": 54.66
+    },
+    {
+      "week": "2020-W20",
+      "price_nok_kg": 59.17
+    },
+    {
+      "week": "2020-W21",
+      "price_nok_kg": 65.46
+    },
+    {
+      "week": "2020-W22",
+      "price_nok_kg": 64.28
+    },
+    {
+      "week": "2020-W23",
+      "price_nok_kg": 69.23
+    },
+    {
+      "week": "2020-W24",
+      "price_nok_kg": 69.94
+    },
+    {
+      "week": "2020-W25",
+      "price_nok_kg": 61.92
+    },
+    {
+      "week": "2020-W26",
+      "price_nok_kg": 59.01
+    },
+    {
+      "week": "2020-W27",
+      "price_nok_kg": 59.81
+    },
+    {
+      "week": "2020-W28",
+      "price_nok_kg": 58.69
+    },
+    {
+      "week": "2020-W29",
+      "price_nok_kg": 52.68
+    },
+    {
+      "week": "2020-W30",
+      "price_nok_kg": 52.23
+    },
+    {
+      "week": "2020-W31",
+      "price_nok_kg": 49.72
+    },
+    {
+      "week": "2020-W32",
+      "price_nok_kg": 49.62
+    },
+    {
+      "week": "2020-W33",
+      "price_nok_kg": 51.7
+    },
+    {
+      "week": "2020-W34",
+      "price_nok_kg": 52.61
+    },
+    {
+      "week": "2020-W35",
+      "price_nok_kg": 49.25
+    },
+    {
+      "week": "2020-W36",
+      "price_nok_kg": 48.9
+    },
+    {
+      "week": "2020-W37",
+      "price_nok_kg": 49.46
+    },
+    {
+      "week": "2020-W38",
+      "price_nok_kg": 48.5
+    },
+    {
+      "week": "2020-W39",
+      "price_nok_kg": 50.77
+    },
+    {
+      "week": "2020-W40",
+      "price_nok_kg": 49.83
+    },
+    {
+      "week": "2020-W41",
+      "price_nok_kg": 48.58
+    },
+    {
+      "week": "2020-W42",
+      "price_nok_kg": 50.0
+    },
+    {
+      "week": "2020-W43",
+      "price_nok_kg": 48.04
+    },
+    {
+      "week": "2020-W44",
+      "price_nok_kg": 47.09
+    },
+    {
+      "week": "2020-W45",
+      "price_nok_kg": 46.9
+    },
+    {
+      "week": "2020-W46",
+      "price_nok_kg": 47.98
+    },
+    {
+      "week": "2020-W47",
+      "price_nok_kg": 48.58
+    },
+    {
+      "week": "2020-W48",
+      "price_nok_kg": 47.67
+    },
+    {
+      "week": "2020-W49",
+      "price_nok_kg": 46.35
+    },
+    {
+      "week": "2020-W50",
+      "price_nok_kg": 46.09
+    },
+    {
+      "week": "2020-W51",
+      "price_nok_kg": 46.24
+    },
+    {
+      "week": "2020-W52",
+      "price_nok_kg": 50.22
+    },
+    {
+      "week": "2020-W53",
+      "price_nok_kg": 54.01
+    },
+    {
+      "week": "2021-W01",
+      "price_nok_kg": 50.38
+    },
+    {
+      "week": "2021-W02",
+      "price_nok_kg": 46.55
+    },
+    {
+      "week": "2021-W03",
+      "price_nok_kg": 49.81
+    },
+    {
+      "week": "2021-W04",
+      "price_nok_kg": 47.94
+    },
+    {
+      "week": "2021-W05",
+      "price_nok_kg": 47.31
+    },
+    {
+      "week": "2021-W06",
+      "price_nok_kg": 51.21
+    },
+    {
+      "week": "2021-W07",
+      "price_nok_kg": 51.07
+    },
+    {
+      "week": "2021-W08",
+      "price_nok_kg": 55.51
+    },
+    {
+      "week": "2021-W09",
+      "price_nok_kg": 63.31
+    },
+    {
+      "week": "2021-W10",
+      "price_nok_kg": 62.79
+    },
+    {
+      "week": "2021-W11",
+      "price_nok_kg": 59.97
+    },
+    {
+      "week": "2021-W12",
+      "price_nok_kg": 62.06
+    },
+    {
+      "week": "2021-W13",
+      "price_nok_kg": 65.25
+    },
+    {
+      "week": "2021-W14",
+      "price_nok_kg": 65.17
+    },
+    {
+      "week": "2021-W15",
+      "price_nok_kg": 60.99
+    },
+    {
+      "week": "2021-W16",
+      "price_nok_kg": 61.13
+    },
+    {
+      "week": "2021-W17",
+      "price_nok_kg": 65.74
+    },
+    {
+      "week": "2021-W18",
+      "price_nok_kg": 65.06
+    },
+    {
+      "week": "2021-W19",
+      "price_nok_kg": 71.08
+    },
+    {
+      "week": "2021-W20",
+      "price_nok_kg": 68.48
+    },
+    {
+      "week": "2021-W21",
+      "price_nok_kg": 63.53
+    },
+    {
+      "week": "2021-W22",
+      "price_nok_kg": 59.59
+    },
+    {
+      "week": "2021-W23",
+      "price_nok_kg": 57.64
+    },
+    {
+      "week": "2021-W24",
+      "price_nok_kg": 61.45
+    },
+    {
+      "week": "2021-W25",
+      "price_nok_kg": 60.12
+    },
+    {
+      "week": "2021-W26",
+      "price_nok_kg": 59.17
+    },
+    {
+      "week": "2021-W27",
+      "price_nok_kg": 59.85
+    },
+    {
+      "week": "2021-W28",
+      "price_nok_kg": 64.69
+    },
+    {
+      "week": "2021-W29",
+      "price_nok_kg": 66.05
+    },
+    {
+      "week": "2021-W30",
+      "price_nok_kg": 62.03
+    },
+    {
+      "week": "2021-W31",
+      "price_nok_kg": 58.52
+    },
+    {
+      "week": "2021-W32",
+      "price_nok_kg": 59.08
+    },
+    {
+      "week": "2021-W33",
+      "price_nok_kg": 56.91
+    },
+    {
+      "week": "2021-W34",
+      "price_nok_kg": 54.08
+    },
+    {
+      "week": "2021-W35",
+      "price_nok_kg": 54.41
+    },
+    {
+      "week": "2021-W36",
+      "price_nok_kg": 52.3
+    },
+    {
+      "week": "2021-W37",
+      "price_nok_kg": 53.43
+    },
+    {
+      "week": "2021-W38",
+      "price_nok_kg": 52.88
+    },
+    {
+      "week": "2021-W39",
+      "price_nok_kg": 53.54
+    },
+    {
+      "week": "2021-W40",
+      "price_nok_kg": 55.33
+    },
+    {
+      "week": "2021-W41",
+      "price_nok_kg": 58.39
+    },
+    {
+      "week": "2021-W42",
+      "price_nok_kg": 59.63
+    },
+    {
+      "week": "2021-W43",
+      "price_nok_kg": 57.98
+    },
+    {
+      "week": "2021-W44",
+      "price_nok_kg": 56.09
+    },
+    {
+      "week": "2021-W45",
+      "price_nok_kg": 54.86
+    },
+    {
+      "week": "2021-W46",
+      "price_nok_kg": 58.13
+    },
+    {
+      "week": "2021-W47",
+      "price_nok_kg": 61.84
+    },
+    {
+      "week": "2021-W48",
+      "price_nok_kg": 61.11
+    },
+    {
+      "week": "2021-W49",
+      "price_nok_kg": 65.06
+    },
+    {
+      "week": "2021-W50",
+      "price_nok_kg": 71.77
+    },
+    {
+      "week": "2021-W51",
+      "price_nok_kg": 71.32
+    },
+    {
+      "week": "2021-W52",
+      "price_nok_kg": 68.38
+    },
+    {
+      "week": "2022-W01",
+      "price_nok_kg": 67.32
+    },
+    {
+      "week": "2022-W02",
+      "price_nok_kg": 72.05
+    },
+    {
+      "week": "2022-W03",
+      "price_nok_kg": 72.97
+    },
+    {
+      "week": "2022-W04",
+      "price_nok_kg": 70.56
+    },
+    {
+      "week": "2022-W05",
+      "price_nok_kg": 74.42
+    },
+    {
+      "week": "2022-W06",
+      "price_nok_kg": 77.55
+    },
+    {
+      "week": "2022-W07",
+      "price_nok_kg": 87.6
+    },
+    {
+      "week": "2022-W08",
+      "price_nok_kg": 87.92
+    },
+    {
+      "week": "2022-W09",
+      "price_nok_kg": 83.75
+    },
+    {
+      "week": "2022-W10",
+      "price_nok_kg": 83.23
+    },
+    {
+      "week": "2022-W11",
+      "price_nok_kg": 78.28
+    },
+    {
+      "week": "2022-W12",
+      "price_nok_kg": 83.53
+    },
+    {
+      "week": "2022-W13",
+      "price_nok_kg": 84.16
+    },
+    {
+      "week": "2022-W14",
+      "price_nok_kg": 93.21
+    },
+    {
+      "week": "2022-W15",
+      "price_nok_kg": 94.63
+    },
+    {
+      "week": "2022-W16",
+      "price_nok_kg": 98.93
+    },
+    {
+      "week": "2022-W17",
+      "price_nok_kg": 107.8
+    },
+    {
+      "week": "2022-W18",
+      "price_nok_kg": 108.2
+    },
+    {
+      "week": "2022-W19",
+      "price_nok_kg": 97.65
+    },
+    {
+      "week": "2022-W20",
+      "price_nok_kg": 92.71
+    },
+    {
+      "week": "2022-W21",
+      "price_nok_kg": 95.13
+    },
+    {
+      "week": "2022-W22",
+      "price_nok_kg": 95.88
+    },
+    {
+      "week": "2022-W23",
+      "price_nok_kg": 96.66
+    },
+    {
+      "week": "2022-W24",
+      "price_nok_kg": 98.43
+    },
+    {
+      "week": "2022-W25",
+      "price_nok_kg": 97.43
+    },
+    {
+      "week": "2022-W26",
+      "price_nok_kg": 93.13
+    },
+    {
+      "week": "2022-W27",
+      "price_nok_kg": 90.29
+    },
+    {
+      "week": "2022-W28",
+      "price_nok_kg": 88.52
+    },
+    {
+      "week": "2022-W29",
+      "price_nok_kg": 80.74
+    },
+    {
+      "week": "2022-W30",
+      "price_nok_kg": 74.23
+    },
+    {
+      "week": "2022-W31",
+      "price_nok_kg": 75.23
+    },
+    {
+      "week": "2022-W32",
+      "price_nok_kg": 73.83
+    },
+    {
+      "week": "2022-W33",
+      "price_nok_kg": 69.86
+    },
+    {
+      "week": "2022-W34",
+      "price_nok_kg": 64.62
+    },
+    {
+      "week": "2022-W35",
+      "price_nok_kg": 61.94
+    },
+    {
+      "week": "2022-W36",
+      "price_nok_kg": 61.8
+    },
+    {
+      "week": "2022-W37",
+      "price_nok_kg": 64.49
+    },
+    {
+      "week": "2022-W38",
+      "price_nok_kg": 64.55
+    },
+    {
+      "week": "2022-W39",
+      "price_nok_kg": 65.67
+    },
+    {
+      "week": "2022-W40",
+      "price_nok_kg": 69.38
+    },
+    {
+      "week": "2022-W41",
+      "price_nok_kg": 72.88
+    },
+    {
+      "week": "2022-W42",
+      "price_nok_kg": 72.09
+    },
+    {
+      "week": "2022-W43",
+      "price_nok_kg": 70.64
+    },
+    {
+      "week": "2022-W44",
+      "price_nok_kg": 70.76
+    },
+    {
+      "week": "2022-W45",
+      "price_nok_kg": 68.43
+    },
+    {
+      "week": "2022-W46",
+      "price_nok_kg": 70.55
+    },
+    {
+      "week": "2022-W47",
+      "price_nok_kg": 78.0
+    },
+    {
+      "week": "2022-W48",
+      "price_nok_kg": 81.7
+    },
+    {
+      "week": "2022-W49",
+      "price_nok_kg": 77.77
+    },
+    {
+      "week": "2022-W50",
+      "price_nok_kg": 77.35
+    },
+    {
+      "week": "2022-W51",
+      "price_nok_kg": 74.71
+    },
+    {
+      "week": "2022-W52",
+      "price_nok_kg": 86.33
+    },
+    {
+      "week": "2023-W01",
+      "price_nok_kg": 89.67
+    },
+    {
+      "week": "2023-W02",
+      "price_nok_kg": 97.51
+    },
+    {
+      "week": "2023-W03",
+      "price_nok_kg": 94.98
+    },
+    {
+      "week": "2023-W04",
+      "price_nok_kg": 89.77
+    },
+    {
+      "week": "2023-W05",
+      "price_nok_kg": 93.07
+    },
+    {
+      "week": "2023-W06",
+      "price_nok_kg": 93.3
+    },
+    {
+      "week": "2023-W07",
+      "price_nok_kg": 103.2
+    },
+    {
+      "week": "2023-W08",
+      "price_nok_kg": 112.5
+    },
+    {
+      "week": "2023-W09",
+      "price_nok_kg": 119.5
+    },
+    {
+      "week": "2023-W10",
+      "price_nok_kg": 118.2
+    },
+    {
+      "week": "2023-W11",
+      "price_nok_kg": 122.9
+    },
+    {
+      "week": "2023-W12",
+      "price_nok_kg": 117.3
+    },
+    {
+      "week": "2023-W13",
+      "price_nok_kg": 111.0
+    },
+    {
+      "week": "2023-W14",
+      "price_nok_kg": 109.2
+    },
+    {
+      "week": "2023-W15",
+      "price_nok_kg": 113.4
+    },
+    {
+      "week": "2023-W16",
+      "price_nok_kg": 120.6
+    },
+    {
+      "week": "2023-W17",
+      "price_nok_kg": 111.6
+    },
+    {
+      "week": "2023-W18",
+      "price_nok_kg": 112.4
+    },
+    {
+      "week": "2023-W19",
+      "price_nok_kg": 108.7
+    },
+    {
+      "week": "2023-W20",
+      "price_nok_kg": 110.9
+    },
+    {
+      "week": "2023-W21",
+      "price_nok_kg": 108.7
+    },
+    {
+      "week": "2023-W22",
+      "price_nok_kg": 113.0
+    },
+    {
+      "week": "2023-W23",
+      "price_nok_kg": 110.1
+    },
+    {
+      "week": "2023-W24",
+      "price_nok_kg": 100.8
+    },
+    {
+      "week": "2023-W25",
+      "price_nok_kg": 89.46
+    },
+    {
+      "week": "2023-W26",
+      "price_nok_kg": 92.04
+    },
+    {
+      "week": "2023-W27",
+      "price_nok_kg": 94.9
+    },
+    {
+      "week": "2023-W28",
+      "price_nok_kg": 97.02
+    },
+    {
+      "week": "2023-W29",
+      "price_nok_kg": 92.67
+    },
+    {
+      "week": "2023-W30",
+      "price_nok_kg": 86.14
+    },
+    {
+      "week": "2023-W31",
+      "price_nok_kg": 83.28
+    },
+    {
+      "week": "2023-W32",
+      "price_nok_kg": 80.26
+    },
+    {
+      "week": "2023-W33",
+      "price_nok_kg": 78.14
+    },
+    {
+      "week": "2023-W34",
+      "price_nok_kg": 76.87
+    },
+    {
+      "week": "2023-W35",
+      "price_nok_kg": 75.15
+    },
+    {
+      "week": "2023-W36",
+      "price_nok_kg": 76.81
+    },
+    {
+      "week": "2023-W37",
+      "price_nok_kg": 77.05
+    },
+    {
+      "week": "2023-W38",
+      "price_nok_kg": 76.93
+    },
+    {
+      "week": "2023-W39",
+      "price_nok_kg": 80.54
+    },
+    {
+      "week": "2023-W40",
+      "price_nok_kg": 82.68
+    },
+    {
+      "week": "2023-W41",
+      "price_nok_kg": 81.28
+    },
+    {
+      "week": "2023-W42",
+      "price_nok_kg": 85.69
+    },
+    {
+      "week": "2023-W43",
+      "price_nok_kg": 83.27
+    },
+    {
+      "week": "2023-W44",
+      "price_nok_kg": 81.11
+    },
+    {
+      "week": "2023-W45",
+      "price_nok_kg": 81.99
+    },
+    {
+      "week": "2023-W46",
+      "price_nok_kg": 81.52
+    },
+    {
+      "week": "2023-W47",
+      "price_nok_kg": 83.51
+    },
+    {
+      "week": "2023-W48",
+      "price_nok_kg": 85.52
+    },
+    {
+      "week": "2023-W49",
+      "price_nok_kg": 86.73
+    },
+    {
+      "week": "2023-W50",
+      "price_nok_kg": 87.82
+    },
+    {
+      "week": "2023-W51",
+      "price_nok_kg": 91.03
+    },
+    {
+      "week": "2023-W52",
+      "price_nok_kg": 100.7
+    },
+    {
+      "week": "2024-W01",
+      "price_nok_kg": 112.9
+    },
+    {
+      "week": "2024-W02",
+      "price_nok_kg": 108.8
+    },
+    {
+      "week": "2024-W03",
+      "price_nok_kg": 99.87
+    },
+    {
+      "week": "2024-W04",
+      "price_nok_kg": 104.5
+    },
+    {
+      "week": "2024-W05",
+      "price_nok_kg": 109.2
+    },
+    {
+      "week": "2024-W06",
+      "price_nok_kg": 106.9
+    },
+    {
+      "week": "2024-W07",
+      "price_nok_kg": 107.8
+    },
+    {
+      "week": "2024-W08",
+      "price_nok_kg": 111.2
+    },
+    {
+      "week": "2024-W09",
+      "price_nok_kg": 109.6
+    },
+    {
+      "week": "2024-W10",
+      "price_nok_kg": 107.3
+    },
+    {
+      "week": "2024-W11",
+      "price_nok_kg": 106.2
+    },
+    {
+      "week": "2024-W12",
+      "price_nok_kg": 106.8
+    },
+    {
+      "week": "2024-W13",
+      "price_nok_kg": 115.2
+    },
+    {
+      "week": "2024-W14",
+      "price_nok_kg": 120.0
+    },
+    {
+      "week": "2024-W15",
+      "price_nok_kg": 123.3
+    },
+    {
+      "week": "2024-W16",
+      "price_nok_kg": 121.2
+    },
+    {
+      "week": "2024-W17",
+      "price_nok_kg": 113.2
+    },
+    {
+      "week": "2024-W18",
+      "price_nok_kg": 119.7
+    },
+    {
+      "week": "2024-W19",
+      "price_nok_kg": 122.0
+    },
+    {
+      "week": "2024-W20",
+      "price_nok_kg": 120.8
+    },
+    {
+      "week": "2024-W21",
+      "price_nok_kg": 118.1
+    },
+    {
+      "week": "2024-W22",
+      "price_nok_kg": 104.9
+    },
+    {
+      "week": "2024-W23",
+      "price_nok_kg": 92.2
+    },
+    {
+      "week": "2024-W24",
+      "price_nok_kg": 84.87
+    },
+    {
+      "week": "2024-W25",
+      "price_nok_kg": 85.58
+    },
+    {
+      "week": "2024-W26",
+      "price_nok_kg": 79.29
+    },
+    {
+      "week": "2024-W27",
+      "price_nok_kg": 78.24
+    },
+    {
+      "week": "2024-W28",
+      "price_nok_kg": 79.78
+    },
+    {
+      "week": "2024-W29",
+      "price_nok_kg": 81.46
+    },
+    {
+      "week": "2024-W30",
+      "price_nok_kg": 81.55
+    },
+    {
+      "week": "2024-W31",
+      "price_nok_kg": 81.19
+    },
+    {
+      "week": "2024-W32",
+      "price_nok_kg": 80.41
+    },
+    {
+      "week": "2024-W33",
+      "price_nok_kg": 80.89
+    },
+    {
+      "week": "2024-W34",
+      "price_nok_kg": 76.82
+    },
+    {
+      "week": "2024-W35",
+      "price_nok_kg": 73.93
+    },
+    {
+      "week": "2024-W36",
+      "price_nok_kg": 73.08
+    },
+    {
+      "week": "2024-W37",
+      "price_nok_kg": 74.12
+    },
+    {
+      "week": "2024-W38",
+      "price_nok_kg": 74.57
+    },
+    {
+      "week": "2024-W39",
+      "price_nok_kg": 73.23
+    },
+    {
+      "week": "2024-W40",
+      "price_nok_kg": 69.7
+    },
+    {
+      "week": "2024-W41",
+      "price_nok_kg": 72.76
+    },
+    {
+      "week": "2024-W42",
+      "price_nok_kg": 76.02
+    },
+    {
+      "week": "2024-W43",
+      "price_nok_kg": 77.59
+    },
+    {
+      "week": "2024-W44",
+      "price_nok_kg": 76.49
+    },
+    {
+      "week": "2024-W45",
+      "price_nok_kg": 77.8
+    },
+    {
+      "week": "2024-W46",
+      "price_nok_kg": 81.68
+    },
+    {
+      "week": "2024-W47",
+      "price_nok_kg": 86.59
+    },
+    {
+      "week": "2024-W48",
+      "price_nok_kg": 89.32
+    },
+    {
+      "week": "2024-W49",
+      "price_nok_kg": 87.46
+    },
+    {
+      "week": "2024-W50",
+      "price_nok_kg": 90.74
+    },
+    {
+      "week": "2024-W51",
+      "price_nok_kg": 92.15
+    },
+    {
+      "week": "2024-W52",
+      "price_nok_kg": 111.8
+    },
+    {
+      "week": "2025-W01",
+      "price_nok_kg": 125.4
+    },
+    {
+      "week": "2025-W02",
+      "price_nok_kg": 117.8
+    },
+    {
+      "week": "2025-W03",
+      "price_nok_kg": 105.1
+    },
+    {
+      "week": "2025-W04",
+      "price_nok_kg": 98.43
+    },
+    {
+      "week": "2025-W05",
+      "price_nok_kg": 94.49
+    },
+    {
+      "week": "2025-W06",
+      "price_nok_kg": 92.18
+    },
+    {
+      "week": "2025-W07",
+      "price_nok_kg": 93.23
+    },
+    {
+      "week": "2025-W08",
+      "price_nok_kg": 92.97
+    },
+    {
+      "week": "2025-W09",
+      "price_nok_kg": 92.67
+    },
+    {
+      "week": "2025-W10",
+      "price_nok_kg": 87.0
+    },
+    {
+      "week": "2025-W11",
+      "price_nok_kg": 88.64
+    },
+    {
+      "week": "2025-W12",
+      "price_nok_kg": 89.09
+    },
+    {
+      "week": "2025-W13",
+      "price_nok_kg": 84.45
+    },
+    {
+      "week": "2025-W14",
+      "price_nok_kg": 76.4
+    },
+    {
+      "week": "2025-W15",
+      "price_nok_kg": 78.56
+    },
+    {
+      "week": "2025-W16",
+      "price_nok_kg": 95.33
+    },
+    {
+      "week": "2025-W17",
+      "price_nok_kg": 89.19
+    },
+    {
+      "week": "2025-W18",
+      "price_nok_kg": 75.35
+    },
+    {
+      "week": "2025-W19",
+      "price_nok_kg": 74.31
+    },
+    {
+      "week": "2025-W20",
+      "price_nok_kg": 77.06
+    },
+    {
+      "week": "2025-W21",
+      "price_nok_kg": 75.89
+    },
+    {
+      "week": "2025-W22",
+      "price_nok_kg": 70.42
+    },
+    {
+      "week": "2025-W23",
+      "price_nok_kg": 72.42
+    },
+    {
+      "week": "2025-W24",
+      "price_nok_kg": 82.73
+    },
+    {
+      "week": "2025-W25",
+      "price_nok_kg": 76.33
+    },
+    {
+      "week": "2025-W26",
+      "price_nok_kg": 68.74
+    },
+    {
+      "week": "2025-W27",
+      "price_nok_kg": 70.28
+    },
+    {
+      "week": "2025-W28",
+      "price_nok_kg": 67.29
+    },
+    {
+      "week": "2025-W29",
+      "price_nok_kg": 68.13
+    },
+    {
+      "week": "2025-W30",
+      "price_nok_kg": 65.1
+    },
+    {
+      "week": "2025-W31",
+      "price_nok_kg": 60.58
+    },
+    {
+      "week": "2025-W32",
+      "price_nok_kg": 62.05
+    },
+    {
+      "week": "2025-W33",
+      "price_nok_kg": 64.38
+    },
+    {
+      "week": "2025-W34",
+      "price_nok_kg": 65.13
+    },
+    {
+      "week": "2025-W35",
+      "price_nok_kg": 65.86
+    },
+    {
+      "week": "2025-W36",
+      "price_nok_kg": 70.2
+    },
+    {
+      "week": "2025-W37",
+      "price_nok_kg": 74.99
+    },
+    {
+      "week": "2025-W38",
+      "price_nok_kg": 77.4
+    },
+    {
+      "week": "2025-W39",
+      "price_nok_kg": 79.91
+    },
+    {
+      "week": "2025-W40",
+      "price_nok_kg": 77.68
+    },
+    {
+      "week": "2025-W41",
+      "price_nok_kg": 75.38
+    },
+    {
+      "week": "2025-W42",
+      "price_nok_kg": 73.74
+    },
+    {
+      "week": "2025-W43",
+      "price_nok_kg": 78.25
+    },
+    {
+      "week": "2025-W44",
+      "price_nok_kg": 80.55
+    },
+    {
+      "week": "2025-W45",
+      "price_nok_kg": 78.08
+    },
+    {
+      "week": "2025-W46",
+      "price_nok_kg": 80.1
+    },
+    {
+      "week": "2025-W47",
+      "price_nok_kg": 84.54
+    },
+    {
+      "week": "2025-W48",
+      "price_nok_kg": 82.5
+    },
+    {
+      "week": "2025-W49",
+      "price_nok_kg": 88.83
+    },
+    {
+      "week": "2025-W50",
+      "price_nok_kg": 95.84
+    },
+    {
+      "week": "2025-W51",
+      "price_nok_kg": 88.71
+    },
+    {
+      "week": "2025-W52",
+      "price_nok_kg": 103.6
+    },
+    {
+      "week": "2026-W01",
+      "price_nok_kg": 100.4
+    },
+    {
+      "week": "2026-W02",
+      "price_nok_kg": 92.33
+    },
+    {
+      "week": "2026-W03",
+      "price_nok_kg": 83.65
+    },
+    {
+      "week": "2026-W04",
+      "price_nok_kg": 83.09
+    },
+    {
+      "week": "2026-W05",
+      "price_nok_kg": 81.29
+    },
+    {
+      "week": "2026-W06",
+      "price_nok_kg": 92.86
+    },
+    {
+      "week": "2026-W07",
+      "price_nok_kg": 93.6
+    },
+    {
+      "week": "2026-W08",
+      "price_nok_kg": 84.89
+    },
+    {
+      "week": "2026-W09",
+      "price_nok_kg": 81.34
+    },
+    {
+      "week": "2026-W10",
+      "price_nok_kg": 88.03
+    },
+    {
+      "week": "2026-W11",
+      "price_nok_kg": 94.98
+    },
+    {
+      "week": "2026-W12",
+      "price_nok_kg": 94.4
+    },
+    {
+      "week": "2026-W13",
+      "price_nok_kg": 90.55
+    },
+    {
+      "week": "2026-W14",
+      "price_nok_kg": 89.13
+    },
+    {
+      "week": "2026-W15",
+      "price_nok_kg": 85.17
+    },
+    {
+      "week": "2026-W16",
+      "price_nok_kg": 77.31
+    },
+    {
+      "week": "2026-W17",
+      "price_nok_kg": 76.49
+    },
+    {
+      "week": "2026-W18",
+      "price_nok_kg": 83.51
+    },
+    {
+      "week": "2026-W19",
+      "price_nok_kg": 82.58
+    },
+    {
+      "week": "2026-W20",
+      "price_nok_kg": 77.29
+    },
+    {
+      "week": "2026-W21",
+      "price_nok_kg": 73.94
+    },
+    {
+      "week": "2026-W22",
+      "price_nok_kg": 76.29
+    },
+    {
+      "week": "2026-W23",
+      "price_nok_kg": 72.78
+    },
+    {
+      "week": "2026-W24",
+      "price_nok_kg": 69.85
+    },
+    {
+      "week": "2026-W25",
+      "price_nok_kg": 70.31
+    },
+    {
+      "week": "2026-W26",
+      "price_nok_kg": 68.14
+    },
+    {
+      "week": "2026-W27",
+      "price_nok_kg": 67.31
+    },
+    {
+      "week": "2026-W28",
+      "price_nok_kg": 69.54
+    },
+    {
+      "week": "2026-W29",
+      "price_nok_kg": 69.64
+    },
+    {
+      "week": "2026-W30",
+      "price_nok_kg": 71.31
+    },
+    {
+      "week": "2026-W31",
+      "price_nok_kg": 73.57
+    },
+    {
+      "week": "2026-W32",
+      "price_nok_kg": 74.9
+    },
+    {
+      "week": "2026-W33",
+      "price_nok_kg": 72.66
+    },
+    {
+      "week": "2026-W34",
+      "price_nok_kg": 73.52
+    },
+    {
+      "week": "2026-W35",
+      "price_nok_kg": 71.87
+    },
+    {
+      "week": "2026-W36",
+      "price_nok_kg": 69.71
+    },
+    {
+      "week": "2026-W37",
+      "price_nok_kg": 70.18
+    },
+    {
+      "week": "2026-W38",
+      "price_nok_kg": 71.41
+    },
+    {
+      "week": "2026-W39",
+      "price_nok_kg": 73.59
+    },
+    {
+      "week": "2026-W40",
+      "price_nok_kg": 73.8
+    },
+    {
+      "week": "2026-W41",
+      "price_nok_kg": 72.55
+    },
+    {
+      "week": "2026-W42",
+      "price_nok_kg": 74.05
+    },
+    {
+      "week": "2026-W43",
+      "price_nok_kg": 76.04
+    },
+    {
+      "week": "2026-W44",
+      "price_nok_kg": 74.98
+    }
+  ],
+  "c1_drivers": [],
+  "windows": {
+    "dev": [
+      "2021-W01",
+      "2024-W52"
+    ],
+    "holdout": [
+      "2025-W01",
+      "2026-W44"
+    ]
+  },
+  "notes": [
+    "Actuals are latest revised data, not archived first releases.",
+    "Publication lags reconstruct historical availability; holiday release dates are approximate.",
+    "Monthly driver levels built from Directorate national sums (areas 0–13).",
+    "c1 unavailable: weekly_national_index.parquet has not landed; preliminary rw/ar/c0 only.",
+    "Errors and MAE are in log price-change points; prices are NOK/kg.",
+    "All models use matched origins and expanding training rows; lags fixed by 2012–2018 BIC.",
+    "Anomaly engine: Price stand-in (Production anomaly module absent).",
+    "The 80% interval uses development errors and is not a calibrated coverage guarantee.",
+    "Holdout unscored and locked until the analysis freeze (8 Nov 2026, 04:00 Europe/London)."
+  ],
+  "scorecard": [
+    {
+      "window": "dev",
+      "h": 2,
+      "model": "ar",
+      "mae": 0.05839,
+      "mae_ratio": 0.9264,
+      "hit_rate": 0.6683
+    },
+    {
+      "window": "dev",
+      "h": 2,
+      "model": "c0",
+      "mae": 0.05932,
+      "mae_ratio": 0.941,
+      "hit_rate": 0.6635
+    },
+    {
+      "window": "dev",
+      "h": 2,
+      "model": "rw",
+      "mae": 0.06303,
+      "mae_ratio": 1.0,
+      "hit_rate": null
+    },
+    {
+      "window": "dev",
+      "h": 3,
+      "model": "ar",
+      "mae": 0.06938,
+      "mae_ratio": 0.887,
+      "hit_rate": 0.6731
+    },
+    {
+      "window": "dev",
+      "h": 3,
+      "model": "c0",
+      "mae": 0.07125,
+      "mae_ratio": 0.9108,
+      "hit_rate": 0.6635
+    },
+    {
+      "window": "dev",
+      "h": 3,
+      "model": "rw",
+      "mae": 0.07822,
+      "mae_ratio": 1.0,
+      "hit_rate": null
+    },
+    {
+      "window": "dev",
+      "h": 4,
+      "model": "ar",
+      "mae": 0.07656,
+      "mae_ratio": 0.8477,
+      "hit_rate": 0.7404
+    },
+    {
+      "window": "dev",
+      "h": 4,
+      "model": "c0",
+      "mae": 0.07846,
+      "mae_ratio": 0.8687,
+      "hit_rate": 0.6971
+    },
+    {
+      "window": "dev",
+      "h": 4,
+      "model": "rw",
+      "mae": 0.09032,
+      "mae_ratio": 1.0,
+      "hit_rate": null
+    },
+    {
+      "window": "dev",
+      "h": 5,
+      "model": "ar",
+      "mae": 0.08155,
+      "mae_ratio": 0.7972,
+      "hit_rate": 0.7452
+    },
+    {
+      "window": "dev",
+      "h": 5,
+      "model": "c0",
+      "mae": 0.08317,
+      "mae_ratio": 0.8131,
+      "hit_rate": 0.7115
+    },
+    {
+      "window": "dev",
+      "h": 5,
+      "model": "rw",
+      "mae": 0.1023,
+      "mae_ratio": 1.0,
+      "hit_rate": null
+    },
+    {
+      "window": "dev",
+      "h": 6,
+      "model": "ar",
+      "mae": 0.08717,
+      "mae_ratio": 0.7533,
+      "hit_rate": 0.7981
+    },
+    {
+      "window": "dev",
+      "h": 6,
+      "model": "c0",
+      "mae": 0.09148,
+      "mae_ratio": 0.7905,
+      "hit_rate": 0.7548
+    },
+    {
+      "window": "dev",
+      "h": 6,
+      "model": "rw",
+      "mae": 0.1157,
+      "mae_ratio": 1.0,
+      "hit_rate": null
+    },
+    {
+      "window": "dev",
+      "h": 7,
+      "model": "ar",
+      "mae": 0.09417,
+      "mae_ratio": 0.738,
+      "hit_rate": 0.7885
+    },
+    {
+      "window": "dev",
+      "h": 7,
+      "model": "c0",
+      "mae": 0.09665,
+      "mae_ratio": 0.7573,
+      "hit_rate": 0.7596
+    },
+    {
+      "window": "dev",
+      "h": 7,
+      "model": "rw",
+      "mae": 0.1276,
+      "mae_ratio": 1.0,
+      "hit_rate": null
+    },
+    {
+      "window": "dev",
+      "h": 8,
+      "model": "ar",
+      "mae": 0.1025,
+      "mae_ratio": 0.7266,
+      "hit_rate": 0.8221
+    },
+    {
+      "window": "dev",
+      "h": 8,
+      "model": "c0",
+      "mae": 0.101,
+      "mae_ratio": 0.7161,
+      "hit_rate": 0.7692
+    },
+    {
+      "window": "dev",
+      "h": 8,
+      "model": "rw",
+      "mae": 0.141,
+      "mae_ratio": 1.0,
+      "hit_rate": null
+    }
+  ],
+  "cw": [],
+  "by_year": [
+    {
+      "year": 2021,
+      "mae_c0": 0.07414,
+      "mae_c1": null
+    },
+    {
+      "year": 2022,
+      "mae_c0": 0.08956,
+      "mae_c1": null
+    },
+    {
+      "year": 2023,
+      "mae_c0": 0.07373,
+      "mae_c1": null
+    },
+    {
+      "year": 2024,
+      "mae_c0": 0.07641,
+      "mae_c1": null
+    }
+  ],
+  "f2": null,
+  "backtest_h4": null,
+  "current": null
+}
