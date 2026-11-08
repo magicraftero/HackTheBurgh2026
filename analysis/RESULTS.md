@@ -57,28 +57,44 @@ and about **93% accurate** on average fish weight. That is 17% less error than t
 baseline on kilograms.
 
 **Why v2 wins:** it reads Statistics Norway's weekly export figures, which are published about
-9 days after each week. The Directorate's monthly harvest figures are published about 50 days
-after the month starts. So by the time we forecast, exports already reveal most of the national
-harvest. v2 converts exports to harvest with a trailing 12-month ratio, then splits the national
-total across areas using biomass, last month's share, last year's share and fish weight.
+9 days after each week starts. The Directorate's monthly harvest figures are published on the
+20th of the following month. We forecast on the 10th, so the month's exports are already
+complete: that's a head start of about 10 days on the official figure. v2 converts exports to
+harvest with a trailing 12-month ratio, then splits the national total across areas using
+biomass, last month's share, last year's share and fish weight.
 
-## 3. Hidden patterns
+## 3. What we found
 
-1. **We see the harvest six weeks before it's published.** Weekly exports reveal Norway's
+Ordered by how new it is. Items 1-3 are our own results; items 4-6 confirm known biology with a
+size measured from public data.
+
+1. **What actually predicts next month's harvest: stock, not biology.** Leaving each group of
+   factors out of the Drivers model (2021-2026, `drivers.json`):
+   - tonnes: removing stock (biomass, fish numbers) makes the error 14% worse; exports 1.6%; the
+     smolt pipeline 1.2%; lice, temperature, feed and deaths about 0%;
+   - fish size: deaths and disease 4.0%, stock 2.4%, lice 1.9%, feed 1.0%.
+
+   Biology barely changes how much salmon comes out next month; it changes what size it is. This
+   is also why the machine learning model, which reads biology well, wins on fish size but not on
+   tonnes.
+2. **Exports give away the harvest before it's published.** Weekly exports reveal Norway's
    monthly harvest to within about 10% (national error 0.104 on development, 0.083 on the
-   holdout), roughly six weeks before the official figures.
-2. **Lice force early harvests of smaller fish.** After high-lice months (top third against the
-   middle third), areas harvested +8.2% fish at −1.3% average weight over the next 0-3 months. The
-   weight part passes M1.
-3. **Deaths come before emergency harvests.** After high-mortality months, +8.3% fish harvested at
-   −1.7% weight.
-4. **Cold seas slow everything.** After cold spells, −5.8% fish at −0.7% weight 1-3 months later.
-5. **Heavy stock signals a harvest wave** (exploratory, found while building the farmer page).
-   When fish in the water are heavier than in 80% of an area's past months, the next month's
-   harvest takes about 7% more of the stock than usual for that time of year.
-6. **The seasonality trap.** Raw disease and harvest series correlate at r = −0.67, but most of
+   holdout), about 10 days before the official figures. Structure matters more than more data:
+   the same export figure used as one input among many improved the forecast by 1.6%; used as a
+   ratio to harvest and split by area, it cut error by 17%.
+3. **The seasonality trap.** Raw disease and harvest series correlate at r = −0.67, but most of
    that is both following the seasons. After removing the seasonal pattern the correlation falls to
    r = −0.28. Anyone reading raw charts would overstate the link by more than double.
+4. **Lice force early harvests of smaller fish** (known from farm-level research, for example
+   Zhang et al.; here measured for whole areas from public data). After high-lice months (top
+   third against the middle third), areas harvested +8.2% fish at −1.3% average weight over the
+   next 0-3 months. The weight part passes M1.
+5. **Deaths come before emergency harvests.** After high-mortality months, +8.3% fish harvested at
+   −1.7% weight.
+6. **Cold seas slow growth.** After cold spells, −5.8% fish at −0.7% weight 1-3 months later.
+7. **Heavy stock signals a harvest wave** (exploratory, expected rather than surprising). When
+   fish in the water are heavier than in 80% of an area's past months, the next month's harvest
+   takes about 6-7% more of the stock than usual for that time of year.
 
 ## 4. Live forecast: October 2026
 

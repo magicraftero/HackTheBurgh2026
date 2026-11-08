@@ -160,8 +160,8 @@ time-ordered cross-validation on past months only. That's not tuning on the scor
 The challenge is to make something invisible visible. Each of these is a specific, testable
 claim. They are exploratory, with no pass mark, and are reported whether they come out or not.
 
-1. **The six-week head start.** Exports reveal each month's harvest about six weeks before the
-   official statistics. We can show "here is October's harvest, today, 10 days after the month
+1. **The head start.** Exports reveal each month's harvest before the official statistics
+   (published on the 20th of the next month). We can show "here is October's harvest, today, 10 days after the month
    ended", then prove the track record on 2025-2026.
 2. **Panic harvests.** When lice rise on farms with big fish, harvest share jumps and average
    weight drops. That's farmers dumping fish early. The *lice × weight* interaction measures it,

@@ -221,11 +221,11 @@ def headline_patterns(effects: dict[str, Any], topdown_national_mae: float | Non
     patterns = []
     if topdown_national_mae is not None:
         patterns.append({
-            "id": "six_weeks_early",
-            "title": "We see the harvest six weeks before it's published",
+            "id": "exports_reveal_harvest",
+            "title": "Exports give away the harvest before it's published",
             "finding": f"Weekly export data reveals Norway's monthly harvest to within about "
-                       f"{100 * topdown_national_mae:.0f}%, roughly six weeks before the official "
-                       "figures.",
+                       f"{100 * topdown_national_mae:.0f}%. Our forecast is made on the 10th, about "
+                       "10 days before the official figures on the 20th.",
         })
     if "lice" in effects:
         e = effects["lice"]["high"]
