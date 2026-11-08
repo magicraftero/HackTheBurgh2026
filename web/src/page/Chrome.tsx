@@ -55,6 +55,9 @@ export function FloatNav() {
             {label}
           </a>
         ))}
+        <a className="nav-link" href="supply-check.html">
+          Supply check
+        </a>
       </nav>
     </header>
   );
