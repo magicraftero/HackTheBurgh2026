@@ -78,8 +78,10 @@ def topdown_month(
 
     made_on = forecast_date(target)
     known = directorate.loc[pd.PeriodIndex(directorate["month"], freq="M") <= target - 1]
-    target_row = directorate.loc[pd.PeriodIndex(directorate["month"], freq="M") == target, ["area", "month"]]
-    blank = target_row.assign(**{"harvest_kg": np.nan, "biomass_kg": np.nan, "fish_stock": np.nan})
+    blank = pd.DataFrame(
+        {"area": list(AREAS), "month": str(target), "harvest_kg": np.nan,
+         "biomass_kg": np.nan, "fish_stock": np.nan}
+    )
     frame = area_share_frame(pd.concat([known, blank], ignore_index=True))
 
     result = pd.DataFrame({"area": list(AREAS), "month": str(target)})
